@@ -12,16 +12,17 @@ uses
   Infra.DBEngine.Contract;
 
 type
-  TDbEngineZeos = class(TDbEngineAbstract)
+  TDbEngineZeos = class(TDbEngineFactory)
   private
     FConnectionComponent: TZConnection;
   public
+    function ConnectionComponent: TComponent; override;
+    function Connect: IDbEngineFactory; override;
     function StartTx: IDbEngineFactory; override;
     function CommitTX: IDbEngineFactory; override;
     function RollbackTx: IDbEngineFactory; override;
     function InTransaction: Boolean; override;
     function InjectConnection(AConn: TComponent; ATransactionObject: TObject): IDbEngineFactory; override;
-    function ConnectionComponent: TComponent; override;
 
   public
     constructor Create(const ADbConfig: IDbEngineConfig); override;
@@ -37,6 +38,13 @@ function TDbEngineZeos.CommitTX: IDbEngineFactory;
 begin
   Result := Self;
   FConnectionComponent.Commit;
+end;
+
+function TDbEngineZeos.Connect: IDbEngineFactory;
+begin
+  Result := Self;
+  FConnectionComponent.Connect;
+  inherited;
 end;
 
 function TDbEngineZeos.ConnectionComponent: TComponent;

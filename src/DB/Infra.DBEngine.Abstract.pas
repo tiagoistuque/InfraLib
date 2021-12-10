@@ -5,6 +5,7 @@ interface
 uses
   Classes,
   SysUtils,
+  DB,
   {$IF DEFINED(INFRA_ORMBR)}
   dbebr.factory.interfaces,
 
@@ -22,15 +23,21 @@ uses
   Infra.DBEngine.Contract;
 
 type
-  TDbEngineAbstract = class abstract(TInterfacedObject, IDbEngineFactory)
+  TDbEngineFactory = class abstract(TInterfacedObject, IDbEngineFactory)
   protected
+    {$IF DEFINED(INFRA_ORMBR)}
     FDBConnection: IDBConnection;
+    {$ENDIF}
   public
     {$IF DEFINED(INFRA_ORMBR)}
     function Connection: IDBConnection;
     function BuildDatabase: IDbEngineFactory;
     {$ENDIF}
     function ConnectionComponent: TComponent; virtual; abstract;
+    function Connect: IDbEngineFactory; virtual;
+    function ExecSQL(const ASQL: string): IDbEngineFactory; virtual; abstract;
+    function ExceSQL(const ASQL: string; var AResultDataSet: TDataSet ): IDbEngineFactory; virtual; abstract;
+    function OpenSQL(const ASQL: string; var AResultDataSet: TDataSet ): IDbEngineFactory; virtual; abstract;
     function StartTx: IDbEngineFactory; virtual; abstract;
     function CommitTX: IDbEngineFactory; virtual; abstract;
     function RollbackTx: IDbEngineFactory; virtual; abstract;
@@ -87,7 +94,15 @@ end;
 {$ENDIF}
 
 
-destructor TDbEngineAbstract.Destroy;
+function TDbEngineFactory.Connect: IDbEngineFactory;
+begin
+  {$IF DEFINED(INFRA_ORMBR)}
+  if Assigned(FDBConnection) then
+    FDBConnection.Connect;
+  {$ENDIF}
+end;
+
+destructor TDbEngineFactory.Destroy;
 begin
 
   inherited;

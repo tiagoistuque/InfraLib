@@ -28,10 +28,14 @@ uses
   Infra.DBEngine.Contract;
 
 type
-  TDbEngineFireDAC = class(TDbEngineAbstract)
+  TDbEngineFireDAC = class(TDbEngineFactory)
   private
     FConnectionComponent: TFDConnection;
   public
+    function Connect: IDbEngineFactory; override;
+    function ExecSQL(const ASQL: string): IDbEngineFactory; override;
+    function ExceSQL(const ASQL: string; var AResultDataSet: TDataSet ): IDbEngineFactory; override;
+    function OpenSQL(const ASQL: string; var AResultDataSet: TDataSet ): IDbEngineFactory; override;
     function StartTx: IDbEngineFactory; override;
     function CommitTX: IDbEngineFactory; override;
     function RollbackTx: IDbEngineFactory; override;
@@ -54,6 +58,13 @@ function TDbEngineFireDAC.CommitTX: IDbEngineFactory;
 begin
   Result := Self;
   TFDConnection(FConnectionComponent).Commit;
+end;
+
+function TDbEngineFireDAC.Connect: IDbEngineFactory;
+begin
+  inherited;
+  Result := Self;
+  FConnectionComponent.Connected := True;
 end;
 
 function TDbEngineFireDAC.ConnectionComponent: TComponent;
@@ -90,6 +101,19 @@ begin
   inherited;
 end;
 
+function TDbEngineFireDAC.ExceSQL(const ASQL: string;
+  var AResultDataSet: TDataSet): IDbEngineFactory;
+begin
+  Result := Self;
+  FConnectionComponent.ExecSQL(ASQL);
+end;
+
+function TDbEngineFireDAC.ExecSQL(const ASQL: string): IDbEngineFactory;
+begin
+  Result := Self;
+  FConnectionComponent.ExecSQL(ASQL);
+end;
+
 function TDbEngineFireDAC.InjectConnection(AConn: TComponent;
   ATransactionObject: TObject): IDbEngineFactory;
 begin
@@ -101,6 +125,13 @@ end;
 function TDbEngineFireDAC.InTransaction: Boolean;
 begin
   Result := FConnectionComponent.InTransaction;
+end;
+
+function TDbEngineFireDAC.OpenSQL(const ASQL: string;
+  var AResultDataSet: TDataSet): IDbEngineFactory;
+begin
+  Result := Self;
+  FConnectionComponent.ExecSQL(ASQL, AResultDataSet);
 end;
 
 function TDbEngineFireDAC.RollbackTx: IDbEngineFactory;

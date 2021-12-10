@@ -7,7 +7,6 @@ interface
 uses
     Classes,
     SysUtils,
-    ACBrUtil,
     Generics.Collections,
     System.Types,
     {$IFDEF MSWINDOWS}
@@ -351,6 +350,11 @@ type
   function Ifx(aCondition : Boolean; const aIfIsTrue, aIfIsFalse : Integer) : Integer; overload;
   function Ifx(aCondition : Boolean; const aIfIsTrue, aIfIsFalse : Extended) : Extended; overload;
   function Ifx(aCondition : Boolean; const aIfIsTrue, aIfIsFalse : TObject) : TObject; overload;
+
+  function PosLast(const SubStr, S: AnsiString): Integer;
+  function PosEx(const SubStr, S: AnsiString; Offset: Cardinal = 1): Integer;
+  function RPos(const aSubStr, aString : AnsiString; const aStartPos: Integer): Integer; overload;
+  function RPos(const aSubStr, aString : AnsiString): Integer; overload;
 
 var
   path : TEnvironmentPath;
@@ -2040,6 +2044,78 @@ end;
   end;
   {$ENDIF}
 {$ENDIF}
+
+function PosLast(const SubStr, S: AnsiString ): Integer;
+Var P : Integer ;
+begin
+  Result := 0 ;
+  P := Pos( SubStr, S) ;
+  while P <> 0 do
+  begin
+     Result := P ;
+     P := PosEx( String(SubStr), String(S), P+1) ;
+  end ;
+end ;
+
+function PosEx(const SubStr, S: AnsiString; Offset: Cardinal = 1): Integer;
+var
+  I,X: Integer;
+  Len, LenSubStr: Integer;
+begin
+  if Offset = 1 then
+    Result := Pos(SubStr, S)
+  else
+  begin
+    I := Offset;
+    LenSubStr := Length(SubStr);
+    Len := Length(S) - LenSubStr + 1;
+    while I <= Len do
+    begin
+      if S[I] = SubStr[1] then
+      begin
+        X := 1;
+        while (X < LenSubStr) and (S[I + X] = SubStr[X + 1]) do
+          Inc(X);
+        if (X = LenSubStr) then
+        begin
+          Result := I;
+          exit;
+        end;
+      end;
+      Inc(I);
+    end;
+    Result := 0;
+  end;
+end;
+
+function RPos(const aSubStr, aString : AnsiString; const aStartPos: Integer): Integer; overload;
+var
+  i: Integer;
+  pStr: PChar;
+  pSub: PChar;
+begin
+  pSub := Pointer(aSubStr);
+
+  for i := aStartPos downto 1 do
+  begin
+    pStr := @(aString[i]);
+    if (pStr^ = pSub^) then
+    begin
+      if CompareMem(pSub, pStr, Length(aSubStr)) then
+      begin
+        result := i;
+        EXIT;
+      end;
+    end;
+  end;
+
+  result := 0;
+end;
+
+function RPos(const aSubStr, aString : AnsiString): Integer; overload;
+begin
+  result := RPos(aSubStr, aString, Length(aString) - Length(aSubStr) + 1);
+end;
 
 {$IFNDEF NEXTGEN}
 initialization

@@ -12,17 +12,18 @@ uses
   Infra.DBEngine.Contract;
 
 type
-  TDbEngineDBExpress = class(TDbEngineAbstract)
+  TDbEngineDBExpress = class(TDbEngineFactory)
   private
     FConnectionComponent: TSQLConnection;
     FTransactionComponent: TDBXTransaction;
   public
+    function ConnectionComponent: TComponent; override;
+    function Connect: IDbEngineFactory; override;
     function StartTx: IDbEngineFactory; override;
     function CommitTX: IDbEngineFactory; override;
     function RollbackTx: IDbEngineFactory; override;
     function InTransaction: Boolean; override;
     function InjectConnection(AConn: TComponent; ATransactionObject: TObject): IDbEngineFactory; override;
-    function ConnectionComponent: TComponent; override;
 
   public
     constructor Create(const ADbConfig: IDbEngineConfig); override;
@@ -38,6 +39,13 @@ function TDbEngineDBExpress.CommitTX: IDbEngineFactory;
 begin
   Result := Self;
   FConnectionComponent.CommitFreeAndNil(FTransactionComponent);
+end;
+
+function TDbEngineDBExpress.Connect: IDbEngineFactory;
+begin
+  Result := Self;
+  FConnectionComponent.Connected := True;
+  inherited;
 end;
 
 function TDbEngineDBExpress.ConnectionComponent: TComponent;

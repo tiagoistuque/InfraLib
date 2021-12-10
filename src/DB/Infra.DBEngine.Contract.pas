@@ -6,6 +6,7 @@ uses
   {$IF DEFINED(INFRA_ORMBR)}
   dbebr.factory.interfaces,
   {$ENDIF}
+  DB,
   Classes;
 
 type
@@ -28,6 +29,10 @@ type
     function BuildDatabase: IDbEngineFactory;
     {$ENDIF}
     function ConnectionComponent: TComponent;
+    function Connect: IDbEngineFactory;
+    function ExecSQL(const ASQL: string): IDbEngineFactory;
+    function ExceSQL(const ASQL: string; var AResultDataSet: TDataSet ): IDbEngineFactory;
+    function OpenSQL(const ASQL: string; var AResultDataSet: TDataSet ): IDbEngineFactory;
     function StartTx: IDbEngineFactory;
     function CommitTX: IDbEngineFactory;
     function RollbackTx: IDbEngineFactory;
