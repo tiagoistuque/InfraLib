@@ -1,0 +1,11 @@
+{
+	"name": "DBConnection",
+	"description": "",
+	"version": "1.0.0",
+	"homepage": "",
+	"mainsrc": "./",
+	"projects": [],
+	"dependencies": {
+		"github.com/tbisistemas/infralib": "^v0.0.1-beta"
+	}
+}
