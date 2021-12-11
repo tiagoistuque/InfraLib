@@ -3,10 +3,13 @@ unit Infra.DBEngine.DBExpress;
 interface
 
 uses
+  DB,
   Classes,
   SysUtils,
   SqlExpr,
+  SimpleDS,
   DBXCommon,
+  DBXFirebird,
 
   Infra.DBEngine.Abstract,
   Infra.DBEngine.Contract;
@@ -19,6 +22,9 @@ type
   public
     function ConnectionComponent: TComponent; override;
     function Connect: IDbEngineFactory; override;
+    function ExecSQL(const ASQL: string): IDbEngineFactory; override;
+    function ExceSQL(const ASQL: string; var AResultDataSet: TDataSet ): IDbEngineFactory; override;
+    function OpenSQL(const ASQL: string; var AResultDataSet: TDataSet ): IDbEngineFactory; override;
     function StartTx: IDbEngineFactory; override;
     function CommitTX: IDbEngineFactory; override;
     function RollbackTx: IDbEngineFactory; override;
@@ -59,12 +65,12 @@ begin
   FConnectionComponent := TSQLConnection.Create(nil);
   with FConnectionComponent do
   begin
+
     DriverName := 'Firebird';
     GetDriverFunc := 'getSQLDriverINTERBASE';
-    KeepConnection := True;
-    LibraryName := 'dbxfb.dll';
-    LoginPrompt := False;
-    VendorLib := 'fbclient.dll';
+//    KeepConnection := True;
+//    LoginPrompt := False;
+//    VendorLib := 'fbclient.dll';
     with Params do
     begin
       Clear;
@@ -91,7 +97,29 @@ begin
   inherited;
 end;
 
-function TDbEngineDBExpress.InjectConnection(AConn: TComponent;
+function TDbEngineDBExpress.ExceSQL(const ASQL: string;
+  var AResultDataSet: TDataSet): IDbEngineFactory;
+var
+  LQuery: TSimpleDataSet;
+begin
+  Result := Self;
+  LQuery := TSimpleDataSet.Create(nil);
+  try
+    LQuery.Connection := FConnectionComponent;
+    LQuery.DataSet.CommandText := ASQL;
+    LQuery.Open;
+  finally
+    AResultDataSet := LQuery;
+  end;
+end;
+
+function TDbEngineDBExpress.ExecSQL(const ASQL: string): IDbEngineFactory;
+begin
+  Result := Self;
+  FConnectionComponent.ExecuteDirect(ASQL);
+end;
+
+Function TDbEngineDBExpress.InjectConnection(AConn: TComponent;
   ATransactionObject: TObject): IDbEngineFactory;
 begin
   if not (AConn is TSQLConnection) then
@@ -102,6 +130,23 @@ end;
 function TDbEngineDBExpress.InTransaction: Boolean;
 begin
   Result := FConnectionComponent.InTransaction;
+end;
+
+function TDbEngineDBExpress.OpenSQL(const ASQL: string;
+  var AResultDataSet: TDataSet): IDbEngineFactory;
+var
+  LQuery: TSimpleDataSet;
+begin
+  Result := Self;
+  LQuery := TSimpleDataSet.Create(nil);
+  try
+    LQuery.Connection := FConnectionComponent;
+    LQuery.DataSet.CommandText := ASQL;
+    LQuery.DataSet.CommandType := ctQuery;
+    LQuery.Open;
+  finally
+    AResultDataSet := LQuery;
+  end;
 end;
 
 function TDbEngineDBExpress.RollbackTx: IDbEngineFactory;

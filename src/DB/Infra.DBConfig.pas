@@ -7,90 +7,28 @@ uses
   Infra.DBEngine.Contract;
 
 type
-
-  TDBConfig = class(TInterfacedObject, IDbEngineConfig)
-  private
+  TDBConfigDef = class abstract(TInterfacedObject, IDbEngineConfig)
+  protected
     FPrefixVariable: string;
-    function Driver: string;
-    function Host: string;
-    function Port: Word;
-    function Database: string;
-    function CharSet: string;
-    function User: string;
-    function Password: string;
+    function Driver: TDBDriver; overload; virtual; abstract;
+    function Host: string; overload; virtual; abstract;
+    function Port: Integer; overload; virtual; abstract;
+    function Database: string; overload; virtual; abstract;
+    function CharSet: string; overload; virtual; abstract;
+    function User: string; overload; virtual; abstract;
+    function Password: string; overload; virtual; abstract;
+    function Driver(const AValue: TDBDriver): IDbEngineConfig; overload; virtual; abstract;
+    function Host(const AValue: string): IDbEngineConfig; overload; virtual; abstract;
+    function Port(const AValue: Integer): IDbEngineConfig; overload; virtual; abstract;
+    function Database(const AValue: string): IDbEngineConfig; overload; virtual; abstract;
+    function CharSet(const AValue: string): IDbEngineConfig; overload; virtual; abstract;
+    function User(const AValue: string): IDbEngineConfig; overload; virtual; abstract;
+    function Password(const AValue: string): IDbEngineConfig; overload; virtual; abstract;
   public
-    constructor Create(const APrefixVariable: string);
-    class function New(const APrefixVariable: string): IDbEngineConfig;
+    constructor Create(const APrefixVariable: string); virtual; abstract;
+    class function New(const APrefixVariable: string): IDbEngineConfig; virtual; abstract;
   end;
 
 implementation
-
-uses
-  Infra.SysInfo;
-
-function TDBConfig.CharSet: string;
-begin
-  Result := GetEnvironmentVariable(FPrefixVariable + 'DBCONFIG_CHARSET');
-  if Result.IsEmpty then
-    Result := 'utf8';
-end;
-
-constructor TDBConfig.Create(const APrefixVariable: string);
-begin
-  FPrefixVariable := APrefixVariable;
-end;
-
-function TDBConfig.Database: string;
-var
-  LDir: string;
-begin
-  Result := GetEnvironmentVariable(FPrefixVariable + 'DBCONFIG_DATABASE');
-  if Result.IsEmpty then
-  begin
-    LDir := SystemInfo.AppPath + 'data' + PathDelim;
-    Result := LDir + SystemInfo.AppName;
-  end;
-  if not DirectoryExists(LDir) then
-    CreateDir(LDir);
-end;
-
-function TDBConfig.Driver: string;
-begin
-  Result := GetEnvironmentVariable(FPrefixVariable + 'DBCONFIG_DRIVER');
-  if Result.IsEmpty then
-    Result := 'FB';
-end;
-
-function TDBConfig.Host: string;
-begin
-  Result := GetEnvironmentVariable(FPrefixVariable + 'DBCONFIG_HOST');
-  if Result.IsEmpty then
-    Result := '127.0.0.1';
-end;
-
-class function TDBConfig.New(
-  const APrefixVariable: string): IDbEngineConfig;
-begin
-  Result := Self.Create(APrefixVariable);
-end;
-
-function TDBConfig.Password: string;
-begin
-  Result := GetEnvironmentVariable(FPrefixVariable + 'DBCONFIG_PASSWORD');
-  if Result.IsEmpty then
-    Result := 'masterkey';
-end;
-
-function TDBConfig.Port: Word;
-begin
-  Result := StrToIntDef(GetEnvironmentVariable(FPrefixVariable + 'DBCONFIG_PORT'), 3053);
-end;
-
-function TDBConfig.User: string;
-begin
-  Result := GetEnvironmentVariable(FPrefixVariable + 'DBCONFIG_USER');
-  if Result.IsEmpty then
-    Result := 'SYSDBA';
-end;
 
 end.

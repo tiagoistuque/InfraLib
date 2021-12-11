@@ -3,10 +3,13 @@ unit Infra.DBEngine.Zeos;
 interface
 
 uses
+  DB,
   Classes,
   SysUtils,
 
+  ZAbstractConnection,
   ZConnection,
+  ZDataSet,
 
   Infra.DBEngine.Abstract,
   Infra.DBEngine.Contract;
@@ -18,6 +21,9 @@ type
   public
     function ConnectionComponent: TComponent; override;
     function Connect: IDbEngineFactory; override;
+    function ExecSQL(const ASQL: string): IDbEngineFactory; override;
+    function ExceSQL(const ASQL: string; var AResultDataSet: TDataSet ): IDbEngineFactory; override;
+    function OpenSQL(const ASQL: string; var AResultDataSet: TDataSet ): IDbEngineFactory; override;
     function StartTx: IDbEngineFactory; override;
     function CommitTX: IDbEngineFactory; override;
     function RollbackTx: IDbEngineFactory; override;
@@ -53,11 +59,15 @@ begin
 end;
 
 constructor TDbEngineZeos.Create(const ADbConfig: IDbEngineConfig);
+var
+  LProtocol: string;
 begin
   inherited;
+  LProtocol := ADbConfig.Driver.ToString.ToLower;
   FConnectionComponent := TZConnection.Create(nil);
   with FConnectionComponent do
   begin
+    Protocol := LProtocol;
     HostName := ADbConfig.Host;
     Port := ADbConfig.Port;
     Database := ADbConfig.Database;
@@ -76,6 +86,30 @@ begin
   inherited;
 end;
 
+function TDbEngineZeos.ExceSQL(const ASQL: string;
+  var AResultDataSet: TDataSet): IDbEngineFactory;
+var
+  LZQuery: TZQuery;
+begin
+  Result := Self;
+  if Assigned(AResultDataSet) then
+    FreeAndNil(AResultDataSet);
+  LZQuery := TZQuery.Create(nil);
+  try
+    LZQuery.Connection := FConnectionComponent;
+    LZQuery.SQL.Text := ASQL;
+    LZQuery.Open;
+  finally
+    AResultDataSet := LZQuery;
+  end;
+end;
+
+function TDbEngineZeos.ExecSQL(const ASQL: string): IDbEngineFactory;
+begin
+  Result := Self;
+  FConnectionComponent.ExecuteDirect(ASQL);
+end;
+
 function TDbEngineZeos.InjectConnection(AConn: TComponent;
   ATransactionObject: TObject): IDbEngineFactory;
 begin
@@ -87,6 +121,24 @@ end;
 function TDbEngineZeos.InTransaction: Boolean;
 begin
   Result := FConnectionComponent.InTransaction;
+end;
+
+function TDbEngineZeos.OpenSQL(const ASQL: string;
+  var AResultDataSet: TDataSet): IDbEngineFactory;
+var
+  LZQuery: TZQuery;
+begin
+  Result := Self;
+  if Assigned(AResultDataSet) then
+    FreeAndNil(AResultDataSet);
+  LZQuery := TZQuery.Create(nil);
+  try
+    LZQuery.Connection := FConnectionComponent;
+    LZQuery.SQL.Text := ASQL;
+    LZQuery.Open;
+  finally
+    AResultDataSet := LZQuery;
+  end;
 end;
 
 function TDbEngineZeos.RollbackTx: IDbEngineFactory;

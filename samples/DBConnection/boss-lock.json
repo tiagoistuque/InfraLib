@@ -4,8 +4,8 @@
 	"installedModules": {
 		"github.com/tbisistemas/infralib": {
 			"name": "infralib",
-			"version": "v0.0.1-beta",
-			"hash": "890217ddbba5afe392f11223d23e8c51",
+			"version": "v0.0.1-beta.2",
+			"hash": "33915816ef5b42804fb0432570d4fce9",
 			"artifacts": {},
 			"failed": false,
 			"changed": false

@@ -34,8 +34,8 @@ type
   public
     function Connect: IDbEngineFactory; override;
     function ExecSQL(const ASQL: string): IDbEngineFactory; override;
-    function ExceSQL(const ASQL: string; var AResultDataSet: TDataSet ): IDbEngineFactory; override;
-    function OpenSQL(const ASQL: string; var AResultDataSet: TDataSet ): IDbEngineFactory; override;
+    function ExceSQL(const ASQL: string; var AResultDataSet: TDataSet): IDbEngineFactory; override;
+    function OpenSQL(const ASQL: string; var AResultDataSet: TDataSet): IDbEngineFactory; override;
     function StartTx: IDbEngineFactory; override;
     function CommitTX: IDbEngineFactory; override;
     function RollbackTx: IDbEngineFactory; override;
@@ -73,11 +73,24 @@ begin
 end;
 
 constructor TDbEngineFireDAC.Create(const ADbConfig: IDbEngineConfig);
+var
+  LDriverID: string;
 begin
   inherited;
+  LDriverID := ADbConfig.Driver.ToString;
+  case ADbConfig.Driver of
+    TDBDriver.Firebird:
+      LDriverID := 'FB';
+    TDBDriver.Interbase:
+      LDriverID := 'IB';
+    TDBDriver.Oracle:
+      LDriverID := 'Ora';
+    TDBDriver.PostgreSQL:
+      LDriverID := 'PG';
+  end;
   FConnectionComponent := TFDConnection.Create(nil);
   FConnectionComponent.FormatOptions.StrsTrim2Len := True;
-  FConnectionComponent.DriverName := ADbConfig.Driver;
+  FConnectionComponent.DriverName := LDriverID;
   FConnectionComponent.TxOptions.Isolation := xiReadCommitted;
   FConnectionComponent.Params.Add('Database=' + ADbConfig.database);
   FConnectionComponent.Params.Add('User_Name=' + ADbConfig.User);
@@ -86,7 +99,7 @@ begin
   FConnectionComponent.Params.Add('Port=' + IntToStr(ADbConfig.Port));
   FConnectionComponent.Params.Add('Server=' + ADbConfig.Host);
   FConnectionComponent.Params.Add('CharacterSet=' + ADbConfig.CharSet);
-  FConnectionComponent.Params.Add('DriverID=' + ADbConfig.Driver);
+  FConnectionComponent.Params.Add('DriverID=' + LDriverID);
   FConnectionComponent.Params.Add('OpenMode=OpenOrCreate');
   FConnectionComponent.Params.Add('GUIDEndian=Big');
   FConnectionComponent.LoginPrompt := False;
@@ -105,7 +118,9 @@ function TDbEngineFireDAC.ExceSQL(const ASQL: string;
   var AResultDataSet: TDataSet): IDbEngineFactory;
 begin
   Result := Self;
-  FConnectionComponent.ExecSQL(ASQL);
+  if Assigned(AResultDataSet) then
+    FreeAndNil(AResultDataSet);
+  FConnectionComponent.ExecSQL(ASQL, AResultDataSet);
 end;
 
 function TDbEngineFireDAC.ExecSQL(const ASQL: string): IDbEngineFactory;
@@ -117,8 +132,8 @@ end;
 function TDbEngineFireDAC.InjectConnection(AConn: TComponent;
   ATransactionObject: TObject): IDbEngineFactory;
 begin
-  if not (AConn is TFDConnection) then
-    raise Exception.Create('Invalid connection component instance for FireDAC. '+Self.UnitName);
+  if not(AConn is TFDConnection) then
+    raise Exception.Create('Invalid connection component instance for FireDAC. ' + Self.UnitName);
   FConnectionComponent := TFDConnection(AConn);
 end;
 
@@ -131,6 +146,8 @@ function TDbEngineFireDAC.OpenSQL(const ASQL: string;
   var AResultDataSet: TDataSet): IDbEngineFactory;
 begin
   Result := Self;
+  if Assigned(AResultDataSet) then
+    FreeAndNil(AResultDataSet);
   FConnectionComponent.ExecSQL(ASQL, AResultDataSet);
 end;
 
