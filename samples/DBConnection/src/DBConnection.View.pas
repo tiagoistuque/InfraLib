@@ -6,21 +6,24 @@ uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
   Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, DB,
 
-  Infra.DBEngine, Vcl.Grids, Vcl.DBGrids;
+  Infra.DBEngine, Vcl.Grids, Vcl.DBGrids, Infra.QueryEngine;
 
 type
   TForm1 = class(TForm)
     Button1: TButton;
     DBGrid1: TDBGrid;
     DataSource1: TDataSource;
+    Button2: TButton;
     procedure Button1Click(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
   private
     { Private declarations }
     FConfig: IDbEngineConfig;
     FDataSet: TDataSet;
     FEngine: IDBEngine;
+    FQuery: IQueryEngine;
     procedure _SetupConfig;
 
   public
@@ -41,6 +44,16 @@ begin
 end;
 
 
+procedure TForm1.Button2Click(Sender: TObject);
+begin
+  FQuery.Reset
+    .Add('SELECT')
+    .Add('CURRENT_TIMESTAMP as DATAHORA, CURRENT_USER, CURRENT_CONNECTION')
+    .Add('FROM RDB$DATABASE')
+    .Open;
+  DataSource1.DataSet := FQuery.DataSet;
+end;
+
 procedure TForm1.FormCreate(Sender: TObject);
 begin
   {$IFDEF DEBUG}
@@ -48,6 +61,7 @@ begin
   {$ENDIF}
   _SetupConfig;
   FEngine := TDBEngine.New(FConfig);
+  FQuery := TQueryEngine.New(FEngine);
 end;
 
 procedure TForm1.FormDestroy(Sender: TObject);

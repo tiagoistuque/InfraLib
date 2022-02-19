@@ -16,7 +16,7 @@ object Form1: TForm1
   PixelsPerInch = 96
   TextHeight = 13
   object Button1: TButton
-    Left = 144
+    Left = 56
     Top = 24
     Width = 137
     Height = 49
@@ -36,6 +36,15 @@ object Form1: TForm1
     TitleFont.Height = -11
     TitleFont.Name = 'Tahoma'
     TitleFont.Style = []
+  end
+  object Button2: TButton
+    Left = 239
+    Top = 24
+    Width = 137
+    Height = 49
+    Caption = 'Open Query'
+    TabOrder = 2
+    OnClick = Button2Click
   end
   object DataSource1: TDataSource
     Left = 216
