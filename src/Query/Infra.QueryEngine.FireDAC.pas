@@ -7,6 +7,7 @@ uses
   Classes, SysUtils,
   FireDAC.Stan.Intf, FireDAC.Stan.Option, FireDAC.Stan.Param, FireDAC.Stan.Error, FireDAC.DatS,
   FireDAC.Phys.Intf, FireDAC.DApt.Intf, FireDAC.Comp.DataSet, FireDAC.Comp.Client,
+  FireDAC.Stan.Util,
   Infra.QueryEngine.Abstract,
   Infra.DBEngine.Contract,
   Infra.QueryEngine.Contract;
@@ -37,7 +38,7 @@ type
     function UpdatesPending: Boolean; override;
     function CancelUpdates: ISQLQuery; override;
     function FindKey(const KeyValues: array of TVarRec): Boolean; override;
-    function Params: TFDParams; override;
+    function Params: TSQLParams; override;
     function SQLCommand: string; override;
     function RowsAffected: Integer; override;
     function RetornaAutoIncremento(const ASequenceName: string): Integer; overload; override;
@@ -163,7 +164,7 @@ begin
   end;
 end;
 
-function TQueryEngineFireDAC.Params: TFDParams;
+function TQueryEngineFireDAC.Params: TSQLParams;
 var
   LParams: TParams;
   I: Integer;

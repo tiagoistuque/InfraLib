@@ -32,7 +32,7 @@ type
     function InjectConnection(AConn: TComponent; ATransactionObject: TObject): IDbEngineFactory; override;
 
   public
-    constructor Create(const ADbConfig: IDbEngineConfig); override;
+    constructor Create(const ADbConfig: IDbEngineConfig; const ASuffixDBName: string = ''); override;
     destructor Destroy; override;
 
   end;
@@ -59,7 +59,7 @@ begin
   Result := FConnectionComponent;
 end;
 
-constructor TDbEngineDBExpress.Create(const ADbConfig: IDbEngineConfig);
+constructor TDbEngineDBExpress.Create(const ADbConfig: IDbEngineConfig; const ASuffixDBName: string = '');
 begin
   inherited;
   FConnectionComponent := TSQLConnection.Create(nil);
@@ -68,13 +68,13 @@ begin
 
     DriverName := 'Firebird';
     GetDriverFunc := 'getSQLDriverINTERBASE';
-//    KeepConnection := True;
-//    LoginPrompt := False;
+    KeepConnection := True;
+    LoginPrompt := False;
 //    VendorLib := 'fbclient.dll';
     with Params do
     begin
       Clear;
-      Add('Database=' + ADBConfig.Database);
+      Add('Database=' + FDBName);
       Add('Rolename=Rolename');
       Add('User_name=' + ADBConfig.User);
       Add('Password=' + ADBConfig.Password);

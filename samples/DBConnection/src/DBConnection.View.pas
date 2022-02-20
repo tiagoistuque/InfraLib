@@ -4,9 +4,11 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, DB,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
+  Vcl.Grids, Vcl.DBGrids, DB,
 
-  Infra.DBEngine, Vcl.Grids, Vcl.DBGrids, Infra.QueryEngine;
+  Infra.DBEngine,
+  Infra.QueryEngine;
 
 type
   TForm1 = class(TForm)
@@ -37,12 +39,12 @@ implementation
 
 {$R *.dfm}
 
+
 procedure TForm1.Button1Click(Sender: TObject);
 begin
   FEngine.OpenSQL('SELECT CURRENT_TIMESTAMP as DATAHORA, CURRENT_USER, CURRENT_CONNECTION FROM RDB$DATABASE', FDataSet);
   DataSource1.DataSet := FDataSet;
 end;
-
 
 procedure TForm1.Button2Click(Sender: TObject);
 begin
@@ -78,7 +80,7 @@ begin
     .Driver(TDbDriver.Firebird)
     .Host('localhost')
     .Port(3053)
-    .Database(ExtractFilePath(ParamStr(0)) +'data\TESTE.FDB')
+    .Database(ExtractFilePath(ParamStr(0)) + 'data\TESTE.FDB')
     .CharSet('UTF8')
     .User('SYSDBA')
     .Password('masterkey');

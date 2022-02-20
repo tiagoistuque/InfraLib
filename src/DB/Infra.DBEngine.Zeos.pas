@@ -31,7 +31,7 @@ type
     function InjectConnection(AConn: TComponent; ATransactionObject: TObject): IDbEngineFactory; override;
 
   public
-    constructor Create(const ADbConfig: IDbEngineConfig); override;
+    constructor Create(const ADbConfig: IDbEngineConfig; const ASuffixDBName: string = ''); override;
     destructor Destroy; override;
 
   end;
@@ -58,7 +58,7 @@ begin
   Result := FConnectionComponent;
 end;
 
-constructor TDbEngineZeos.Create(const ADbConfig: IDbEngineConfig);
+constructor TDbEngineZeos.Create(const ADbConfig: IDbEngineConfig; const ASuffixDBName: string = '');
 var
   LProtocol: string;
 begin
@@ -70,7 +70,7 @@ begin
     Protocol := LProtocol;
     HostName := ADbConfig.Host;
     Port := ADbConfig.Port;
-    Database := ADbConfig.Database;
+    Database := FDBName;
     User := ADbConfig.User;
     Password := ADbConfig.Password;
     Connected := True;

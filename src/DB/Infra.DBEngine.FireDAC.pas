@@ -1,5 +1,5 @@
 unit Infra.DBEngine.FireDAC;
-
+
 interface
 
 uses
@@ -44,7 +44,7 @@ type
     function ConnectionComponent: TComponent; override;
 
   public
-    constructor Create(const ADbConfig: IDbEngineConfig); override;
+    constructor Create(const ADbConfig: IDbEngineConfig; const ASuffixDBName: string = ''); override;
     destructor Destroy; override;
 
   end;
@@ -72,7 +72,7 @@ begin
   Result := FConnectionComponent;
 end;
 
-constructor TDbEngineFireDAC.Create(const ADbConfig: IDbEngineConfig);
+constructor TDbEngineFireDAC.Create(const ADbConfig: IDbEngineConfig; const ASuffixDBName: string = '');
 var
   LDriverID: string;
 begin
@@ -92,7 +92,7 @@ begin
   FConnectionComponent.FormatOptions.StrsTrim2Len := True;
   FConnectionComponent.DriverName := LDriverID;
   FConnectionComponent.TxOptions.Isolation := xiReadCommitted;
-  FConnectionComponent.Params.Add('Database=' + ADbConfig.database);
+  FConnectionComponent.Params.Add('Database=' + FDbName);
   FConnectionComponent.Params.Add('User_Name=' + ADbConfig.User);
   FConnectionComponent.Params.Add('Password=' + ADbConfig.Password);
   FConnectionComponent.Params.Add('Protocol=TCPIP');
@@ -103,9 +103,9 @@ begin
   FConnectionComponent.Params.Add('OpenMode=OpenOrCreate');
   FConnectionComponent.Params.Add('GUIDEndian=Big');
   FConnectionComponent.LoginPrompt := False;
-  {$IF DEFINED(INFRA_ORMBR)}
+{$IF DEFINED(INFRA_ORMBR)}
   FDBConnection := TFactoryFireDAC.Create(TFDConnection(FConnectionComponent), dnFirebird);
-  {$ENDIF}
+{$ENDIF}
 end;
 
 destructor TDbEngineFireDAC.Destroy;
@@ -164,3 +164,4 @@ begin
 end;
 
 end.
+

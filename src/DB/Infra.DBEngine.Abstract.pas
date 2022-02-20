@@ -25,6 +25,7 @@ uses
 type
   TDbEngineFactory = class abstract(TInterfacedObject, IDbEngineFactory)
   protected
+    FDBName: string;
     {$IF DEFINED(INFRA_ORMBR)}
     FDBConnection: IDBConnection;
     {$ENDIF}
@@ -44,7 +45,7 @@ type
     function InTransaction: Boolean; virtual; abstract;
     function InjectConnection(AConn: TComponent; ATransactionObject: TObject): IDbEngineFactory; virtual; abstract;
   public
-    constructor Create(const ADbConfig: IDbEngineConfig); virtual; abstract;
+    constructor Create(const ADbConfig: IDbEngineConfig; const ASuffixDBName: string = ''); virtual;
     destructor Destroy; override;
 
   end;
@@ -100,6 +101,20 @@ begin
   if Assigned(FDBConnection) then
     FDBConnection.Connect;
   {$ENDIF}
+end;
+
+constructor TDbEngineFactory.Create(const ADbConfig: IDbEngineConfig; const ASuffixDBName: string);
+var
+  LDBNameExtension: string;
+  LDBNameWithoutExtension: string;
+begin
+  FDBName := ADbConfig.Database;
+  if Trim(ASuffixDBName) <> EmptyStr then
+  begin
+    LDBNameExtension := ExtractFileExt(FDBName);
+    LDBNameWithoutExtension := StringReplace(FDBName, LDBNameExtension, '', [rfReplaceAll, rfIgnoreCase]);
+    FDBName := LDBNameWithoutExtension + ASuffixDBName + LDBNameExtension;
+  end;
 end;
 
 destructor TDbEngineFactory.Destroy;

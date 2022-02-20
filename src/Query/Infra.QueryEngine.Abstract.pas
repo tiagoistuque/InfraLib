@@ -30,7 +30,7 @@ type
     function UpdatesPending: Boolean; virtual; abstract;
     function CancelUpdates: ISQLQuery; virtual; abstract;
     function FindKey(const KeyValues: array of TVarRec): Boolean; virtual; abstract;
-    function Params: {$IF DEFINED(INFRA_FIREDAC)}TFDParams {$ELSE}TParams{$ENDIF};  virtual; abstract;
+    function Params: TSQLParams;  virtual; abstract;
     function SQLCommand: string; virtual; abstract;
     function RowsAffected: Integer; virtual; abstract;
     function RetornaAutoIncremento(const ASequenceName: string): Integer; overload; virtual; abstract;

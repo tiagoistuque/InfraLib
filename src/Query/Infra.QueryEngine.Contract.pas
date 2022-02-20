@@ -7,6 +7,8 @@ uses
   DB;
 
 type
+  TSQLParams = {$IF DEFINED(INFRA_FIREDAC)}FireDAC.Stan.Param.TFDParams {$ELSE}TParams{$ENDIF};
+
   ISQLQuery = interface
     ['{9BBB3764-7029-4B19-87BB-0739BC61C058}']
     function Reset: ISQLQuery;
@@ -23,7 +25,7 @@ type
     function UpdatesPending: Boolean;
     function CancelUpdates: ISQLQuery;
     function FindKey(const KeyValues: array of TVarRec): Boolean;
-    function Params: {$IF DEFINED(INFRA_FIREDAC)}TFDParams {$ELSE}TParams{$ENDIF}; overload;
+    function Params: TSQLParams;
     function SQLCommand: string;
     function RowsAffected: Integer;
     function RetornaAutoIncremento(const ASequenceName: string): Integer; overload;

@@ -26,8 +26,8 @@ type
 
   TDBEngine = class
   public
-    class function New(const ADbConfig: IDbEngineConfig): IDBEngine;
-    class function Create(const ADbConfig: IDbEngineConfig): TDbEngineFactory;
+    class function New(const ADbConfig: IDbEngineConfig; const ASuffixDBName: string = ''): IDBEngine;
+    class function Create(const ADbConfig: IDbEngineConfig; const ASuffixDBName: string = ''): TDbEngineFactory;
   end;
 
 implementation
@@ -46,40 +46,40 @@ uses
 {$ENDIF}
 
 
-class function TDBEngine.New(const ADbConfig: IDbEngineConfig): IDBEngine;
+class function TDBEngine.New(const ADbConfig: IDbEngineConfig; const ASuffixDBName: string = ''): IDBEngine;
 begin
   {$IF DEFINED(FPC)}
   {$IF DEFINED(INFRA_ZEOS)}
-  Result := TDbEngineZeos.Create(ADbConfig);
+  Result := TDbEngineZeos.Create(ADbConfig, ASuffixDBname);
   {$ELSE}
-  Result := TDbEngineSQLConnector.Create(ADbConfig);
+  Result := TDbEngineSQLConnector.Create(ADbConfig, ASuffixDBname);
   {$ENDIF}
   {$ELSE}
   {$IF DEFINED(INFRA_DBEXPRESS)}
-  Result := TDbEngineDBExpress.Create(ADbConfig);
+  Result := TDbEngineDBExpress.Create(ADbConfig, ASuffixDBname);
   {$ELSEIF DEFINED(INFRA_ZEOS)}
-  Result := TDbEngineZeos.Create(ADbConfig);
+  Result := TDbEngineZeos.Create(ADbConfig, ASuffixDBname);
   {$ELSE}
-  Result := TDbEngineFireDAC.Create(ADbConfig);
+  Result := TDbEngineFireDAC.Create(ADbConfig, ASuffixDBname);
   {$ENDIF}
   {$ENDIF}
 end;
 
-class function TDBEngine.Create(const ADbConfig: IDbEngineConfig): TDbEngineFactory;
+class function TDBEngine.Create(const ADbConfig: IDbEngineConfig; const ASuffixDBName: string = ''): TDbEngineFactory;
 begin
   {$IF DEFINED(FPC)}
   {$IF DEFINED(INFRA_ZEOS)}
-  Result := TDbEngineZeos.Create(ADbConfig);
+  Result := TDbEngineZeos.Create(ADbConfig, ASuffixDBname);
   {$ELSE}
-  Result := TDbEngineSQLConnector.Create(ADbConfig);
+  Result := TDbEngineSQLConnector.Create(ADbConfig, ASuffixDBname);
   {$ENDIF}
   {$ELSE}
   {$IF DEFINED(INFRA_DBEXPRESS)}
-  Result := TDbEngineDBExpress.Create(ADbConfig);
+  Result := TDbEngineDBExpress.Create(ADbConfig, ASuffixDBname);
   {$ELSEIF DEFINED(INFRA_ZEOS)}
-  Result := TDbEngineZeos.Create(ADbConfig);
+  Result := TDbEngineZeos.Create(ADbConfig, ASuffixDBname);
   {$ELSE}
-  Result := TDbEngineFireDAC.Create(ADbConfig);
+  Result := TDbEngineFireDAC.Create(ADbConfig, ASuffixDBname);
   {$ENDIF}
   {$ENDIF}
 end;
