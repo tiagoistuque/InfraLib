@@ -57,12 +57,12 @@ uses
 
 {$IF DEFINED(INFRA_ORMBR)}
 
-function TDbEngineAbstract.Connection: IDBConnection;
+function TDbEngineFactory.Connection: IDBConnection;
 begin
   Result := FDBConnection;
 end;
 
-function TDbEngineAbstract.BuildDatabase: IDbEngineFactory;
+function TDbEngineFactory.BuildDatabase: IDbEngineFactory;
 var
   LManager: IDatabaseCompare;
   LDDL: TDDLCommand;
