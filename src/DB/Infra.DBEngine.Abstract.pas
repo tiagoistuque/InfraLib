@@ -36,6 +36,7 @@ type
     {$ENDIF}
     function ConnectionComponent: TComponent; virtual; abstract;
     function Connect: IDbEngineFactory; virtual;
+    function Disconnect: IDbEngineFactory; virtual;
     function ExecSQL(const ASQL: string): IDbEngineFactory; virtual; abstract;
     function ExceSQL(const ASQL: string; var AResultDataSet: TDataSet ): IDbEngineFactory; virtual; abstract;
     function OpenSQL(const ASQL: string; var AResultDataSet: TDataSet ): IDbEngineFactory; virtual; abstract;
@@ -43,6 +44,7 @@ type
     function CommitTX: IDbEngineFactory; virtual; abstract;
     function RollbackTx: IDbEngineFactory; virtual; abstract;
     function InTransaction: Boolean; virtual; abstract;
+    function IsConnected: Boolean; virtual; abstract;
     function InjectConnection(AConn: TComponent; ATransactionObject: TObject): IDbEngineFactory; virtual; abstract;
   public
     constructor Create(const ADbConfig: IDbEngineConfig; const ASuffixDBName: string = ''); virtual;
@@ -121,6 +123,14 @@ destructor TDbEngineFactory.Destroy;
 begin
 
   inherited;
+end;
+
+function TDbEngineFactory.Disconnect: IDbEngineFactory;
+begin
+  {$IF DEFINED(INFRA_ORMBR)}
+  if Assigned(FDBConnection) then
+    FDBConnection.Disconnect;
+  {$ENDIF}
 end;
 
 end.

@@ -33,6 +33,7 @@ type
     FConnectionComponent: TFDConnection;
   public
     function Connect: IDbEngineFactory; override;
+    function Disconnect: IDbEngineFactory; override;
     function ExecSQL(const ASQL: string): IDbEngineFactory; override;
     function ExceSQL(const ASQL: string; var AResultDataSet: TDataSet): IDbEngineFactory; override;
     function OpenSQL(const ASQL: string; var AResultDataSet: TDataSet): IDbEngineFactory; override;
@@ -40,6 +41,7 @@ type
     function CommitTX: IDbEngineFactory; override;
     function RollbackTx: IDbEngineFactory; override;
     function InTransaction: Boolean; override;
+    function IsConnected: Boolean; override;
     function InjectConnection(AConn: TComponent; ATransactionObject: TObject): IDbEngineFactory; override;
     function ConnectionComponent: TComponent; override;
 
@@ -114,6 +116,12 @@ begin
   inherited;
 end;
 
+function TDbEngineFireDAC.Disconnect: IDbEngineFactory;
+begin
+  Result := Self;
+  FConnectionComponent.Connected := False;
+end;
+
 function TDbEngineFireDAC.ExceSQL(const ASQL: string;
   var AResultDataSet: TDataSet): IDbEngineFactory;
 begin
@@ -142,6 +150,11 @@ begin
   Result := FConnectionComponent.InTransaction;
 end;
 
+function TDbEngineFireDAC.IsConnected: Boolean;
+begin
+  Result := FConnectionComponent.Connected;
+end;
+
 function TDbEngineFireDAC.OpenSQL(const ASQL: string;
   var AResultDataSet: TDataSet): IDbEngineFactory;
 begin
@@ -160,6 +173,8 @@ end;
 function TDbEngineFireDAC.StartTx: IDbEngineFactory;
 begin
   Result := Self;
+  if not FConnectionComponent.Connected then
+    FConnectionComponent.Connected := True;
   FConnectionComponent.StartTransaction;
 end;
 

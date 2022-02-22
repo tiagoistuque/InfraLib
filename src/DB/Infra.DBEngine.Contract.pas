@@ -55,6 +55,7 @@ type
     {$ENDIF}
     function ConnectionComponent: TComponent;
     function Connect: IDbEngineFactory;
+    function Disconnect: IDbEngineFactory;
     function ExecSQL(const ASQL: string): IDbEngineFactory; overload;
     function ExceSQL(const ASQL: string; var AResultDataSet: TDataSet): IDbEngineFactory; overload;
     function OpenSQL(const ASQL: string; var AResultDataSet: TDataSet): IDbEngineFactory;
@@ -62,6 +63,7 @@ type
     function CommitTX: IDbEngineFactory;
     function RollbackTx: IDbEngineFactory;
     function InTransaction: Boolean;
+    function IsConnected: Boolean;
     function InjectConnection(AConn: TComponent; ATransactionObject: TObject): IDbEngineFactory;
   end;
 
