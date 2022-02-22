@@ -1,0 +1,11 @@
+{
+	"name": "tests",
+	"description": "",
+	"version": "1.0.0",
+	"homepage": "",
+	"mainsrc": "./",
+	"projects": [],
+	"dependencies": {
+		"https://github.com/tbisistemas/infralib": "^v0.1.1-beta-4"
+	}
+}
