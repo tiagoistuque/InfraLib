@@ -17,6 +17,7 @@ type
     function CharSet: string; overload; virtual; abstract;
     function User: string; overload; virtual; abstract;
     function Password: string; overload; virtual; abstract;
+    function BuildDatabase: Boolean; overload; virtual; abstract;
     function Driver(const AValue: TDBDriver): IDbEngineConfig; overload; virtual; abstract;
     function Host(const AValue: string): IDbEngineConfig; overload; virtual; abstract;
     function Port(const AValue: Integer): IDbEngineConfig; overload; virtual; abstract;
@@ -24,6 +25,7 @@ type
     function CharSet(const AValue: string): IDbEngineConfig; overload; virtual; abstract;
     function User(const AValue: string): IDbEngineConfig; overload; virtual; abstract;
     function Password(const AValue: string): IDbEngineConfig; overload; virtual; abstract;
+    function BuildDatabase(const AValue: Boolean): IDbEngineConfig; overload; virtual; abstract;
   public
     constructor Create(const APrefixVariable: string); virtual; abstract;
     class function New(const APrefixVariable: string): IDbEngineConfig; virtual; abstract;

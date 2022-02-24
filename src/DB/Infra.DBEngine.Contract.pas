@@ -37,6 +37,7 @@ type
     function CharSet: string; overload;
     function User: string; overload;
     function Password: string; overload;
+    function BuildDatabase: Boolean; overload;
     function Driver(const AValue: TDBDriver): IDbEngineConfig; overload;
     function Host(const AValue: string): IDbEngineConfig; overload;
     function Port(const AValue: Integer): IDbEngineConfig; overload;
@@ -44,6 +45,7 @@ type
     function CharSet(const AValue: string): IDbEngineConfig; overload;
     function User(const AValue: string): IDbEngineConfig; overload;
     function Password(const AValue: string): IDbEngineConfig; overload;
+    function BuildDatabase(const AValue: Boolean): IDbEngineConfig; overload;
   end;
 
   IDbEngineFactory = interface
@@ -75,6 +77,7 @@ const
   SConfigCharSet = 'DBCONFIG_CHARSET';
   SConfigUser = 'DBCONFIG_USER';
   SConfigPassword = 'DBCONFIG_PASSWORD';
+  SConfigBuildDB = 'DBCONFIG_BUILD_DB';
 
   {$IF DEFINED(INFRA_ORMBR)}
   dnMSSQL = TDriverName.dnMSSQL;

@@ -18,6 +18,7 @@ type
     function CharSet: string; override;
     function User: string; override;
     function Password: string; override;
+    function BuildDatabase: Boolean; override;
   public
     constructor Create(const APrefixVariable: string); override;
     class function New(const APrefixVariable: string): IDbEngineConfig; override;
@@ -27,6 +28,11 @@ implementation
 
 uses
   Infra.SysInfo;
+
+function TDBConfigEnvironmentVar.BuildDatabase: Boolean;
+begin
+  Result := StrToBoolDef(GetEnvironmentVariable(FPrefixVariable + SConfigBuildDB), False);
+end;
 
 function TDBConfigEnvironmentVar.CharSet: string;
 begin
