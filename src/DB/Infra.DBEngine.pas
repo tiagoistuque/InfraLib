@@ -1,5 +1,5 @@
 unit Infra.DBEngine;
-
+
 interface
 
 uses
@@ -7,13 +7,14 @@ uses
   Infra.DBEngine.Abstract,
   Infra.DBConfig,
   Infra.DBConfig.IniFile,
+  Infra.DBConfig.Memory,
   Infra.DBConfig.EnvironmentVar;
 
 type
   IDBEngine = Infra.DBEngine.Contract.IDbEngineFactory;
   IDbEngineConfig = Infra.DBEngine.Contract.IDbEngineConfig;
 
-  TDbDriver = Infra.DBEngine.Contract.TDBDriver;
+  TDbDriver = Infra.DBEngine.Contract.TDbDriver;
 
   {$SCOPEDENUMS ON}
   TTypeConfig = (EnvironmentVariable, IniFile, Memory);
@@ -50,17 +51,17 @@ class function TDBEngine.New(const ADbConfig: IDbEngineConfig; const ASuffixDBNa
 begin
   {$IF DEFINED(FPC)}
   {$IF DEFINED(INFRA_ZEOS)}
-  Result := TDbEngineZeos.Create(ADbConfig, ASuffixDBname);
+  Result := TDbEngineZeos.Create(ADbConfig, ASuffixDBName);
   {$ELSE}
-  Result := TDbEngineSQLConnector.Create(ADbConfig, ASuffixDBname);
+  Result := TDbEngineSQLConnector.Create(ADbConfig, ASuffixDBName);
   {$IFEND}
   {$ELSE}
   {$IF DEFINED(INFRA_DBEXPRESS)}
-  Result := TDbEngineDBExpress.Create(ADbConfig, ASuffixDBname);
+  Result := TDbEngineDBExpress.Create(ADbConfig, ASuffixDBName);
   {$ELSEIF DEFINED(INFRA_ZEOS)}
-  Result := TDbEngineZeos.Create(ADbConfig, ASuffixDBname);
+  Result := TDbEngineZeos.Create(ADbConfig, ASuffixDBName);
   {$ELSE}
-  Result := TDbEngineFireDAC.Create(ADbConfig, ASuffixDBname);
+  Result := TDbEngineFireDAC.Create(ADbConfig, ASuffixDBName);
   {$IFEND}
   {$IFEND}
 end;
@@ -69,17 +70,17 @@ class function TDBEngine.Create(const ADbConfig: IDbEngineConfig; const ASuffixD
 begin
   {$IF DEFINED(FPC)}
   {$IF DEFINED(INFRA_ZEOS)}
-  Result := TDbEngineZeos.Create(ADbConfig, ASuffixDBname);
+  Result := TDbEngineZeos.Create(ADbConfig, ASuffixDBName);
   {$ELSE}
-  Result := TDbEngineSQLConnector.Create(ADbConfig, ASuffixDBname);
+  Result := TDbEngineSQLConnector.Create(ADbConfig, ASuffixDBName);
   {$IFEND}
   {$ELSE}
   {$IF DEFINED(INFRA_DBEXPRESS)}
-  Result := TDbEngineDBExpress.Create(ADbConfig, ASuffixDBname);
+  Result := TDbEngineDBExpress.Create(ADbConfig, ASuffixDBName);
   {$ELSEIF DEFINED(INFRA_ZEOS)}
-  Result := TDbEngineZeos.Create(ADbConfig, ASuffixDBname);
+  Result := TDbEngineZeos.Create(ADbConfig, ASuffixDBName);
   {$ELSE}
-  Result := TDbEngineFireDAC.Create(ADbConfig, ASuffixDBname);
+  Result := TDbEngineFireDAC.Create(ADbConfig, ASuffixDBName);
   {$IFEND}
   {$IFEND}
 end;
@@ -94,7 +95,10 @@ begin
       Result := TDBConfigEnvironmentVar.New(APrefixVariable);
     TTypeConfig.IniFile:
       Result := TDBConfigIniFile.New(APrefixVariable);
+    TTypeConfig.Memory:
+      Result := TDBConfigMemory.New(APrefixVariable);
   end;
 end;
 
 end.
+
