@@ -16,7 +16,7 @@ type
   TDbDriver = Infra.DBEngine.Contract.TDBDriver;
 
   {$SCOPEDENUMS ON}
-  TTypeConfig = (EnvironmentVariable, IniFile);
+  TTypeConfig = (EnvironmentVariable, IniFile, Memory);
   {$SCOPEDENUMS OFF}
 
   TDBConfigFactory = class
