@@ -48,7 +48,7 @@ uses
 
 function TDBConfigIniFile.CharSet: string;
 begin
-  Result := FIniFile.ReadString(ASECTIONDB, SConfigCharSet, 'utf8');
+  Result := FIniFile.ReadString(ASECTIONDB, SConfigCharSet, '');
 end;
 
 function TDBConfigIniFile.BuildDatabase(const AValue: Boolean): IDbEngineConfig;
@@ -94,7 +94,7 @@ end;
 function TDBConfigIniFile.Driver(const AValue: TDBDriver): IDbEngineConfig;
 begin
   Result := Self;
-  FIniFile.WriteString(ASECTIONDB, SConfigDriver, AValue.ToString);
+  FIniFile.WriteString(ASECTIONDB, SConfigDriver, DBDriverToStr(AValue));
 end;
 
 function TDBConfigIniFile.Driver: TDBDriver;

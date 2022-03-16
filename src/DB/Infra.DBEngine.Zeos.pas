@@ -38,7 +38,7 @@ type
 
 implementation
 
-{$IF DEFINED(INFRA_ORMBR)} uses dbebr.factory.Zeos; {$ENDIF}
+{$IF DEFINED(INFRA_ORMBR)} uses dbebr.factory.Zeos; {$IFEND}
 
 function TDbEngineZeos.CommitTX: IDbEngineFactory;
 begin
@@ -63,7 +63,7 @@ var
   LProtocol: string;
 begin
   inherited;
-  LProtocol := ADbConfig.Driver.ToString.ToLower;
+  LProtocol := DBDriverToStr(ADbConfig.Driver).ToLower;
   FConnectionComponent := TZConnection.Create(nil);
   with FConnectionComponent do
   begin
@@ -77,7 +77,7 @@ begin
   end;
   {$IF DEFINED(INFRA_ORMBR)}
   FDBConnection := TFactoryZeos.Create(FConnectionComponent, dnFirebird);
-  {$ENDIF}
+  {$IFEND}
 end;
 
 destructor TDbEngineZeos.Destroy;

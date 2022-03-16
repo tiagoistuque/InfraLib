@@ -53,7 +53,7 @@ type
 
 implementation
 
-{$IF DEFINED(INFRA_ORMBR)} uses dbebr.factory.FireDAC; {$ENDIF}
+{$IF DEFINED(INFRA_ORMBR)} uses dbebr.factory.FireDAC; {$IFEND}
 
 
 function TDbEngineFireDAC.CommitTX: IDbEngineFactory;
@@ -79,7 +79,7 @@ var
   LDriverID: string;
 begin
   inherited;
-  LDriverID := ADbConfig.Driver.ToString;
+  LDriverID := DBDriverToStr(ADbConfig.Driver);
   case ADbConfig.Driver of
     TDBDriver.Firebird:
       LDriverID := 'FB';
@@ -107,7 +107,7 @@ begin
   FConnectionComponent.LoginPrompt := False;
 {$IF DEFINED(INFRA_ORMBR)}
   FDBConnection := TFactoryFireDAC.Create(TFDConnection(FConnectionComponent), dnFirebird);
-{$ENDIF}
+{$IFEND}
 end;
 
 destructor TDbEngineFireDAC.Destroy;

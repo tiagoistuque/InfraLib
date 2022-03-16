@@ -5,7 +5,7 @@ interface
 uses
   {$IF DEFINED(INFRA_ORMBR)}
   dbebr.factory.interfaces,
-  {$ENDIF}
+  {$IFEND}
   DB,
   StrUtils,
   Classes;
@@ -22,11 +22,13 @@ type
     Oracle,
     PostgreSQL);
   {$SCOPEDENUMS OFF}
+  {$IF CompilerVersion > 23}
 
   TDBDriverHelper = record helper for TDBDriver
   public
     function ToString: string;
   end;
+  {$IFEND}
 
   IDbEngineConfig = interface
     ['{E3DB667A-5693-467E-97A1-28ED96AA402C}']
@@ -54,7 +56,7 @@ type
     {$IF DEFINED(INFRA_ORMBR)}
     function Connection: IDBConnection;
     function BuildDatabase: IDbEngineFactory;
-    {$ENDIF}
+    {$IFEND}
     function ConnectionComponent: TComponent;
     function Connect: IDbEngineFactory;
     function Disconnect: IDbEngineFactory;
@@ -96,14 +98,16 @@ const
   dnElevateDB = TDriverName.dnElevateDB;
   dnNexusDB = TDriverName.dnNexusDB;
   dnFirebase = TDriverName.dnFirebase;
-  {$ENDIF}
+  {$IFEND}
 
 function StrToDBDriver(const AValue: string): TDBDriver;
+function DBDriverToStr(const AValue: TDBDriver): string;
 
 implementation
 
 { TDBDriverHelper }
 
+{$IF CompilerVersion > 23}
 function TDBDriverHelper.ToString: string;
 begin
   case Self of
@@ -125,14 +129,13 @@ begin
       Result := 'PostgreSQL';
   end;
 end;
+{$IFEND}
 
 function StrToDBDriver(const AValue: string): TDBDriver;
 begin
   case AnsiIndexStr(AValue,
-    [TDBDriver.MSSQL.ToString, TDBDriver.MySQL.ToString,
-    TDBDriver.Firebird.ToString, TDBDriver.SQLite.ToString,
-    TDBDriver.Interbase.ToString, TDBDriver.Oracle.ToString,
-    TDBDriver.PostgreSQL.ToString, TDBDriver.unknown.ToString]) of
+    ['MSSQL', 'MySQL','Firebird', 'SQLite',
+    'Interbase', 'Oracle', 'PostgreSQL', 'Unknown']) of
     0:
       Result := TDBDriver.MSSQL;
     1:
@@ -151,6 +154,28 @@ begin
       Result := TDBDriver.unknown;
   else
     Result := TDBDriver.unknown;
+  end;
+end;
+
+function DBDriverToStr(const AValue: TDBDriver): string;
+begin
+  case AValue of
+    TDBDriver.unknown:
+      Result := 'Unknown';
+    TDBDriver.MSSQL:
+      Result := 'MSSQL';
+    TDBDriver.MySQL:
+      Result := 'MySQL';
+    TDBDriver.Firebird:
+      Result := 'Firebird';
+    TDBDriver.SQLite:
+      Result := 'SQLite';
+    TDBDriver.Interbase:
+      Result := 'Interbase';
+    TDBDriver.Oracle:
+      Result := 'Oracle';
+    TDBDriver.PostgreSQL:
+      Result := 'PostgreSQL';
   end;
 end;
 

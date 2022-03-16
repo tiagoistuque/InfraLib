@@ -19,7 +19,7 @@ uses
   ormbr.modeldb.compare,
   ormbr.metadata.classe.factory,
   ormbr.dml.generator.firebird,
-  {$ENDIF}
+  {$IFEND}
   Infra.DBEngine.Contract;
 
 type
@@ -28,12 +28,12 @@ type
     FDBName: string;
     {$IF DEFINED(INFRA_ORMBR)}
     FDBConnection: IDBConnection;
-    {$ENDIF}
+    {$IFEND}
   public
     {$IF DEFINED(INFRA_ORMBR)}
     function Connection: IDBConnection;
     function BuildDatabase: IDbEngineFactory;
-    {$ENDIF}
+    {$IFEND}
     function ConnectionComponent: TComponent; virtual; abstract;
     function Connect: IDbEngineFactory; virtual;
     function Disconnect: IDbEngineFactory; virtual;
@@ -94,7 +94,7 @@ begin
     LCommandList.Free;
   end;
 end;
-{$ENDIF}
+{$IFEND}
 
 
 function TDbEngineFactory.Connect: IDbEngineFactory;
@@ -102,7 +102,7 @@ begin
   {$IF DEFINED(INFRA_ORMBR)}
   if Assigned(FDBConnection) then
     FDBConnection.Connect;
-  {$ENDIF}
+  {$IFEND}
 end;
 
 constructor TDbEngineFactory.Create(const ADbConfig: IDbEngineConfig; const ASuffixDBName: string);
@@ -130,7 +130,7 @@ begin
   {$IF DEFINED(INFRA_ORMBR)}
   if Assigned(FDBConnection) then
     FDBConnection.Disconnect;
-  {$ENDIF}
+  {$IFEND}
 end;
 
 end.

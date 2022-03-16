@@ -42,8 +42,8 @@ uses
   Infra.DBEngine.Zeos;
 {$ELSE}
   Infra.DBEngine.FireDAC;
-{$ENDIF}
-{$ENDIF}
+{$IFEND}
+{$IFEND}
 
 
 class function TDBEngine.New(const ADbConfig: IDbEngineConfig; const ASuffixDBName: string = ''): IDBEngine;
@@ -53,7 +53,7 @@ begin
   Result := TDbEngineZeos.Create(ADbConfig, ASuffixDBname);
   {$ELSE}
   Result := TDbEngineSQLConnector.Create(ADbConfig, ASuffixDBname);
-  {$ENDIF}
+  {$IFEND}
   {$ELSE}
   {$IF DEFINED(INFRA_DBEXPRESS)}
   Result := TDbEngineDBExpress.Create(ADbConfig, ASuffixDBname);
@@ -61,8 +61,8 @@ begin
   Result := TDbEngineZeos.Create(ADbConfig, ASuffixDBname);
   {$ELSE}
   Result := TDbEngineFireDAC.Create(ADbConfig, ASuffixDBname);
-  {$ENDIF}
-  {$ENDIF}
+  {$IFEND}
+  {$IFEND}
 end;
 
 class function TDBEngine.Create(const ADbConfig: IDbEngineConfig; const ASuffixDBName: string = ''): TDbEngineFactory;
@@ -72,7 +72,7 @@ begin
   Result := TDbEngineZeos.Create(ADbConfig, ASuffixDBname);
   {$ELSE}
   Result := TDbEngineSQLConnector.Create(ADbConfig, ASuffixDBname);
-  {$ENDIF}
+  {$IFEND}
   {$ELSE}
   {$IF DEFINED(INFRA_DBEXPRESS)}
   Result := TDbEngineDBExpress.Create(ADbConfig, ASuffixDBname);
@@ -80,8 +80,8 @@ begin
   Result := TDbEngineZeos.Create(ADbConfig, ASuffixDBname);
   {$ELSE}
   Result := TDbEngineFireDAC.Create(ADbConfig, ASuffixDBname);
-  {$ENDIF}
-  {$ENDIF}
+  {$IFEND}
+  {$IFEND}
 end;
 
 { TDBConfigFactory }

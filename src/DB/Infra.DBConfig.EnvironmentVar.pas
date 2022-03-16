@@ -37,7 +37,7 @@ end;
 function TDBConfigEnvironmentVar.CharSet: string;
 begin
   Result := GetEnvironmentVariable(FPrefixVariable + SConfigDriver);
-  if Result.IsEmpty then
+  if Trim(Result) = EmptyStr then
     Result := 'utf8';
 end;
 
@@ -51,7 +51,7 @@ var
   LDir: string;
 begin
   Result := GetEnvironmentVariable(FPrefixVariable + SConfigDatabase);
-  if Result.IsEmpty then
+  if Trim(Result) = EmptyStr then
   begin
     LDir := SystemInfo.AppPath + 'data' + PathDelim;
     Result := LDir + SystemInfo.AppName;
@@ -70,7 +70,7 @@ end;
 function TDBConfigEnvironmentVar.Host: string;
 begin
   Result := GetEnvironmentVariable(FPrefixVariable + SConfigHost);
-  if Result.IsEmpty then
+  if Trim(Result) = EmptyStr then
     Result := '127.0.0.1';
 end;
 
@@ -83,7 +83,7 @@ end;
 function TDBConfigEnvironmentVar.Password: string;
 begin
   Result := GetEnvironmentVariable(FPrefixVariable + SConfigPassword);
-  if Result.IsEmpty then
+  if Trim(Result) = EmptyStr then
     Result := 'masterkey';
 end;
 
@@ -95,7 +95,7 @@ end;
 function TDBConfigEnvironmentVar.User: string;
 begin
   Result := GetEnvironmentVariable(FPrefixVariable + SConfigUser);
-  if Result.IsEmpty then
+  if Trim(Result) = EmptyStr then
     Result := 'SYSDBA';
 end;
 

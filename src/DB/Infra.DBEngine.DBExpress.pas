@@ -39,7 +39,7 @@ type
 
 implementation
 
-{$IF DEFINED(INFRA_ORMBR)} uses dbebr.factory.DBExpress; {$ENDIF}
+{$IF DEFINED(INFRA_ORMBR)} uses dbebr.factory.DBExpress; {$IFEND}
 
 function TDbEngineDBExpress.CommitTX: IDbEngineFactory;
 begin
@@ -86,7 +86,7 @@ begin
   end;
   {$IF DEFINED(INFRA_ORMBR)}
   FDBConnection := TFactoryDBExpress.Create(FConnectionComponent, dnFirebird);
-  {$ENDIF}
+  {$IFEND}
 end;
 
 destructor TDbEngineDBExpress.Destroy;
