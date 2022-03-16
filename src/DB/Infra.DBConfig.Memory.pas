@@ -18,6 +18,7 @@ type
     FHost: string;
     FPort: Integer;
     FUser: string;
+    FPassword: string;
   protected
     function Driver: TDBDriver; override;
     function Host: string; override;
