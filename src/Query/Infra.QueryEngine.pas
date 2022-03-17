@@ -28,8 +28,8 @@ uses
   Infra.QueryEngine.Zeos;
 {$ELSE}
   Infra.QueryEngine.FireDAC;
-{$ENDIF}
-{$ENDIF}
+{$IFEND}
+{$IFEND}
 
 
 class function TQueryEngine.New(const AConnection: IDbEngineFactory): IQueryEngine;
@@ -39,7 +39,7 @@ begin
   Result := TQueryEngineZeos.Create(AConnection);
   {$ELSE}
   Result := TQueryEngineSQLConnector.Create(AConnection);
-  {$ENDIF}
+  {$IFEND}
   {$ELSE}
   {$IF DEFINED(INFRA_DBEXPRESS)}
   Result := TQueryEngineDBExpress.Create(AConnection);
@@ -47,8 +47,8 @@ begin
   Result := TQueryEngineZeos.Create(AConnection);
   {$ELSE}
   Result := TQueryEngineFireDAC.Create(AConnection);
-  {$ENDIF}
-  {$ENDIF}
+  {$IFEND}
+  {$IFEND}
 end;
 
 class function TQueryEngine.Create(const AConnection: IDbEngineFactory): TQueryEngineFactory;
@@ -58,7 +58,7 @@ begin
   Result := TQueryEngineZeos.Create(AConnection);
   {$ELSE}
   Result := TQueryEngineSQLConnector.Create(AConnection);
-  {$ENDIF}
+  {$IFEND}
   {$ELSE}
   {$IF DEFINED(INFRA_DBEXPRESS)}
   Result := TQueryEngineDBExpress.Create(AConnection);
@@ -66,8 +66,8 @@ begin
   Result := TQueryEngineZeos.Create(AConnection);
   {$ELSE}
   Result := TQueryEngineFireDAC.Create(AConnection);
-  {$ENDIF}
-  {$ENDIF}
+  {$IFEND}
+  {$IFEND}
 end;
 
 end.

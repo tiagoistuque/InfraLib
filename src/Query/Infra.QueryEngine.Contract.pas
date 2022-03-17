@@ -3,11 +3,11 @@ unit Infra.QueryEngine.Contract;
 interface
 
 uses
-  {$IF DEFINED(INFRA_FIREDAC)}FireDAC.Stan.Param, {$ENDIF}
+  {$IF DEFINED(INFRA_FIREDAC)}FireDAC.Stan.Param, {$IFEND}
   DB;
 
 type
-  TSQLParams = {$IF DEFINED(INFRA_FIREDAC)}FireDAC.Stan.Param.TFDParams {$ELSE}TParams{$ENDIF};
+  TSQLParams = {$IF DEFINED(INFRA_FIREDAC)}FireDAC.Stan.Param.TFDParams {$ELSE}TParams{$IFEND};
 
   ISQLQuery = interface
     ['{9BBB3764-7029-4B19-87BB-0739BC61C058}']

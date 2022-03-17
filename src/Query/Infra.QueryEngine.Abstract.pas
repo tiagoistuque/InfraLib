@@ -3,7 +3,7 @@ unit Infra.QueryEngine.Abstract;
 interface
 
 uses
-  DB, {$IF DEFINED(INFRA_FIREDAC)}FireDAC.Stan.Param, {$ENDIF}
+  DB, {$IF DEFINED(INFRA_FIREDAC)}FireDAC.Stan.Param, {$IFEND}
   Infra.DBEngine.Contract,
   Infra.QueryEngine.Contract;
 
