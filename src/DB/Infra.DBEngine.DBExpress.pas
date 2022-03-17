@@ -74,7 +74,7 @@ begin
     with Params do
     begin
       Clear;
-      Add('Database=' + FDBName);
+      Add('Database=' + Format('%s/%d:%s', [ADbConfig.Host, ADbConfig.Port, FDBName]));
       Add('Rolename=Rolename');
       Add('User_name=' + ADBConfig.User);
       Add('Password=' + ADBConfig.Password);
