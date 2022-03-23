@@ -19,6 +19,8 @@ type
   private
     FConnectionComponent: TSQLConnection;
     FTransactionComponent: TDBXTransaction;
+    FInjectedConnection: Boolean;
+    FInjectedTransaction: Boolean;
   public
     function ConnectionComponent: TComponent; override;
     function Connect: IDbEngineFactory; override;
@@ -29,6 +31,7 @@ type
     function CommitTX: IDbEngineFactory; override;
     function RollbackTx: IDbEngineFactory; override;
     function InTransaction: Boolean; override;
+    function IsConnected: Boolean; override;
     function InjectConnection(AConn: TComponent; ATransactionObject: TObject): IDbEngineFactory; override;
 
   public
@@ -44,7 +47,8 @@ implementation
 function TDbEngineDBExpress.CommitTX: IDbEngineFactory;
 begin
   Result := Self;
-  FConnectionComponent.CommitFreeAndNil(FTransactionComponent);
+  if (not FInjectedConnection) and (not FInjectedTransaction) then
+    FConnectionComponent.CommitFreeAndNil(FTransactionComponent);
 end;
 
 function TDbEngineDBExpress.Connect: IDbEngineFactory;
@@ -62,38 +66,44 @@ end;
 constructor TDbEngineDBExpress.Create(const ADbConfig: IDbEngineConfig; const ASuffixDBName: string = '');
 begin
   inherited;
-  FConnectionComponent := TSQLConnection.Create(nil);
-  with FConnectionComponent do
+  if Assigned(ADbConfig) then
   begin
-
-    DriverName := 'Firebird';
-    GetDriverFunc := 'getSQLDriverINTERBASE';
-    KeepConnection := True;
-    LoginPrompt := False;
-//    VendorLib := 'fbclient.dll';
-    with Params do
+    FConnectionComponent := TSQLConnection.Create(nil);
+    with FConnectionComponent do
     begin
-      Clear;
-      Add('Database=' + Format('%s/%d:%s', [ADbConfig.Host, ADbConfig.Port, FDBName]));
-      Add('Rolename=Rolename');
-      Add('User_name=' + ADBConfig.User);
-      Add('Password=' + ADBConfig.Password);
-      Add('SQLDialect=3');
-      Add('ServerCharSet=' + ADBConfig.CharSet);
-      Add('Isolationlevel=ReadCommitted');
+
+      DriverName := 'Firebird';
+      GetDriverFunc := 'getSQLDriverINTERBASE';
+      KeepConnection := True;
+      LoginPrompt := False;
+  //    VendorLib := 'fbclient.dll';
+      with Params do
+      begin
+        Clear;
+        Add('Database=' + Format('%s/%d:%s', [ADbConfig.Host, ADbConfig.Port, FDBName]));
+        Add('Rolename=Rolename');
+        Add('User_name=' + ADBConfig.User);
+        Add('Password=' + ADBConfig.Password);
+        Add('SQLDialect=3');
+        Add('ServerCharSet=' + ADBConfig.CharSet);
+        Add('Isolationlevel=ReadCommitted');
+      end;
+      Connected := True;
     end;
-    Connected := True;
+    {$IF DEFINED(INFRA_ORMBR)}
+    FDBConnection := TFactoryDBExpress.Create(FConnectionComponent, dnFirebird);
+    {$IFEND}
   end;
-  {$IF DEFINED(INFRA_ORMBR)}
-  FDBConnection := TFactoryDBExpress.Create(FConnectionComponent, dnFirebird);
-  {$IFEND}
 end;
 
 destructor TDbEngineDBExpress.Destroy;
 begin
-  if Assigned(FTransactionComponent) then
-    FConnectionComponent.RollbackIncompleteFreeAndNil(FTransactionComponent);
-  FConnectionComponent.Free;
+  if (not FInjectedConnection) and (not FInjectedTransaction) then
+    if Assigned(FTransactionComponent) then
+    begin
+      FConnectionComponent.RollbackIncompleteFreeAndNil(FTransactionComponent);
+      FConnectionComponent.Free;
+    end;
   inherited;
 end;
 
@@ -122,14 +132,28 @@ end;
 Function TDbEngineDBExpress.InjectConnection(AConn: TComponent;
   ATransactionObject: TObject): IDbEngineFactory;
 begin
+  Result := Self;
+  if Assigned(FConnectionComponent) then
+    FreeAndNil(FConnectionComponent);
   if not (AConn is TSQLConnection) then
     raise Exception.Create('Invalid connection component instance for DBExpress. '+Self.UnitName);
   FConnectionComponent := TSQLConnection(AConn);
+  FInjectedConnection := True;
+  if Assigned(ATransactionObject) then
+  begin
+    FTransactionComponent := TDBXTransaction(ATransactionObject);
+    FInjectedTransaction := True;
+  end;
 end;
 
 function TDbEngineDBExpress.InTransaction: Boolean;
 begin
   Result := FConnectionComponent.InTransaction;
+end;
+
+function TDbEngineDBExpress.IsConnected: Boolean;
+begin
+  Result := Assigned(FConnectionComponent) and FConnectionComponent.Connected;
 end;
 
 function TDbEngineDBExpress.OpenSQL(const ASQL: string;
@@ -152,13 +176,15 @@ end;
 function TDbEngineDBExpress.RollbackTx: IDbEngineFactory;
 begin
   Result := Self;
-  FConnectionComponent.RollbackFreeAndNil(FTransactionComponent);
+  if (not FInjectedConnection) and (not FInjectedTransaction) then
+    FConnectionComponent.RollbackFreeAndNil(FTransactionComponent);
 end;
 
 function TDbEngineDBExpress.StartTx: IDbEngineFactory;
 begin
   Result := Self;
-  FTransactionComponent :=  FConnectionComponent.BeginTransaction(TDBXIsolations.ReadCommitted);
+  if (not FInjectedConnection) and (not FInjectedTransaction) then
+    FTransactionComponent :=  FConnectionComponent.BeginTransaction(TDBXIsolations.ReadCommitted);
 end;
 
 end.

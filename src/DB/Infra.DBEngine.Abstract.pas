@@ -110,12 +110,15 @@ var
   LDBNameExtension: string;
   LDBNameWithoutExtension: string;
 begin
-  FDBName := ADbConfig.Database;
-  if Trim(ASuffixDBName) <> EmptyStr then
+  if Assigned(ADbConfig) then
   begin
-    LDBNameExtension := ExtractFileExt(FDBName);
-    LDBNameWithoutExtension := StringReplace(FDBName, LDBNameExtension, '', [rfReplaceAll, rfIgnoreCase]);
-    FDBName := LDBNameWithoutExtension + ASuffixDBName + LDBNameExtension;
+    FDBName := ADbConfig.Database;
+    if Trim(ASuffixDBName) <> EmptyStr then
+    begin
+      LDBNameExtension := ExtractFileExt(FDBName);
+      LDBNameWithoutExtension := StringReplace(FDBName, LDBNameExtension, '', [rfReplaceAll, rfIgnoreCase]);
+      FDBName := LDBNameWithoutExtension + ASuffixDBName + LDBNameExtension;
+    end;
   end;
 end;
 
