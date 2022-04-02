@@ -31,6 +31,7 @@ type
   TDbEngineFireDAC = class(TDbEngineFactory)
   private
     FConnectionComponent: TFDConnection;
+	FInjectedConnection: Boolean;
   public
     function Connect: IDbEngineFactory; override;
     function Disconnect: IDbEngineFactory; override;
@@ -115,7 +116,12 @@ end;
 
 destructor TDbEngineFireDAC.Destroy;
 begin
-  FConnectionComponent.Free;
+  if (not FInjectedConnection) and (not FInjectedTransaction) then
+    if Assigned(FTransactionComponent) then
+    begin
+      FConnectionComponent.Rollback;
+      FConnectionComponent.Free;
+    end;
   inherited;
 end;
 
@@ -146,6 +152,7 @@ begin
   Result := Self;
   if not(AConn is TFDConnection) then
     raise Exception.Create('Invalid connection component instance for FireDAC. ' + Self.UnitName);
+  FInjectedConnection := True;	
   FConnectionComponent := TFDConnection(AConn);
 end;
 
@@ -171,7 +178,8 @@ end;
 function TDbEngineFireDAC.RollbackTx: IDbEngineFactory;
 begin
   Result := Self;
-  FConnectionComponent.Rollback;
+  if (not FInjectedConnection) then
+    FConnectionComponent.Rollback;
 end;
 
 function TDbEngineFireDAC.StartTx: IDbEngineFactory;
@@ -179,7 +187,8 @@ begin
   Result := Self;
   if not FConnectionComponent.Connected then
     FConnectionComponent.Connected := True;
-  FConnectionComponent.StartTransaction;
+  if (not FInjectedConnection) then
+    FConnectionComponent.StartTransaction;
 end;
 
 end.
