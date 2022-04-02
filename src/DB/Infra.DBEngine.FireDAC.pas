@@ -143,6 +143,7 @@ end;
 function TDbEngineFireDAC.InjectConnection(AConn: TComponent;
   ATransactionObject: TObject): IDbEngineFactory;
 begin
+  Result := Self;
   if not(AConn is TFDConnection) then
     raise Exception.Create('Invalid connection component instance for FireDAC. ' + Self.UnitName);
   FConnectionComponent := TFDConnection(AConn);
