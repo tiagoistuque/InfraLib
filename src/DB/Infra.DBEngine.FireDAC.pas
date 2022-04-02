@@ -79,35 +79,38 @@ var
   LDriverID: string;
 begin
   inherited;
-  LDriverID := DBDriverToStr(ADbConfig.Driver);
-  case ADbConfig.Driver of
-    TDBDriver.Firebird:
-      LDriverID := 'FB';
-    TDBDriver.Interbase:
-      LDriverID := 'IB';
-    TDBDriver.Oracle:
-      LDriverID := 'Ora';
-    TDBDriver.PostgreSQL:
-      LDriverID := 'PG';
+  if Assigned(ADbConfig) then
+  begin
+    LDriverID := DBDriverToStr(ADbConfig.Driver);
+    case ADbConfig.Driver of
+      TDBDriver.Firebird:
+        LDriverID := 'FB';
+      TDBDriver.Interbase:
+        LDriverID := 'IB';
+      TDBDriver.Oracle:
+        LDriverID := 'Ora';
+      TDBDriver.PostgreSQL:
+        LDriverID := 'PG';
+    end;
+    FConnectionComponent := TFDConnection.Create(nil);
+    FConnectionComponent.FormatOptions.StrsTrim2Len := True;
+    FConnectionComponent.DriverName := LDriverID;
+    FConnectionComponent.TxOptions.Isolation := xiReadCommitted;
+    FConnectionComponent.Params.Add('Database=' + FDbName);
+    FConnectionComponent.Params.Add('User_Name=' + ADbConfig.User);
+    FConnectionComponent.Params.Add('Password=' + ADbConfig.Password);
+    FConnectionComponent.Params.Add('Protocol=TCPIP');
+    FConnectionComponent.Params.Add('Port=' + IntToStr(ADbConfig.Port));
+    FConnectionComponent.Params.Add('Server=' + ADbConfig.Host);
+    FConnectionComponent.Params.Add('CharacterSet=' + ADbConfig.CharSet);
+    FConnectionComponent.Params.Add('DriverID=' + LDriverID);
+    FConnectionComponent.Params.Add('OpenMode=OpenOrCreate');
+    FConnectionComponent.Params.Add('GUIDEndian=Big');
+    FConnectionComponent.LoginPrompt := False;
+    {$IF DEFINED(INFRA_ORMBR)}
+    FDBConnection := TFactoryFireDAC.Create(TFDConnection(FConnectionComponent), dnFirebird);
+    {$IFEND}
   end;
-  FConnectionComponent := TFDConnection.Create(nil);
-  FConnectionComponent.FormatOptions.StrsTrim2Len := True;
-  FConnectionComponent.DriverName := LDriverID;
-  FConnectionComponent.TxOptions.Isolation := xiReadCommitted;
-  FConnectionComponent.Params.Add('Database=' + FDbName);
-  FConnectionComponent.Params.Add('User_Name=' + ADbConfig.User);
-  FConnectionComponent.Params.Add('Password=' + ADbConfig.Password);
-  FConnectionComponent.Params.Add('Protocol=TCPIP');
-  FConnectionComponent.Params.Add('Port=' + IntToStr(ADbConfig.Port));
-  FConnectionComponent.Params.Add('Server=' + ADbConfig.Host);
-  FConnectionComponent.Params.Add('CharacterSet=' + ADbConfig.CharSet);
-  FConnectionComponent.Params.Add('DriverID=' + LDriverID);
-  FConnectionComponent.Params.Add('OpenMode=OpenOrCreate');
-  FConnectionComponent.Params.Add('GUIDEndian=Big');
-  FConnectionComponent.LoginPrompt := False;
-{$IF DEFINED(INFRA_ORMBR)}
-  FDBConnection := TFactoryFireDAC.Create(TFDConnection(FConnectionComponent), dnFirebird);
-{$IFEND}
 end;
 
 destructor TDbEngineFireDAC.Destroy;
