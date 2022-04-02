@@ -116,12 +116,11 @@ end;
 
 destructor TDbEngineFireDAC.Destroy;
 begin
-  if (not FInjectedConnection) and (not FInjectedTransaction) then
-    if Assigned(FTransactionComponent) then
-    begin
-      FConnectionComponent.Rollback;
-      FConnectionComponent.Free;
-    end;
+  if (not FInjectedConnection) then
+  begin
+    FConnectionComponent.Rollback;
+    FConnectionComponent.Free;
+  end;
   inherited;
 end;
 
