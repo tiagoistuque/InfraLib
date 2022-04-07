@@ -99,11 +99,13 @@ end;
 destructor TDbEngineDBExpress.Destroy;
 begin
   if (not FInjectedConnection) and (not FInjectedTransaction) then
+  begin
     if Assigned(FTransactionComponent) then
     begin
       FConnectionComponent.RollbackIncompleteFreeAndNil(FTransactionComponent);
-      FConnectionComponent.Free;
     end;
+    FConnectionComponent.Free;
+  end;
   inherited;
 end;
 
