@@ -47,7 +47,7 @@ implementation
 function TDbEngineDBExpress.CommitTX: IDbEngineFactory;
 begin
   Result := Self;
-  if (not FInjectedConnection) and (not FInjectedTransaction) then
+  if Assigned(FTransactionComponent) and (not FInjectedConnection) and (not FInjectedTransaction) then
     FConnectionComponent.CommitFreeAndNil(FTransactionComponent);
 end;
 
@@ -176,7 +176,7 @@ end;
 function TDbEngineDBExpress.RollbackTx: IDbEngineFactory;
 begin
   Result := Self;
-  if (not FInjectedConnection) and (not FInjectedTransaction) then
+  if Assigned(FTransactionComponent) and (not FInjectedConnection) and (not FInjectedTransaction) then
     FConnectionComponent.RollbackFreeAndNil(FTransactionComponent);
 end;
 
