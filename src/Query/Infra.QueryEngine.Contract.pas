@@ -18,6 +18,7 @@ type
     function Exec(const AReturn: Boolean = False): ISQLQuery;
     function Close: ISQLQuery;
     function IndexFieldNames(const Fields: string): ISQLQuery;
+	function IndexFieldNames: string;
     function DataSet: TDataSet;
     function ProviderFlags(const FieldName: string; ProviderFlags: TProviderFlags): ISQLQuery;
     function ApplyUpdates: Boolean;
