@@ -22,8 +22,8 @@ type
     function Open: ISQLQuery; virtual; abstract;
     function Exec(const AReturn: Boolean = False): ISQLQuery; virtual; abstract;
     function Close: ISQLQuery; virtual; abstract;
-    function IndexFieldNames(const Fields: string): ISQLQuery; virtual; abstract;
-	function IndexFieldNames: string; virtual; abstract;
+    function IndexFieldNames(const Fields: string): ISQLQuery; overload; virtual; abstract;
+	  function IndexFieldNames: string; overload; virtual; abstract;
     function DataSet: TDataSet; virtual; abstract;
     function ProviderFlags(const FieldName: string; ProviderFlags: TProviderFlags): ISQLQuery; virtual; abstract;
     function ApplyUpdates: Boolean; virtual; abstract;
@@ -36,6 +36,7 @@ type
     function RowsAffected: Integer; virtual; abstract;
     function RetornaAutoIncremento(const ASequenceName: string): Integer; overload; virtual; abstract;
     function RetornaAutoIncremento(const ASequenceName, ATableDest, AFieldDest: string): Integer; overload; virtual; abstract;
+    function DbEngine: IDbEngineFactory;
   end;
 
 implementation
@@ -46,6 +47,11 @@ constructor TQueryEngineFActory.Create(
   const AConnection: IDbEngineFactory);
 begin
   FDbEngine := AConnection;
+end;
+
+function TQueryEngineFactory.DbEngine: IDbEngineFactory;
+begin
+  Result := FDbEngine;
 end;
 
 destructor TQueryEngineFActory.Destroy;

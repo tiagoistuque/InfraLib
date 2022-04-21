@@ -31,7 +31,7 @@ type
     function Exec(const AReturn: Boolean = False): ISQLQuery; override;
     function Close: ISQLQuery; override;
     function IndexFieldNames(const Fields: string): ISQLQuery; override;
-	function IndexFieldNames: string; override;
+  	function IndexFieldNames: string; override;
     function DataSet: TDataSet; override;
     function ProviderFlags(const FieldName: string; ProviderFlags: TProviderFlags): ISQLQuery; override;
     function ApplyUpdates: Boolean; override;
@@ -114,6 +114,11 @@ begin
     Result := FClientDataSet
   else
     Result := FQuery;
+end;
+
+function TQueryEngineDBExpress.DbEngine: IDbEngineFactory;
+begin
+  Result :=
 end;
 
 destructor TQueryEngineDBExpress.Destroy;

@@ -4,7 +4,7 @@ interface
 
 uses
   {$IF DEFINED(INFRA_FIREDAC)}FireDAC.Stan.Param, {$IFEND}
-  DB;
+  DB, Infra.DBEngine.Contract;
 
 type
   TSQLParams = {$IF DEFINED(INFRA_FIREDAC)}FireDAC.Stan.Param.TFDParams {$ELSE}TParams{$IFEND};
@@ -17,8 +17,8 @@ type
     function Open: ISQLQuery;
     function Exec(const AReturn: Boolean = False): ISQLQuery;
     function Close: ISQLQuery;
-    function IndexFieldNames(const Fields: string): ISQLQuery;
-	function IndexFieldNames: string;
+    function IndexFieldNames(const Fields: string): ISQLQuery; overload;
+	  function IndexFieldNames: string; overload;
     function DataSet: TDataSet;
     function ProviderFlags(const FieldName: string; ProviderFlags: TProviderFlags): ISQLQuery;
     function ApplyUpdates: Boolean;
@@ -31,6 +31,7 @@ type
     function RowsAffected: Integer;
     function RetornaAutoIncremento(const ASequenceName: string): Integer; overload;
     function RetornaAutoIncremento(const ASequenceName, ATableDest, AFieldDest: string): Integer; overload;
+    function DbEngine: IDbEngineFactory;
   end;
 
 implementation
