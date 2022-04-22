@@ -31,7 +31,7 @@ type
     function Exec(const AReturn: Boolean = False): ISQLQuery; override;
     function Close: ISQLQuery; override;
     function IndexFieldNames(const Fields: string): ISQLQuery; override;
-	function IndexFieldNames: string; override;
+  	function IndexFieldNames: string; override;
     function DataSet: TDataSet; override;
     function ProviderFlags(const FieldName: string; ProviderFlags: TProviderFlags): ISQLQuery; override;
     function ApplyUpdates: Boolean; override;
@@ -89,6 +89,7 @@ begin
   FQuery := TFDQuery.Create(nil);
   FQuery.Connection := TFDConnection(AConnection.ConnectionComponent);
   FQuery.CachedUpdates := True;
+  FQuery.ResourceOptions.ParamCreate := False;
   FParams := TFDParams.Create;
   FComandoSQL := TStringList.Create;
 end;
@@ -116,12 +117,12 @@ begin
     FQuery.SQL.Assign(FComandoSQL);
     if FParams.Count > 0 then
       FQuery.Params.Assign(FParams);
-    if FParams.ArraySize > 0 then
-      FQuery.Execute(FParams.ArraySize)
+    if AReturn then
+      FQuery.Open
     else
     begin
-      if AReturn then
-        FQuery.Open
+      if FParams.ArraySize > 0 then
+        FQuery.Execute(FParams.ArraySize)
       else
         FQuery.ExecSQL;
     end;
