@@ -116,11 +116,6 @@ begin
     Result := FQuery;
 end;
 
-function TQueryEngineDBExpress.DbEngine: IDbEngineFactory;
-begin
-  Result :=
-end;
-
 destructor TQueryEngineDBExpress.Destroy;
 begin
   FParams.Free;
