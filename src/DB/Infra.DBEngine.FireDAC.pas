@@ -31,7 +31,7 @@ type
   TDbEngineFireDAC = class(TDbEngineFactory)
   private
     FConnectionComponent: TFDConnection;
-	FInjectedConnection: Boolean;
+  	FInjectedConnection: Boolean;
   public
     function Connect: IDbEngineFactory; override;
     function Disconnect: IDbEngineFactory; override;
@@ -78,20 +78,47 @@ end;
 constructor TDbEngineFireDAC.Create(const ADbConfig: IDbEngineConfig; const ASuffixDBName: string = '');
 var
   LDriverID: string;
+  LOpenMode: string;
+  LGUIDEndian: string;
+  LAuthMode: string;
+  LProtocol: string;
 begin
   inherited;
+  // for complete parameters definitions see : https://docwiki.embarcadero.com/RADStudio/Sydney/en/Database_Connectivity_(FireDAC)
   if Assigned(ADbConfig) then
   begin
+    LGUIDEndian := EmptyStr;
+    LOpenMode := EmptyStr;
+    LAuthMode := EmptyStr;
+    LProtocol := EmptyStr;
     LDriverID := DBDriverToStr(ADbConfig.Driver);
     case ADbConfig.Driver of
       TDBDriver.Firebird:
+      begin
         LDriverID := 'FB';
+        LGUIDEndian := 'Big';
+        LOpenMode := 'OpenOrCreate';
+        LProtocol := 'TCPIP';
+        if not ADbConfig.GetExecuteMigrations then
+          LOpenMode := 'Open';
+      end;
       TDBDriver.Interbase:
+      begin
         LDriverID := 'IB';
+        LOpenMode := 'OpenOrCreate';
+        LProtocol := 'TCPIP';
+        if not ADbConfig.GetExecuteMigrations then
+          LOpenMode := 'Open';
+      end;
       TDBDriver.Oracle:
+      begin
         LDriverID := 'Ora';
+        LAuthMode := 'SysDBA';
+      end;
       TDBDriver.PostgreSQL:
+      begin
         LDriverID := 'PG';
+      end;
     end;
     FConnectionComponent := TFDConnection.Create(nil);
     FConnectionComponent.FormatOptions.StrsTrim2Len := True;
@@ -100,13 +127,16 @@ begin
     FConnectionComponent.Params.Add('Database=' + FDbName);
     FConnectionComponent.Params.Add('User_Name=' + ADbConfig.User);
     FConnectionComponent.Params.Add('Password=' + ADbConfig.Password);
-    FConnectionComponent.Params.Add('Protocol=TCPIP');
+    if not LProtocol.IsEmpty then
+      FConnectionComponent.Params.Add('Protocol='+LProtocol);
     FConnectionComponent.Params.Add('Port=' + IntToStr(ADbConfig.Port));
     FConnectionComponent.Params.Add('Server=' + ADbConfig.Host);
     FConnectionComponent.Params.Add('CharacterSet=' + ADbConfig.CharSet);
     FConnectionComponent.Params.Add('DriverID=' + LDriverID);
-    FConnectionComponent.Params.Add('OpenMode=OpenOrCreate');
-    FConnectionComponent.Params.Add('GUIDEndian=Big');
+    if not LOpenMode.IsEmpty then
+      FConnectionComponent.Params.Add('OpenMode='+LOpenMode);
+    if not LGUIDEndian.IsEmpty then
+      FConnectionComponent.Params.Add('GUIDEndian='+LGUIDEndian);
     FConnectionComponent.LoginPrompt := False;
     {$IF DEFINED(INFRA_ORMBR)}
     FDBConnection := TFactoryFireDAC.Create(TFDConnection(FConnectionComponent), dnFirebird);

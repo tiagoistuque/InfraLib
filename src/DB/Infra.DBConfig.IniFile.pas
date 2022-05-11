@@ -26,7 +26,7 @@ type
     function CharSet: string; override;
     function User: string; override;
     function Password: string; override;
-    function BuildDatabase: Boolean; overload; override;
+    function GetExecuteMigrations: Boolean; overload; override;
     function Driver(const AValue: TDBDriver): IDbEngineConfig; overload; override;
     function Host(const AValue: string): IDbEngineConfig; overload; override;
     function Port(const AValue: Integer): IDbEngineConfig; overload; override;
@@ -34,7 +34,7 @@ type
     function CharSet(const AValue: string): IDbEngineConfig; overload; override;
     function User(const AValue: string): IDbEngineConfig; overload; override;
     function Password(const AValue: string): IDbEngineConfig; overload; override;
-    function BuildDatabase(const AValue: Boolean): IDbEngineConfig; overload; override;
+    function SetExecuteMigrations(const AValue: Boolean): IDbEngineConfig; overload; override;
     function ConfigFileName: TFileName; override;
 
   public
@@ -54,13 +54,13 @@ begin
   Result := FIniFile.ReadString(ASECTIONDB, SConfigCharSet, '');
 end;
 
-function TDBConfigIniFile.BuildDatabase(const AValue: Boolean): IDbEngineConfig;
+function TDBConfigIniFile.SetExecuteMigrations(const AValue: Boolean): IDbEngineConfig;
 begin
   Result := Self;
   FIniFile.WriteBool(ASECTIONDB, SConfigBuildDB, AValue);
 end;
 
-function TDBConfigIniFile.BuildDatabase: Boolean;
+function TDBConfigIniFile.GetExecuteMigrations: Boolean;
 begin
   Result := FIniFile.ReadBool(ASECTIONDB, SConfigBuildDB, False);
 end;

@@ -26,13 +26,14 @@ type
   TDbEngineFactory = class abstract(TInterfacedObject, IDbEngineFactory)
   protected
     FDBName: string;
+    FAutoExcuteMigrations: Boolean;
     {$IF DEFINED(INFRA_ORMBR)}
     FDBConnection: IDBConnection;
     {$IFEND}
   public
     {$IF DEFINED(INFRA_ORMBR)}
     function Connection: IDBConnection;
-    function BuildDatabase: IDbEngineFactory;
+    function ExecuteMigrations: IDbEngineFactory;
     {$IFEND}
     function ConnectionComponent: TComponent; virtual; abstract;
     function Connect: IDbEngineFactory; virtual;
@@ -64,7 +65,7 @@ begin
   Result := FDBConnection;
 end;
 
-function TDbEngineFactory.BuildDatabase: IDbEngineFactory;
+function TDbEngineFactory.ExecuteMigrations: IDbEngineFactory;
 var
   LManager: IDatabaseCompare;
   LDDL: TDDLCommand;
@@ -74,7 +75,7 @@ begin
   try
     try
       LManager := TModelDbCompare.Create(FDBConnection);
-      LManager.CommandsAutoExecute := True;
+      LManager.CommandsAutoExecute := FAutoExcuteMigrations;
       LManager.ComparerFieldPosition := True;
       LManager.BuildDatabase;
       for LDDL in LManager.GetCommandList do
@@ -110,8 +111,10 @@ var
   LDBNameExtension: string;
   LDBNameWithoutExtension: string;
 begin
+  FAutoExcuteMigrations := False;
   if Assigned(ADbConfig) then
   begin
+    FAutoExcuteMigrations := ADbConfig.GetExecuteMigrations;
     FDBName := ADbConfig.Database;
     if Trim(ASuffixDBName) <> EmptyStr then
     begin

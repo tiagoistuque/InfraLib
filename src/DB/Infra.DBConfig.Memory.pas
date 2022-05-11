@@ -27,7 +27,7 @@ type
     function CharSet: string; override;
     function User: string; override;
     function Password: string; override;
-    function BuildDatabase: Boolean; override;
+    function GetExecuteMigrations: Boolean; override;
     function Driver(const AValue: TDBDriver): IDbEngineConfig; overload; override;
     function Host(const AValue: string): IDbEngineConfig; overload; override;
     function Port(const AValue: Integer): IDbEngineConfig; overload; override;
@@ -35,7 +35,7 @@ type
     function CharSet(const AValue: string): IDbEngineConfig; overload; override;
     function User(const AValue: string): IDbEngineConfig; overload; override;
     function Password(const AValue: string): IDbEngineConfig; overload; override;
-    function BuildDatabase(const AValue: Boolean): IDbEngineConfig; overload; override;
+    function SetExecuteMigrations(const AValue: Boolean): IDbEngineConfig; overload; override;
   public
     constructor Create(const APrefixVariable: string); override;
     class function New(const APrefixVariable: string): IDbEngineConfig; override;
@@ -45,14 +45,14 @@ implementation
 
 { TDBConfigMemory }
 
-function TDBConfigMemory.BuildDatabase(
+function TDBConfigMemory.SetExecuteMigrations(
   const AValue: Boolean): IDbEngineConfig;
 begin
   Result := Self;
   FBuildDatabase := AValue;
 end;
 
-function TDBConfigMemory.BuildDatabase: Boolean;
+function TDBConfigMemory.GetExecuteMigrations: Boolean;
 begin
   Result := FBuildDatabase;
 end;

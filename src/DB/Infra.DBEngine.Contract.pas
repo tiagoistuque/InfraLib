@@ -40,7 +40,7 @@ type
     function CharSet: string; overload;
     function User: string; overload;
     function Password: string; overload;
-    function BuildDatabase: Boolean; overload;
+    function GetExecuteMigrations: Boolean; overload;
     function Driver(const AValue: TDBDriver): IDbEngineConfig; overload;
     function Host(const AValue: string): IDbEngineConfig; overload;
     function Port(const AValue: Integer): IDbEngineConfig; overload;
@@ -48,7 +48,7 @@ type
     function CharSet(const AValue: string): IDbEngineConfig; overload;
     function User(const AValue: string): IDbEngineConfig; overload;
     function Password(const AValue: string): IDbEngineConfig; overload;
-    function BuildDatabase(const AValue: Boolean): IDbEngineConfig; overload;
+    function SetExecuteMigrations(const AValue: Boolean): IDbEngineConfig; overload;
     function ConfigFileName: TFileName;
   end;
 
@@ -57,7 +57,7 @@ type
 
     {$IF DEFINED(INFRA_ORMBR)}
     function Connection: IDBConnection;
-    function BuildDatabase: IDbEngineFactory;
+    function ExecuteMigrations: IDbEngineFactory;
     {$IFEND}
     function ConnectionComponent: TComponent;
     function Connect: IDbEngineFactory;
