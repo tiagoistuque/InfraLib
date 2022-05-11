@@ -13,6 +13,7 @@ type
   TDBConfigIniFile = class(TDBConfigDef)
   private
     FIniFile: TIniFile;
+    FFileName: TFileName;
 
   const
     ASECTIONDB = 'DBCONFIG';
@@ -34,6 +35,8 @@ type
     function User(const AValue: string): IDbEngineConfig; overload; override;
     function Password(const AValue: string): IDbEngineConfig; overload; override;
     function BuildDatabase(const AValue: Boolean): IDbEngineConfig; overload; override;
+    function ConfigFileName: TFileName; override;
+
   public
     constructor Create(const APrefixVariable: string); override;
     destructor Destroy; override;
@@ -68,10 +71,16 @@ begin
   FIniFile.WriteString(ASECTIONDB, SConfigCharSet, AValue);
 end;
 
+function TDBConfigIniFile.ConfigFileName: TFileName;
+begin
+  Result := FFileName;
+end;
+
 constructor TDBConfigIniFile.Create(const APrefixVariable: string);
 begin
   inherited;
-  FIniFile := TIniFile.Create(SystemInfo.AppPath + APrefixVariable + SystemInfo.AppName + '.ini');
+  FFileName := SystemInfo.AppPath + APrefixVariable + SystemInfo.AppName + '.ini';
+  FIniFile := TIniFile.Create(FFileName);
 end;
 
 function TDBConfigIniFile.Database: string;

@@ -7,6 +7,7 @@ uses
   dbebr.factory.interfaces,
   {$IFEND}
   DB,
+  SysUtils,
   StrUtils,
   Classes;
 
@@ -48,6 +49,7 @@ type
     function User(const AValue: string): IDbEngineConfig; overload;
     function Password(const AValue: string): IDbEngineConfig; overload;
     function BuildDatabase(const AValue: Boolean): IDbEngineConfig; overload;
+    function ConfigFileName: TFileName;
   end;
 
   IDbEngineFactory = interface

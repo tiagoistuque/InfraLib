@@ -26,6 +26,7 @@ type
     function User(const AValue: string): IDbEngineConfig; overload; virtual; abstract;
     function Password(const AValue: string): IDbEngineConfig; overload; virtual; abstract;
     function BuildDatabase(const AValue: Boolean): IDbEngineConfig; overload; virtual; abstract;
+    function ConfigFileName: TFileName; virtual; abstract;
   public
     constructor Create(const APrefixVariable: string); virtual; abstract;
     class function New(const APrefixVariable: string): IDbEngineConfig; virtual; abstract;
