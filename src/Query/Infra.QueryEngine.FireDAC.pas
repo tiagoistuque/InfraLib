@@ -113,6 +113,7 @@ begin
   Result := Self;
   try
     FQuery.Close;
+    FQuery.IndexFieldNames := EmptyStr;
     FQuery.SQL.Clear;
     FQuery.SQL.Assign(FComandoSQL);
     if FParams.Count > 0 then
@@ -159,6 +160,7 @@ begin
   Result := Self;
   try
     FQuery.Close;
+    FQuery.IndexFieldNames := EmptyStr;
     FQuery.SQL.Assign(FComandoSQL);
     if FParams.Count > 0 then
       FQuery.Params.Assign(FParams);
