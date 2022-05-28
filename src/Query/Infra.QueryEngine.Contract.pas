@@ -31,6 +31,10 @@ type
     function RowsAffected: Integer;
     function RetornaAutoIncremento(const ASequenceName: string): Integer; overload;
     function RetornaAutoIncremento(const ASequenceName, ATableDest, AFieldDest: string): Integer; overload;
+    {$IF DEFINED(INFRA_FIREDAC)}
+    function SetAutoIncField(const AFieldName: string): ISQLQuery;
+    function SetAutoIncGeneratorName(const AGeneratorName: string): ISQLQuery;
+    {$IFEND}
     function DbEngine: IDbEngineFactory;
   end;
 

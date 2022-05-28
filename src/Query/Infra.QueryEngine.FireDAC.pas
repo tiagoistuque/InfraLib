@@ -44,6 +44,8 @@ type
     function RowsAffected: Integer; override;
     function RetornaAutoIncremento(const ASequenceName: string): Integer; overload; override;
     function RetornaAutoIncremento(const ASequenceName, ATableDest, AFieldDest: string): Integer; overload; override;
+    function SetAutoIncField(const AFieldName: string): ISQLQuery; override;
+    function SetAutoIncGeneratorName(const AGeneratorName: string): ISQLQuery; override;
   end;
 
 implementation
@@ -89,6 +91,8 @@ begin
   FQuery := TFDQuery.Create(nil);
   FQuery.Connection := TFDConnection(AConnection.ConnectionComponent);
   FQuery.CachedUpdates := True;
+  FQuery.FetchOptions.Mode := fmAll;
+  FQuery.FetchOptions.RowsetSize     := -1;
   FQuery.ResourceOptions.ParamCreate := False;
   FParams := TFDParams.Create;
   FComandoSQL := TStringList.Create;
@@ -240,6 +244,22 @@ end;
 function TQueryEngineFireDAC.RowsAffected: Integer;
 begin
   Result := FRowsAffected;
+end;
+
+function TQueryEngineFireDAC.SetAutoIncField(const AFieldName: string): ISQLQuery;
+begin
+  Result := Self;
+  if FQuery.Active then
+    raise Exception.Create('SetAutoIncField - Operation not allowed with active dataset.');
+  FQuery.UpdateOptions.AutoIncFields := AFieldName;
+end;
+
+function TQueryEngineFireDAC.SetAutoIncGeneratorName(const AGeneratorName: string): ISQLQuery;
+begin
+  Result := Self;
+  if FQuery.Active then
+    raise Exception.Create('SetAutoIncGeneratorName - Operation not allowed with active dataset.');
+  FQuery.UpdateOptions.GeneratorName := AGeneratorName;
 end;
 
 function TQueryEngineFireDAC.SQLCommand: string;

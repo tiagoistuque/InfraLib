@@ -37,6 +37,8 @@ type
     function RetornaAutoIncremento(const ASequenceName: string): Integer; overload; virtual; abstract;
     function RetornaAutoIncremento(const ASequenceName, ATableDest, AFieldDest: string): Integer; overload; virtual; abstract;
     function DbEngine: IDbEngineFactory;
+    function SetAutoIncField(const AFieldName: string): ISQLQuery; virtual; abstract;
+    function SetAutoIncGeneratorName(const AGeneratorName: string): ISQLQuery; virtual; abstract;
   end;
 
 implementation
