@@ -15,12 +15,13 @@ uses
   Infra.DBEngine.Contract;
 
 type
-  TDbEngineDBExpress = class(TDbEngineFactory)
+  TDbEngineDBExpress = class(TDbEngineAbstract)
   private
     FConnectionComponent: TSQLConnection;
     FTransactionComponent: TDBXTransaction;
     FInjectedConnection: Boolean;
     FInjectedTransaction: Boolean;
+    FRowsAffected: Integer;
   public
     function ConnectionComponent: TComponent; override;
     function Connect: IDbEngineFactory; override;
@@ -32,6 +33,7 @@ type
     function RollbackTx: IDbEngineFactory; override;
     function InTransaction: Boolean; override;
     function IsConnected: Boolean; override;
+    function RowsAffected: Integer; override;
     function InjectConnection(AConn: TComponent; ATransactionObject: TObject): IDbEngineFactory; override;
 
   public
@@ -76,7 +78,6 @@ begin
       GetDriverFunc := 'getSQLDriverINTERBASE';
       KeepConnection := True;
       LoginPrompt := False;
-  //    VendorLib := 'fbclient.dll';
       with Params do
       begin
         Clear;
@@ -128,7 +129,7 @@ end;
 function TDbEngineDBExpress.ExecSQL(const ASQL: string): IDbEngineFactory;
 begin
   Result := Self;
-  FConnectionComponent.ExecuteDirect(ASQL);
+  FRowsAffected := FConnectionComponent.ExecuteDirect(ASQL);
 end;
 
 Function TDbEngineDBExpress.InjectConnection(AConn: TComponent;
@@ -180,6 +181,11 @@ begin
   Result := Self;
   if Assigned(FTransactionComponent) and (not FInjectedConnection) and (not FInjectedTransaction) then
     FConnectionComponent.RollbackFreeAndNil(FTransactionComponent);
+end;
+
+function TDbEngineDBExpress.RowsAffected: Integer;
+begin
+  Result := FRowsAffected;
 end;
 
 function TDbEngineDBExpress.StartTx: IDbEngineFactory;

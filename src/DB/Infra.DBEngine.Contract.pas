@@ -70,6 +70,7 @@ type
     function RollbackTx: IDbEngineFactory;
     function InTransaction: Boolean;
     function IsConnected: Boolean;
+    function RowsAffected: Integer;
     function InjectConnection(AConn: TComponent; ATransactionObject: TObject): IDbEngineFactory;
   end;
 

@@ -15,9 +15,10 @@ uses
   Infra.DBEngine.Contract;
 
 type
-  TDbEngineZeos = class(TDbEngineFactory)
+  TDbEngineZeos = class(TDbEngineAbstract)
   private
     FConnectionComponent: TZConnection;
+    FRowsAffected: Integer;
   public
     function ConnectionComponent: TComponent; override;
     function Connect: IDbEngineFactory; override;
@@ -28,6 +29,7 @@ type
     function CommitTX: IDbEngineFactory; override;
     function RollbackTx: IDbEngineFactory; override;
     function InTransaction: Boolean; override;
+    function RowsAffected: Integer; override;
     function InjectConnection(AConn: TComponent; ATransactionObject: TObject): IDbEngineFactory; override;
 
   public
@@ -107,7 +109,7 @@ end;
 function TDbEngineZeos.ExecSQL(const ASQL: string): IDbEngineFactory;
 begin
   Result := Self;
-  FConnectionComponent.ExecuteDirect(ASQL);
+  FConnectionComponent.ExecuteDirect(ASQL, FRowsAffected);
 end;
 
 function TDbEngineZeos.InjectConnection(AConn: TComponent;
@@ -145,6 +147,11 @@ function TDbEngineZeos.RollbackTx: IDbEngineFactory;
 begin
   Result := Self;
   FConnectionComponent.Rollback;
+end;
+
+function TDbEngineZeos.RowsAffected: Integer;
+begin
+  Result := FRowsAffected;
 end;
 
 function TDbEngineZeos.StartTx: IDbEngineFactory;

@@ -28,10 +28,11 @@ uses
   Infra.DBEngine.Contract;
 
 type
-  TDbEngineFireDAC = class(TDbEngineFactory)
+  TDbEngineFireDAC = class(TDbEngineAbstract)
   private
     FConnectionComponent: TFDConnection;
   	FInjectedConnection: Boolean;
+    FRowsAffected: Integer;
   public
     function Connect: IDbEngineFactory; override;
     function Disconnect: IDbEngineFactory; override;
@@ -43,6 +44,7 @@ type
     function RollbackTx: IDbEngineFactory; override;
     function InTransaction: Boolean; override;
     function IsConnected: Boolean; override;
+    function RowsAffected: Integer; override;
     function InjectConnection(AConn: TComponent; ATransactionObject: TObject): IDbEngineFactory; override;
     function ConnectionComponent: TComponent; override;
 
@@ -172,7 +174,7 @@ end;
 function TDbEngineFireDAC.ExecSQL(const ASQL: string): IDbEngineFactory;
 begin
   Result := Self;
-  FConnectionComponent.ExecSQL(ASQL);
+  FRowsAffected := FConnectionComponent.ExecSQL(ASQL);
 end;
 
 function TDbEngineFireDAC.InjectConnection(AConn: TComponent;
@@ -209,6 +211,11 @@ begin
   Result := Self;
   if (not FInjectedConnection) then
     FConnectionComponent.Rollback;
+end;
+
+function TDbEngineFireDAC.RowsAffected: Integer;
+begin
+  Result := FRowsAffected;
 end;
 
 function TDbEngineFireDAC.StartTx: IDbEngineFactory;

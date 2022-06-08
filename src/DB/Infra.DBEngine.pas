@@ -28,7 +28,7 @@ type
   TDBEngine = class
   public
     class function New(const ADbConfig: IDbEngineConfig; const ASuffixDBName: string = ''): IDBEngine;
-    class function Create(const ADbConfig: IDbEngineConfig; const ASuffixDBName: string = ''): TDbEngineFactory;
+    class function Create(const ADbConfig: IDbEngineConfig; const ASuffixDBName: string = ''): TDbEngineAbstract;
   end;
 
 implementation
@@ -66,7 +66,7 @@ begin
   {$IFEND}
 end;
 
-class function TDBEngine.Create(const ADbConfig: IDbEngineConfig; const ASuffixDBName: string = ''): TDbEngineFactory;
+class function TDBEngine.Create(const ADbConfig: IDbEngineConfig; const ASuffixDBName: string = ''): TDbEngineAbstract;
 begin
   {$IF DEFINED(FPC)}
   {$IF DEFINED(INFRA_ZEOS)}

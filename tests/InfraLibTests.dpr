@@ -11,7 +11,20 @@ uses
   DUnitX.Loggers.Console,
   DUnitX.Loggers.Xml.NUnit,
   DUnitX.TestFramework,
-  InfraLib.Tests.DbEngine in 'src\InfraLib.Tests.DbEngine.pas';
+  InfraLib.Tests.DbEngine in 'src\InfraLib.Tests.DbEngine.pas',
+  Infra.DBConfig.EnvironmentVar in '..\src\DB\Infra.DBConfig.EnvironmentVar.pas',
+  Infra.DBConfig.IniFile in '..\src\DB\Infra.DBConfig.IniFile.pas',
+  Infra.DBConfig.Memory in '..\src\DB\Infra.DBConfig.Memory.pas',
+  Infra.DBConfig in '..\src\DB\Infra.DBConfig.pas',
+  Infra.DBEngine.Abstract in '..\src\DB\Infra.DBEngine.Abstract.pas',
+  Infra.DBEngine.Contract in '..\src\DB\Infra.DBEngine.Contract.pas',
+  Infra.DBEngine.DBExpress in '..\src\DB\Infra.DBEngine.DBExpress.pas',
+  Infra.DBEngine.FireDAC in '..\src\DB\Infra.DBEngine.FireDAC.pas',
+  Infra.DBEngine in '..\src\DB\Infra.DBEngine.pas',
+  Infra.DBEngine.Zeos in '..\src\DB\Infra.DBEngine.Zeos.pas',
+  Infra.Commons in '..\src\Infra.Commons.pas',
+  Infra.Files in '..\src\Infra.Files.pas',
+  Infra.SysInfo in '..\src\Infra.SysInfo.pas';
 
 var
   runner : ITestRunner;
