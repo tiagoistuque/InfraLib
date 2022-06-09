@@ -61,12 +61,12 @@ uses
 
 {$IF DEFINED(INFRA_ORMBR)}
 
-function TDbEngineFactory.Connection: IDBConnection;
+function TDbEngineAbstract.Connection: IDBConnection;
 begin
   Result := FDBConnection;
 end;
 
-function TDbEngineFactory.ExecuteMigrations: IDbEngineFactory;
+function TDbEngineAbstract.ExecuteMigrations: IDbEngineFactory;
 var
   LManager: IDatabaseCompare;
   LDDL: TDDLCommand;
