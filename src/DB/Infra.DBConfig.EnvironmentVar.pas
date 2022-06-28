@@ -36,7 +36,7 @@ end;
 
 function TDBConfigEnvironmentVar.CharSet: string;
 begin
-  Result := GetEnvironmentVariable(FPrefixVariable + SConfigDriver);
+  Result := GetEnvironmentVariable(FPrefixVariable + SConfigCharSet);
   if Trim(Result) = EmptyStr then
     Result := 'utf8';
 end;
