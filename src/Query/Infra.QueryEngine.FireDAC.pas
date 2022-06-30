@@ -9,6 +9,7 @@ uses
   FireDAC.Phys.Intf, FireDAC.DApt.Intf, FireDAC.Comp.DataSet, FireDAC.Comp.Client,
   FireDAC.Stan.Util,
   Infra.QueryEngine.Abstract,
+  Infra.DBEngine.Abstract,
   Infra.DBEngine.Contract,
   Infra.QueryEngine.Contract;
 
@@ -21,7 +22,7 @@ type
     FComandoSQL: TStringList;
     FRowsAffected: Integer;
   public
-    constructor Create(const AConnection: IDbEngineFactory); override;
+    constructor Create(const AConnection: TDbEngineAbstract); override;
     destructor Destroy; override;
 
     function Reset: ISQLQuery; override;
@@ -85,7 +86,7 @@ begin
 end;
 
 constructor TQueryEngineFireDAC.Create(
-  const AConnection: IDbEngineFactory);
+  const AConnection: TDbEngineAbstract);
 begin
   FDbEngine := AConnection;
   FQuery := TFDQuery.Create(nil);

@@ -34,18 +34,18 @@ type
   	FInjectedConnection: Boolean;
     FRowsAffected: Integer;
   public
-    function Connect: IDbEngineFactory; override;
-    function Disconnect: IDbEngineFactory; override;
-    function ExecSQL(const ASQL: string): IDbEngineFactory; override;
-    function ExceSQL(const ASQL: string; var AResultDataSet: TDataSet): IDbEngineFactory; override;
-    function OpenSQL(const ASQL: string; var AResultDataSet: TDataSet): IDbEngineFactory; override;
-    function StartTx: IDbEngineFactory; override;
-    function CommitTX: IDbEngineFactory; override;
-    function RollbackTx: IDbEngineFactory; override;
+    function Connect: TDbEngineAbstract; override;
+    function Disconnect: TDbEngineAbstract; override;
+    function ExecSQL(const ASQL: string): TDbEngineAbstract; override;
+    function ExceSQL(const ASQL: string; var AResultDataSet: TDataSet): TDbEngineAbstract; override;
+    function OpenSQL(const ASQL: string; var AResultDataSet: TDataSet): TDbEngineAbstract; override;
+    function StartTx: TDbEngineAbstract; override;
+    function CommitTX: TDbEngineAbstract; override;
+    function RollbackTx: TDbEngineAbstract; override;
     function InTransaction: Boolean; override;
     function IsConnected: Boolean; override;
     function RowsAffected: Integer; override;
-    function InjectConnection(AConn: TComponent; ATransactionObject: TObject): IDbEngineFactory; override;
+    function InjectConnection(AConn: TComponent; ATransactionObject: TObject): TDbEngineAbstract; override;
     function ConnectionComponent: TComponent; override;
 
   public
@@ -59,13 +59,13 @@ implementation
 {$IF DEFINED(INFRA_ORMBR)} uses dbebr.factory.FireDAC; {$IFEND}
 
 
-function TDbEngineFireDAC.CommitTX: IDbEngineFactory;
+function TDbEngineFireDAC.CommitTX: TDbEngineAbstract;
 begin
   Result := Self;
   TFDConnection(FConnectionComponent).Commit;
 end;
 
-function TDbEngineFireDAC.Connect: IDbEngineFactory;
+function TDbEngineFireDAC.Connect: TDbEngineAbstract;
 begin
   inherited;
   Result := Self;
@@ -156,14 +156,14 @@ begin
   inherited;
 end;
 
-function TDbEngineFireDAC.Disconnect: IDbEngineFactory;
+function TDbEngineFireDAC.Disconnect: TDbEngineAbstract;
 begin
   Result := Self;
   FConnectionComponent.Connected := False;
 end;
 
 function TDbEngineFireDAC.ExceSQL(const ASQL: string;
-  var AResultDataSet: TDataSet): IDbEngineFactory;
+  var AResultDataSet: TDataSet): TDbEngineAbstract;
 begin
   Result := Self;
   if Assigned(AResultDataSet) then
@@ -171,14 +171,14 @@ begin
   FConnectionComponent.ExecSQL(ASQL, AResultDataSet);
 end;
 
-function TDbEngineFireDAC.ExecSQL(const ASQL: string): IDbEngineFactory;
+function TDbEngineFireDAC.ExecSQL(const ASQL: string): TDbEngineAbstract;
 begin
   Result := Self;
   FRowsAffected := FConnectionComponent.ExecSQL(ASQL);
 end;
 
 function TDbEngineFireDAC.InjectConnection(AConn: TComponent;
-  ATransactionObject: TObject): IDbEngineFactory;
+  ATransactionObject: TObject): TDbEngineAbstract;
 begin
   Result := Self;
   if not(AConn is TFDConnection) then
@@ -198,7 +198,7 @@ begin
 end;
 
 function TDbEngineFireDAC.OpenSQL(const ASQL: string;
-  var AResultDataSet: TDataSet): IDbEngineFactory;
+  var AResultDataSet: TDataSet): TDbEngineAbstract;
 begin
   Result := Self;
   if Assigned(AResultDataSet) then
@@ -206,7 +206,7 @@ begin
   FConnectionComponent.ExecSQL(ASQL, AResultDataSet);
 end;
 
-function TDbEngineFireDAC.RollbackTx: IDbEngineFactory;
+function TDbEngineFireDAC.RollbackTx: TDbEngineAbstract;
 begin
   Result := Self;
   if (not FInjectedConnection) then
@@ -218,7 +218,7 @@ begin
   Result := FRowsAffected;
 end;
 
-function TDbEngineFireDAC.StartTx: IDbEngineFactory;
+function TDbEngineFireDAC.StartTx: TDbEngineAbstract;
 begin
   Result := Self;
   if not FConnectionComponent.Connected then

@@ -23,7 +23,7 @@ uses
   Infra.DBEngine.Contract;
 
 type
-  TDbEngineAbstract = class abstract(TInterfacedObject, IDbEngineFactory)
+  TDbEngineAbstract = class abstract
   protected
     FDBName: string;
     FAutoExcuteMigrations: Boolean;
@@ -33,21 +33,21 @@ type
   public
     {$IF DEFINED(INFRA_ORMBR)}
     function Connection: IDBConnection;
-    function ExecuteMigrations: IDbEngineFactory;
+    function ExecuteMigrations: TDbEngineAbstract;
     {$IFEND}
     function ConnectionComponent: TComponent; virtual; abstract;
-    function Connect: IDbEngineFactory; virtual;
-    function Disconnect: IDbEngineFactory; virtual;
-    function ExecSQL(const ASQL: string): IDbEngineFactory; virtual; abstract;
-    function ExceSQL(const ASQL: string; var AResultDataSet: TDataSet ): IDbEngineFactory; virtual; abstract;
-    function OpenSQL(const ASQL: string; var AResultDataSet: TDataSet ): IDbEngineFactory; virtual; abstract;
-    function StartTx: IDbEngineFactory; virtual; abstract;
-    function CommitTX: IDbEngineFactory; virtual; abstract;
-    function RollbackTx: IDbEngineFactory; virtual; abstract;
+    function Connect: TDbEngineAbstract; virtual;
+    function Disconnect: TDbEngineAbstract; virtual;
+    function ExecSQL(const ASQL: string): TDbEngineAbstract; virtual; abstract;
+    function ExceSQL(const ASQL: string; var AResultDataSet: TDataSet ): TDbEngineAbstract; virtual; abstract;
+    function OpenSQL(const ASQL: string; var AResultDataSet: TDataSet ): TDbEngineAbstract; virtual; abstract;
+    function StartTx: TDbEngineAbstract; virtual; abstract;
+    function CommitTX: TDbEngineAbstract; virtual; abstract;
+    function RollbackTx: TDbEngineAbstract; virtual; abstract;
     function InTransaction: Boolean; virtual; abstract;
     function IsConnected: Boolean; virtual; abstract;
     function RowsAffected: Integer; virtual; abstract;
-    function InjectConnection(AConn: TComponent; ATransactionObject: TObject): IDbEngineFactory; virtual; abstract;
+    function InjectConnection(AConn: TComponent; ATransactionObject: TObject): TDbEngineAbstract; virtual; abstract;
   public
     constructor Create(const ADbConfig: IDbEngineConfig; const ASuffixDBName: string = ''); virtual;
     destructor Destroy; override;
@@ -66,7 +66,7 @@ begin
   Result := FDBConnection;
 end;
 
-function TDbEngineAbstract.ExecuteMigrations: IDbEngineFactory;
+function TDbEngineAbstract.ExecuteMigrations: TDbEngineAbstract;
 var
   LManager: IDatabaseCompare;
   LDDL: TDDLCommand;
@@ -99,7 +99,7 @@ end;
 {$IFEND}
 
 
-function TDbEngineAbstract.Connect: IDbEngineFactory;
+function TDbEngineAbstract.Connect: TDbEngineAbstract;
 begin
   {$IF DEFINED(INFRA_ORMBR)}
   if Assigned(FDBConnection) then
@@ -132,7 +132,7 @@ begin
   inherited;
 end;
 
-function TDbEngineAbstract.Disconnect: IDbEngineFactory;
+function TDbEngineAbstract.Disconnect: TDbEngineAbstract;
 begin
   {$IF DEFINED(INFRA_ORMBR)}
   if Assigned(FDBConnection) then

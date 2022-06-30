@@ -4,6 +4,7 @@ interface
 
 uses
   Infra.DBEngine.Contract,
+  Infra.DBEngine.Abstract,
   Infra.QueryEngine.Contract,
   Infra.QueryEngine.Abstract;
 
@@ -12,8 +13,8 @@ type
 
   TQueryEngine = class
   public
-    class function New(const AConnection: IDbEngineFactory): IQueryEngine;
-    class function Create(const AConnection: IDbEngineFactory): TQueryEngineFactory;
+    class function New(const AConnection: TDbEngineAbstract): IQueryEngine;
+    class function Create(const AConnection: TDbEngineAbstract): TQueryEngineFactory;
   end;
 
 implementation
@@ -32,7 +33,7 @@ uses
 {$IFEND}
 
 
-class function TQueryEngine.New(const AConnection: IDbEngineFactory): IQueryEngine;
+class function TQueryEngine.New(const AConnection: TDbEngineAbstract): IQueryEngine;
 begin
   {$IF DEFINED(FPC)}
   {$IF DEFINED(INFRA_ZEOS)}
@@ -51,7 +52,7 @@ begin
   {$IFEND}
 end;
 
-class function TQueryEngine.Create(const AConnection: IDbEngineFactory): TQueryEngineFactory;
+class function TQueryEngine.Create(const AConnection: TDbEngineAbstract): TQueryEngineFactory;
 begin
   {$IF DEFINED(FPC)}
   {$IF DEFINED(INFRA_ZEOS)}

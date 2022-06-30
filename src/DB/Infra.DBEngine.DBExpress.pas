@@ -24,17 +24,17 @@ type
     FRowsAffected: Integer;
   public
     function ConnectionComponent: TComponent; override;
-    function Connect: IDbEngineFactory; override;
-    function ExecSQL(const ASQL: string): IDbEngineFactory; override;
-    function ExceSQL(const ASQL: string; var AResultDataSet: TDataSet ): IDbEngineFactory; override;
-    function OpenSQL(const ASQL: string; var AResultDataSet: TDataSet ): IDbEngineFactory; override;
-    function StartTx: IDbEngineFactory; override;
-    function CommitTX: IDbEngineFactory; override;
-    function RollbackTx: IDbEngineFactory; override;
+    function Connect: TDbEngineAbstract; override;
+    function ExecSQL(const ASQL: string): TDbEngineAbstract; override;
+    function ExceSQL(const ASQL: string; var AResultDataSet: TDataSet ): TDbEngineAbstract; override;
+    function OpenSQL(const ASQL: string; var AResultDataSet: TDataSet ): TDbEngineAbstract; override;
+    function StartTx: TDbEngineAbstract; override;
+    function CommitTX: TDbEngineAbstract; override;
+    function RollbackTx: TDbEngineAbstract; override;
     function InTransaction: Boolean; override;
     function IsConnected: Boolean; override;
     function RowsAffected: Integer; override;
-    function InjectConnection(AConn: TComponent; ATransactionObject: TObject): IDbEngineFactory; override;
+    function InjectConnection(AConn: TComponent; ATransactionObject: TObject): TDbEngineAbstract; override;
 
   public
     constructor Create(const ADbConfig: IDbEngineConfig; const ASuffixDBName: string = ''); override;
@@ -46,14 +46,14 @@ implementation
 
 {$IF DEFINED(INFRA_ORMBR)} uses dbebr.factory.DBExpress; {$IFEND}
 
-function TDbEngineDBExpress.CommitTX: IDbEngineFactory;
+function TDbEngineDBExpress.CommitTX: TDbEngineAbstract;
 begin
   Result := Self;
   if Assigned(FTransactionComponent) and (not FInjectedConnection) and (not FInjectedTransaction) then
     FConnectionComponent.CommitFreeAndNil(FTransactionComponent);
 end;
 
-function TDbEngineDBExpress.Connect: IDbEngineFactory;
+function TDbEngineDBExpress.Connect: TDbEngineAbstract;
 begin
   Result := Self;
   FConnectionComponent.Connected := True;
@@ -111,7 +111,7 @@ begin
 end;
 
 function TDbEngineDBExpress.ExceSQL(const ASQL: string;
-  var AResultDataSet: TDataSet): IDbEngineFactory;
+  var AResultDataSet: TDataSet): TDbEngineAbstract;
 var
   LQuery: TSimpleDataSet;
 begin
@@ -126,14 +126,14 @@ begin
   end;
 end;
 
-function TDbEngineDBExpress.ExecSQL(const ASQL: string): IDbEngineFactory;
+function TDbEngineDBExpress.ExecSQL(const ASQL: string): TDbEngineAbstract;
 begin
   Result := Self;
   FRowsAffected := FConnectionComponent.ExecuteDirect(ASQL);
 end;
 
 Function TDbEngineDBExpress.InjectConnection(AConn: TComponent;
-  ATransactionObject: TObject): IDbEngineFactory;
+  ATransactionObject: TObject): TDbEngineAbstract;
 begin
   Result := Self;
   if Assigned(FConnectionComponent) then
@@ -160,7 +160,7 @@ begin
 end;
 
 function TDbEngineDBExpress.OpenSQL(const ASQL: string;
-  var AResultDataSet: TDataSet): IDbEngineFactory;
+  var AResultDataSet: TDataSet): TDbEngineAbstract;
 var
   LQuery: TSimpleDataSet;
 begin
@@ -176,7 +176,7 @@ begin
   end;
 end;
 
-function TDbEngineDBExpress.RollbackTx: IDbEngineFactory;
+function TDbEngineDBExpress.RollbackTx: TDbEngineAbstract;
 begin
   Result := Self;
   if Assigned(FTransactionComponent) and (not FInjectedConnection) and (not FInjectedTransaction) then
@@ -188,7 +188,7 @@ begin
   Result := FRowsAffected;
 end;
 
-function TDbEngineDBExpress.StartTx: IDbEngineFactory;
+function TDbEngineDBExpress.StartTx: TDbEngineAbstract;
 begin
   Result := Self;
   if (not FInjectedConnection) and (not FInjectedTransaction) then

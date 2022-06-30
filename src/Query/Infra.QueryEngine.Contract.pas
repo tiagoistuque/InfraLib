@@ -4,7 +4,8 @@ interface
 
 uses
   {$IF DEFINED(INFRA_FIREDAC)}FireDAC.Stan.Param, {$IFEND}
-  DB, Infra.DBEngine.Contract;
+  DB,
+  Infra.DBEngine.Abstract;
 
 type
   TSQLParams = {$IF DEFINED(INFRA_FIREDAC)}FireDAC.Stan.Param.TFDParams {$ELSE}TParams{$IFEND};
@@ -35,7 +36,7 @@ type
     function SetAutoIncField(const AFieldName: string): ISQLQuery;
     function SetAutoIncGeneratorName(const AGeneratorName: string): ISQLQuery;
     {$IFEND}
-    function DbEngine: IDbEngineFactory;
+    function DbEngine: TDbEngineAbstract;
   end;
 
 implementation

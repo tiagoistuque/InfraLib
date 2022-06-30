@@ -7,6 +7,7 @@ uses
   Classes, SysUtils,
   SqlExpr, DBclient, Provider,
   Infra.QueryEngine.Abstract,
+  Infra.DBEngine.Abstract,
   Infra.DBEngine.Contract,
   Infra.QueryEngine.Contract;
 
@@ -21,7 +22,7 @@ type
     FComandoSQL: TStringList;
     FRowsAffected: Integer;
   public
-    constructor Create(const AConnection: IDbEngineFactory); override;
+    constructor Create(const AConnection: TDbEngineAbstract); override;
     destructor Destroy; override;
 
     function Reset: ISQLQuery; override;
@@ -89,7 +90,7 @@ begin
 end;
 
 constructor TQueryEngineDBExpress.Create(
-  const AConnection: IDbEngineFactory);
+  const AConnection: TDbEngineAbstract);
 begin
   FDbEngine := AConnection;
   FQuery := TSQLQuery.Create(DM);

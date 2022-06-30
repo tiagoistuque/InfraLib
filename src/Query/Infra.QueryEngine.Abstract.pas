@@ -5,15 +5,16 @@ interface
 uses
   DB, {$IF DEFINED(INFRA_FIREDAC)}FireDAC.Stan.Param, {$IFEND}
   Infra.DBEngine.Contract,
+  Infra.DBEngine.Abstract,
   Infra.QueryEngine.Contract;
 
 type
 
   TQueryEngineFactory = class abstract(TInterfacedObject, ISQLQuery)
   protected
-    FDbEngine: IDbEngineFactory;
+    FDbEngine: TDbEngineAbstract;
   public
-    constructor Create(const AConnection: IDbEngineFactory); virtual;
+    constructor Create(const AConnection: TDbEngineAbstract); virtual;
     destructor Destroy; override;
 
     function Reset: ISQLQuery; virtual; abstract;
@@ -36,7 +37,7 @@ type
     function RowsAffected: Integer; virtual; abstract;
     function RetornaAutoIncremento(const ASequenceName: string): Integer; overload; virtual; abstract;
     function RetornaAutoIncremento(const ASequenceName, ATableDest, AFieldDest: string): Integer; overload; virtual; abstract;
-    function DbEngine: IDbEngineFactory;
+    function DbEngine: TDbEngineAbstract;
     function SetAutoIncField(const AFieldName: string): ISQLQuery; virtual; abstract;
     function SetAutoIncGeneratorName(const AGeneratorName: string): ISQLQuery; virtual; abstract;
   end;
@@ -46,12 +47,12 @@ implementation
 { TQueryEngineFActory }
 
 constructor TQueryEngineFActory.Create(
-  const AConnection: IDbEngineFactory);
+  const AConnection: TDbEngineAbstract);
 begin
   FDbEngine := AConnection;
 end;
 
-function TQueryEngineFactory.DbEngine: IDbEngineFactory;
+function TQueryEngineFactory.DbEngine: TDbEngineAbstract;
 begin
   Result := FDbEngine;
 end;
