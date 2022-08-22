@@ -13,6 +13,7 @@ uses
 type
   IDBEngine = Infra.DBEngine.Contract.IDbEngineFactory;
   IDbEngineConfig = Infra.DBEngine.Contract.IDbEngineConfig;
+  TDbengineAbstract = Infra.DBEngine.Abstract.TDbEngineAbstract;
 
   TDbDriver = Infra.DBEngine.Contract.TDbDriver;
 
