@@ -23,10 +23,11 @@ uses
   Infra.DBEngine.Contract;
 
 type
-  TDbEngineAbstract = class abstract
+  TDbEngineAbstract = class abstract(TInterfacedObject, IDbEngineFactory)
   protected
     FDBName: string;
     FAutoExcuteMigrations: Boolean;
+    FDbDriver: TDBDriver;
     {$IF DEFINED(INFRA_ORMBR)}
     FDBConnection: IDBConnection;
     {$IFEND}
@@ -36,18 +37,20 @@ type
     function ExecuteMigrations: TDbEngineAbstract;
     {$IFEND}
     function ConnectionComponent: TComponent; virtual; abstract;
-    function Connect: TDbEngineAbstract; virtual;
-    function Disconnect: TDbEngineAbstract; virtual;
-    function ExecSQL(const ASQL: string): TDbEngineAbstract; virtual; abstract;
-    function ExceSQL(const ASQL: string; var AResultDataSet: TDataSet ): TDbEngineAbstract; virtual; abstract;
-    function OpenSQL(const ASQL: string; var AResultDataSet: TDataSet ): TDbEngineAbstract; virtual; abstract;
-    function StartTx: TDbEngineAbstract; virtual; abstract;
-    function CommitTX: TDbEngineAbstract; virtual; abstract;
-    function RollbackTx: TDbEngineAbstract; virtual; abstract;
+    procedure Connect; virtual;
+    procedure Disconnect; virtual;
+    function ExecSQL(const ASQL: string): Integer; virtual; abstract;
+    function ExceSQL(const ASQL: string; var AResultDataSet: TDataSet ): Integer; virtual; abstract;
+    function OpenSQL(const ASQL: string; var AResultDataSet: TDataSet ): Integer; overload; virtual; abstract;
+    function OpenSQL(const ASQL: string; var AResultDataSet: TDataSet; const APage: Integer; const ARowsPerPage: Integer): Integer; overload; virtual; abstract;
+    procedure StartTx; virtual; abstract;
+    procedure CommitTX; virtual; abstract;
+    procedure RollbackTx; virtual; abstract;
     function InTransaction: Boolean; virtual; abstract;
     function IsConnected: Boolean; virtual; abstract;
     function RowsAffected: Integer; virtual; abstract;
-    function InjectConnection(AConn: TComponent; ATransactionObject: TObject): TDbEngineAbstract; virtual; abstract;
+    procedure InjectConnection(AConn: TComponent; ATransactionObject: TObject); virtual; abstract;
+    function DbDriver: TDBDriver; virtual;
   public
     constructor Create(const ADbConfig: IDbEngineConfig; const ASuffixDBName: string = ''); virtual;
     destructor Destroy; override;
@@ -99,7 +102,7 @@ end;
 {$IFEND}
 
 
-function TDbEngineAbstract.Connect: TDbEngineAbstract;
+procedure TDbEngineAbstract.Connect;
 begin
   {$IF DEFINED(INFRA_ORMBR)}
   if Assigned(FDBConnection) then
@@ -115,6 +118,7 @@ begin
   FAutoExcuteMigrations := False;
   if Assigned(ADbConfig) then
   begin
+    FDbDriver := ADbConfig.Driver;
     FAutoExcuteMigrations := ADbConfig.GetExecuteMigrations;
     FDBName := ADbConfig.Database;
     if Trim(ASuffixDBName) <> EmptyStr then
@@ -126,13 +130,18 @@ begin
   end;
 end;
 
+function TDbEngineAbstract.DbDriver: TDBDriver;
+begin
+  Result := FDbDriver;
+end;
+
 destructor TDbEngineAbstract.Destroy;
 begin
 
   inherited;
 end;
 
-function TDbEngineAbstract.Disconnect: TDbEngineAbstract;
+procedure TDbEngineAbstract.Disconnect;
 begin
   {$IF DEFINED(INFRA_ORMBR)}
   if Assigned(FDBConnection) then

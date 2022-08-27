@@ -54,24 +54,25 @@ type
 
   IDbEngineFactory = interface
     ['{53515CD9-9EA4-43F3-B275-D2C1FDAC30C3}']
-
     {$IF DEFINED(INFRA_ORMBR)}
     function Connection: IDBConnection;
-    function ExecuteMigrations: IDbEngineFactory;
+    procedure ExecuteMigrations;
     {$IFEND}
     function ConnectionComponent: TComponent;
-    function Connect: IDbEngineFactory;
-    function Disconnect: IDbEngineFactory;
-    function ExecSQL(const ASQL: string): IDbEngineFactory; overload;
-    function ExceSQL(const ASQL: string; var AResultDataSet: TDataSet): IDbEngineFactory; overload;
-    function OpenSQL(const ASQL: string; var AResultDataSet: TDataSet): IDbEngineFactory;
-    function StartTx: IDbEngineFactory;
-    function CommitTX: IDbEngineFactory;
-    function RollbackTx: IDbEngineFactory;
+    procedure Connect;
+    procedure Disconnect;
+    function ExecSQL(const ASQL: string): Integer; overload;
+    function ExceSQL(const ASQL: string; var AResultDataSet: TDataSet): Integer; overload;
+    function OpenSQL(const ASQL: string; var AResultDataSet: TDataSet): Integer; overload;
+    function OpenSQL(const ASQL: string; var AResultDataSet: TDataSet; const APage: Integer; const ARowsPerPage: Integer): Integer; overload;
+    procedure StartTx;
+    procedure CommitTX;
+    procedure RollbackTx;
     function InTransaction: Boolean;
     function IsConnected: Boolean;
     function RowsAffected: Integer;
-    function InjectConnection(AConn: TComponent; ATransactionObject: TObject): IDbEngineFactory;
+    procedure InjectConnection(AConn: TComponent; ATransactionObject: TObject);
+    function DbDriver: TDBDriver;
   end;
 
 const

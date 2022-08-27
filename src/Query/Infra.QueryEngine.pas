@@ -14,7 +14,7 @@ type
   TQueryEngine = class
   public
     class function New(const AConnection: TDbEngineAbstract): IQueryEngine;
-    class function Create(const AConnection: TDbEngineAbstract): TQueryEngineFactory;
+    class function Create(const AConnection: TDbEngineAbstract): TQueryEngineAbstract;
   end;
 
 implementation
@@ -52,7 +52,7 @@ begin
   {$IFEND}
 end;
 
-class function TQueryEngine.Create(const AConnection: TDbEngineAbstract): TQueryEngineFactory;
+class function TQueryEngine.Create(const AConnection: TDbEngineAbstract): TQueryEngineAbstract;
 begin
   {$IF DEFINED(FPC)}
   {$IF DEFINED(INFRA_ZEOS)}

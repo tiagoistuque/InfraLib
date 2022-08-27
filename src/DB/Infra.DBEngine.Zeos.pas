@@ -18,19 +18,20 @@ type
   TDbEngineZeos = class(TDbEngineAbstract)
   private
     FConnectionComponent: TZConnection;
+  	FInjectedConnection: Boolean;
     FRowsAffected: Integer;
   public
     function ConnectionComponent: TComponent; override;
-    function Connect: IDbEngineFactory; override;
-    function ExecSQL(const ASQL: string): IDbEngineFactory; override;
-    function ExceSQL(const ASQL: string; var AResultDataSet: TDataSet ): IDbEngineFactory; override;
-    function OpenSQL(const ASQL: string; var AResultDataSet: TDataSet ): IDbEngineFactory; override;
-    function StartTx: IDbEngineFactory; override;
-    function CommitTX: IDbEngineFactory; override;
-    function RollbackTx: IDbEngineFactory; override;
+    procedure Connect; override;
+    function ExecSQL(const ASQL: string): Integer; override;
+    function ExceSQL(const ASQL: string; var AResultDataSet: TDataSet ): Integer; override;
+    function OpenSQL(const ASQL: string; var AResultDataSet: TDataSet ): Integer; override;
+    procedure StartTx; override;
+    procedure CommitTX; override;
+    procedure RollbackTx; override;
     function InTransaction: Boolean; override;
     function RowsAffected: Integer; override;
-    function InjectConnection(AConn: TComponent; ATransactionObject: TObject): IDbEngineFactory; override;
+    procedure InjectConnection(AConn: TComponent; ATransactionObject: TObject); override;
 
   public
     constructor Create(const ADbConfig: IDbEngineConfig; const ASuffixDBName: string = ''); override;
@@ -42,15 +43,13 @@ implementation
 
 {$IF DEFINED(INFRA_ORMBR)} uses dbebr.factory.Zeos; {$IFEND}
 
-function TDbEngineZeos.CommitTX: IDbEngineFactory;
+procedure TDbEngineZeos.CommitTX;
 begin
-  Result := Self;
   FConnectionComponent.Commit;
 end;
 
-function TDbEngineZeos.Connect: IDbEngineFactory;
+procedure TDbEngineZeos.Connect;
 begin
-  Result := Self;
   FConnectionComponent.Connect;
   inherited;
 end;
@@ -84,16 +83,19 @@ end;
 
 destructor TDbEngineZeos.Destroy;
 begin
-  FConnectionComponent.Free;
+  if (not FInjectedConnection) then
+  begin
+    FConnectionComponent.Rollback;
+    FConnectionComponent.Free;
+  end;
   inherited;
 end;
 
 function TDbEngineZeos.ExceSQL(const ASQL: string;
-  var AResultDataSet: TDataSet): IDbEngineFactory;
+  var AResultDataSet: TDataSet): Integer;
 var
   LZQuery: TZQuery;
 begin
-  Result := Self;
   if Assigned(AResultDataSet) then
     FreeAndNil(AResultDataSet);
   LZQuery := TZQuery.Create(nil);
@@ -101,22 +103,26 @@ begin
     LZQuery.Connection := FConnectionComponent;
     LZQuery.SQL.Text := ASQL;
     LZQuery.Open;
+    Result := LZQuery.RecordCount;
   finally
     AResultDataSet := LZQuery;
   end;
 end;
 
-function TDbEngineZeos.ExecSQL(const ASQL: string): IDbEngineFactory;
+function TDbEngineZeos.ExecSQL(const ASQL: string): Integer;
 begin
-  Result := Self;
   FConnectionComponent.ExecuteDirect(ASQL, FRowsAffected);
+  Result := FRowsAffected;
 end;
 
-function TDbEngineZeos.InjectConnection(AConn: TComponent;
-  ATransactionObject: TObject): IDbEngineFactory;
+procedure TDbEngineZeos.InjectConnection(AConn: TComponent;
+  ATransactionObject: TObject);
 begin
   if not (AConn is TZConnection) then
     raise Exception.Create('Invalid connection component instance for ZeosDBO. '+Self.UnitName);
+  if Assigned(FConnectionComponent) then
+    FreeAndNil(FConnectionComponent);
+  FInjectedConnection := True;
   FConnectionComponent := TZConnection(AConn);
 end;
 
@@ -126,11 +132,10 @@ begin
 end;
 
 function TDbEngineZeos.OpenSQL(const ASQL: string;
-  var AResultDataSet: TDataSet): IDbEngineFactory;
+  var AResultDataSet: TDataSet): Integer;
 var
   LZQuery: TZQuery;
 begin
-  Result := Self;
   if Assigned(AResultDataSet) then
     FreeAndNil(AResultDataSet);
   LZQuery := TZQuery.Create(nil);
@@ -138,15 +143,16 @@ begin
     LZQuery.Connection := FConnectionComponent;
     LZQuery.SQL.Text := ASQL;
     LZQuery.Open;
+    Result := LZQuery.RecordCount;
   finally
     AResultDataSet := LZQuery;
   end;
 end;
 
-function TDbEngineZeos.RollbackTx: IDbEngineFactory;
+procedure TDbEngineZeos.RollbackTx;
 begin
-  Result := Self;
-  FConnectionComponent.Rollback;
+  if (not FInjectedConnection) then
+    FConnectionComponent.Rollback;
 end;
 
 function TDbEngineZeos.RowsAffected: Integer;
@@ -154,10 +160,12 @@ begin
   Result := FRowsAffected;
 end;
 
-function TDbEngineZeos.StartTx: IDbEngineFactory;
+procedure TDbEngineZeos.StartTx;
 begin
-  Result := Self;
-  FConnectionComponent.StartTransaction;
+  if not FConnectionComponent.Connected then
+    FConnectionComponent.Connected := True;
+  if (not FInjectedConnection) then
+    FConnectionComponent.StartTransaction;
 end;
 
 end.

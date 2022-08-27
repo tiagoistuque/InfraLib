@@ -34,18 +34,18 @@ type
   	FInjectedConnection: Boolean;
     FRowsAffected: Integer;
   public
-    function Connect: TDbEngineAbstract; override;
-    function Disconnect: TDbEngineAbstract; override;
-    function ExecSQL(const ASQL: string): TDbEngineAbstract; override;
-    function ExceSQL(const ASQL: string; var AResultDataSet: TDataSet): TDbEngineAbstract; override;
-    function OpenSQL(const ASQL: string; var AResultDataSet: TDataSet): TDbEngineAbstract; override;
-    function StartTx: TDbEngineAbstract; override;
-    function CommitTX: TDbEngineAbstract; override;
-    function RollbackTx: TDbEngineAbstract; override;
+    procedure Connect; override;
+    procedure Disconnect; override;
+    function ExecSQL(const ASQL: string): Integer; override;
+    function ExceSQL(const ASQL: string; var AResultDataSet: TDataSet): Integer; override;
+    function OpenSQL(const ASQL: string; var AResultDataSet: TDataSet): Integer; override;
+    procedure StartTx; override;
+    procedure CommitTX; override;
+    procedure RollbackTx; override;
     function InTransaction: Boolean; override;
     function IsConnected: Boolean; override;
     function RowsAffected: Integer; override;
-    function InjectConnection(AConn: TComponent; ATransactionObject: TObject): TDbEngineAbstract; override;
+    procedure InjectConnection(AConn: TComponent; ATransactionObject: TObject); override;
     function ConnectionComponent: TComponent; override;
 
   public
@@ -59,16 +59,14 @@ implementation
 {$IF DEFINED(INFRA_ORMBR)} uses dbebr.factory.FireDAC; {$IFEND}
 
 
-function TDbEngineFireDAC.CommitTX: TDbEngineAbstract;
+procedure TDbEngineFireDAC.CommitTX;
 begin
-  Result := Self;
   TFDConnection(FConnectionComponent).Commit;
 end;
 
-function TDbEngineFireDAC.Connect: TDbEngineAbstract;
+procedure TDbEngineFireDAC.Connect;
 begin
   inherited;
-  Result := Self;
   FConnectionComponent.Connected := True;
 end;
 
@@ -156,34 +154,34 @@ begin
   inherited;
 end;
 
-function TDbEngineFireDAC.Disconnect: TDbEngineAbstract;
+procedure TDbEngineFireDAC.Disconnect;
 begin
-  Result := Self;
   FConnectionComponent.Connected := False;
 end;
 
 function TDbEngineFireDAC.ExceSQL(const ASQL: string;
-  var AResultDataSet: TDataSet): TDbEngineAbstract;
+  var AResultDataSet: TDataSet): Integer;
 begin
-  Result := Self;
   if Assigned(AResultDataSet) then
     FreeAndNil(AResultDataSet);
-  FConnectionComponent.ExecSQL(ASQL, AResultDataSet);
+  FRowsAffected := FConnectionComponent.ExecSQL(ASQL, AResultDataSet);
+  Result := FRowsAffected;
 end;
 
-function TDbEngineFireDAC.ExecSQL(const ASQL: string): TDbEngineAbstract;
+function TDbEngineFireDAC.ExecSQL(const ASQL: string): Integer;
 begin
-  Result := Self;
   FRowsAffected := FConnectionComponent.ExecSQL(ASQL);
+  Result := FRowsAffected;
 end;
 
-function TDbEngineFireDAC.InjectConnection(AConn: TComponent;
-  ATransactionObject: TObject): TDbEngineAbstract;
+procedure TDbEngineFireDAC.InjectConnection(AConn: TComponent;
+  ATransactionObject: TObject);
 begin
-  Result := Self;
   if not(AConn is TFDConnection) then
     raise Exception.Create('Invalid connection component instance for FireDAC. ' + Self.UnitName);
-  FInjectedConnection := True;	
+  if Assigned(FConnectionComponent) then
+    FreeAndNil(FConnectionComponent);
+  FInjectedConnection := True;
   FConnectionComponent := TFDConnection(AConn);
 end;
 
@@ -198,17 +196,16 @@ begin
 end;
 
 function TDbEngineFireDAC.OpenSQL(const ASQL: string;
-  var AResultDataSet: TDataSet): TDbEngineAbstract;
+  var AResultDataSet: TDataSet): Integer;
 begin
-  Result := Self;
   if Assigned(AResultDataSet) then
     FreeAndNil(AResultDataSet);
   FConnectionComponent.ExecSQL(ASQL, AResultDataSet);
+  Result := AResultDataSet.RecordCount;
 end;
 
-function TDbEngineFireDAC.RollbackTx: TDbEngineAbstract;
+procedure TDbEngineFireDAC.RollbackTx;
 begin
-  Result := Self;
   if (not FInjectedConnection) then
     FConnectionComponent.Rollback;
 end;
@@ -218,9 +215,8 @@ begin
   Result := FRowsAffected;
 end;
 
-function TDbEngineFireDAC.StartTx: TDbEngineAbstract;
+procedure TDbEngineFireDAC.StartTx;
 begin
-  Result := Self;
   if not FConnectionComponent.Connected then
     FConnectionComponent.Connected := True;
   if (not FInjectedConnection) then

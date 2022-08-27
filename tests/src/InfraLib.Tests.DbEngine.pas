@@ -14,7 +14,7 @@ type
   TTestDBEngine = class(TObject)
   private
     FConfig: IDbEngineConfig;
-    FEngine: IDbEngine;
+    FEngine: TDbengineAbstract;
     FDataSet: TDataSet;
   public
     [Setup]

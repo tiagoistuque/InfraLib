@@ -1,7 +1,7 @@
 unit Infra.QueryEngine.DBExpress;
 
 interface
-
+{$IF DEFINED(INFRA_DBEXPRESS)}
 uses
   DB,
   Classes, SysUtils,
@@ -13,12 +13,12 @@ uses
 
 type
 
-  TQueryEngineDBExpress = class(TQueryEngineFactory)
+  TQueryEngineDBExpress = class(TQueryEngineAbstract)
   private
     FQuery: TSQLQuery;
     FClientDataSet: TClientDataSet;
     FProvider: TDataSetProvider;
-    FParams: TParams;
+    FParams: TSQLParams;
     FComandoSQL: TStringList;
     FRowsAffected: Integer;
   public
@@ -46,9 +46,9 @@ type
     function RetornaAutoIncremento(const ASequenceName: string): Integer; overload; override;
     function RetornaAutoIncremento(const ASequenceName, ATableDest, AFieldDest: string): Integer; overload; override;
   end;
-
+{$IFEND}
 implementation
-
+{$IF DEFINED(INFRA_DBEXPRESS)}
 var
   DM: TDataModule;
 
@@ -105,7 +105,7 @@ begin
   FProvider.Name := 'DSP' + Format('%s%d',[FormatDateTime('YYYYMMDDHHNNSSZZZ', Now), Random(32768)]);
   FClientDataSet.ProviderName := FProvider.Name;
 
-  FParams := TParams.Create;
+  FParams := TSQLParams.Create;
   FComandoSQL := TStringList.Create;
 end;
 
@@ -190,11 +190,24 @@ begin
 end;
 
 function TQueryEngineDBExpress.Params: TSQLParams;
+var
+  LParams: TParams;
+  I: Integer;
 begin
-  if not Assigned(FParams) then
-    FParams := TParams.Create;
   if (Pos(':', FComandoSQL.Text) > 0) and (FParams.Count = 0) then
-    FParams.ParseSQL(FComandoSQL.Text, True);
+  begin
+    FParams.Clear;
+    LParams := TParams.Create;
+    try
+      LParams.ParseSQL(FComandoSQL.Text, True);
+      for I := 0 to LParams.Count - 1 do
+      begin
+        FParams.AddParameter.Name := LParams.Items[I].Name;
+      end;
+    finally
+      LParams.Free;
+    end;
+  end;
   Result := FParams;
 end;
 
@@ -265,5 +278,5 @@ Randomize;
 finalization
 
 DM.Free;
-
+{$IFEND}
 end.

@@ -2,6 +2,8 @@ unit Infra.QueryEngine.FireDAC;
 
 interface
 
+{$IF DEFINED(INFRA_FIREDAC)}
+
 uses
   DB,
   Classes, SysUtils,
@@ -15,10 +17,10 @@ uses
 
 type
 
-  TQueryEngineFireDAC = class(TQueryEngineFactory)
+  TQueryEngineFireDAC = class(TQueryEngineAbstract)
   private
     FQuery: TFDQuery;
-    FParams: TFDParams;
+    FParams: TSQLParams;
     FComandoSQL: TStringList;
     FRowsAffected: Integer;
   public
@@ -32,7 +34,7 @@ type
     function Exec(const AReturn: Boolean = False): ISQLQuery; override;
     function Close: ISQLQuery; override;
     function IndexFieldNames(const Fields: string): ISQLQuery; override;
-  	function IndexFieldNames: string; override;
+    function IndexFieldNames: string; override;
     function DataSet: TDataSet; override;
     function ProviderFlags(const FieldName: string; ProviderFlags: TProviderFlags): ISQLQuery; override;
     function ApplyUpdates: Boolean; override;
@@ -42,15 +44,18 @@ type
     function FindKey(const KeyValues: array of TVarRec): Boolean; override;
     function Params: TSQLParams; override;
     function SQLCommand: string; override;
+    function TotalPages: Integer;
     function RowsAffected: Integer; override;
     function RetornaAutoIncremento(const ASequenceName: string): Integer; overload; override;
     function RetornaAutoIncremento(const ASequenceName, ATableDest, AFieldDest: string): Integer; overload; override;
     function SetAutoIncField(const AFieldName: string): ISQLQuery; override;
     function SetAutoIncGeneratorName(const AGeneratorName: string): ISQLQuery; override;
   end;
+{$IFEND}
 
 implementation
 
+{$IF DEFINED(INFRA_FIREDAC)}
 { TQueryEngineFireDAC }
 
 function TQueryEngineFireDAC.Add(Str: string): ISQLQuery;
@@ -93,9 +98,9 @@ begin
   FQuery.Connection := TFDConnection(AConnection.ConnectionComponent);
   FQuery.CachedUpdates := True;
   FQuery.FetchOptions.Mode := fmAll;
-  FQuery.FetchOptions.RowsetSize     := -1;
+  FQuery.FetchOptions.RowsetSize := -1;
   FQuery.ResourceOptions.ParamCreate := False;
-  FParams := TFDParams.Create;
+  FParams := TSQLParams.Create;
   FComandoSQL := TStringList.Create;
 end;
 
@@ -166,10 +171,14 @@ begin
   try
     FQuery.Close;
     FQuery.IndexFieldNames := EmptyStr;
+    if FPaginate then
+      FDMLGenerator.GenerateSQLPaginating(FPage, FRowsPerPage, FComandoSQL);
     FQuery.SQL.Assign(FComandoSQL);
     if FParams.Count > 0 then
       FQuery.Params.Assign(FParams);
     FQuery.Open;
+    if FPaginate then
+      FTotalPages := FQuery.FieldByName(FDMLGenerator.GetColumnNameTotalPages).AsInteger;
   except
     on E: Exception do
     begin
@@ -268,9 +277,15 @@ begin
   Result := FComandoSQL.Text;
 end;
 
+function TQueryEngineFireDAC.TotalPages: Integer;
+begin
+  Result := FTotalPages;
+end;
+
 function TQueryEngineFireDAC.UpdatesPending: Boolean;
 begin
   Result := FQuery.Active and (FQuery.UpdatesPending);
 end;
+{$IFEND}
 
 end.

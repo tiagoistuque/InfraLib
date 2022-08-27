@@ -24,7 +24,16 @@ uses
   Infra.DBEngine.Zeos in '..\src\DB\Infra.DBEngine.Zeos.pas',
   Infra.Commons in '..\src\Infra.Commons.pas',
   Infra.Files in '..\src\Infra.Files.pas',
-  Infra.SysInfo in '..\src\Infra.SysInfo.pas';
+  Infra.SysInfo in '..\src\Infra.SysInfo.pas',
+  Infra.QueryEngine.Abstract in '..\src\Query\Infra.QueryEngine.Abstract.pas',
+  Infra.QueryEngine.Contract in '..\src\Query\Infra.QueryEngine.Contract.pas',
+  Infra.QueryEngine.DBExpress in '..\src\Query\Infra.QueryEngine.DBExpress.pas',
+  Infra.QueryEngine.FireDAC in '..\src\Query\Infra.QueryEngine.FireDAC.pas',
+  Infra.QueryEngine in '..\src\Query\Infra.QueryEngine.pas',
+  Infra.DML.Contracts in '..\src\DB\Infra.DML.Contracts.pas',
+  Infra.DML.GeneratorAbstract in '..\src\DB\Infra.DML.GeneratorAbstract.pas',
+  Infra.DBDriver.Register in '..\src\DB\Infra.DBDriver.Register.pas',
+  Infra.DML.Generator.Firebird in '..\src\DB\Infra.DML.Generator.Firebird.pas';
 
 var
   runner : ITestRunner;

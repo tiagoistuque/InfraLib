@@ -24,17 +24,17 @@ type
     FRowsAffected: Integer;
   public
     function ConnectionComponent: TComponent; override;
-    function Connect: TDbEngineAbstract; override;
-    function ExecSQL(const ASQL: string): TDbEngineAbstract; override;
-    function ExceSQL(const ASQL: string; var AResultDataSet: TDataSet ): TDbEngineAbstract; override;
-    function OpenSQL(const ASQL: string; var AResultDataSet: TDataSet ): TDbEngineAbstract; override;
-    function StartTx: TDbEngineAbstract; override;
-    function CommitTX: TDbEngineAbstract; override;
-    function RollbackTx: TDbEngineAbstract; override;
+    procedure Connect; override;
+    function ExecSQL(const ASQL: string): Integer; override;
+    function ExceSQL(const ASQL: string; var AResultDataSet: TDataSet ): Integer; override;
+    function OpenSQL(const ASQL: string; var AResultDataSet: TDataSet ): Integer; override;
+    procedure StartTx; override;
+    procedure CommitTX; override;
+    procedure RollbackTx; override;
     function InTransaction: Boolean; override;
     function IsConnected: Boolean; override;
     function RowsAffected: Integer; override;
-    function InjectConnection(AConn: TComponent; ATransactionObject: TObject): TDbEngineAbstract; override;
+    procedure InjectConnection(AConn: TComponent; ATransactionObject: TObject); override;
 
   public
     constructor Create(const ADbConfig: IDbEngineConfig; const ASuffixDBName: string = ''); override;
@@ -46,16 +46,14 @@ implementation
 
 {$IF DEFINED(INFRA_ORMBR)} uses dbebr.factory.DBExpress; {$IFEND}
 
-function TDbEngineDBExpress.CommitTX: TDbEngineAbstract;
+procedure TDbEngineDBExpress.CommitTX;
 begin
-  Result := Self;
   if Assigned(FTransactionComponent) and (not FInjectedConnection) and (not FInjectedTransaction) then
     FConnectionComponent.CommitFreeAndNil(FTransactionComponent);
 end;
 
-function TDbEngineDBExpress.Connect: TDbEngineAbstract;
+procedure TDbEngineDBExpress.Connect;
 begin
-  Result := Self;
   FConnectionComponent.Connected := True;
   inherited;
 end;
@@ -111,35 +109,34 @@ begin
 end;
 
 function TDbEngineDBExpress.ExceSQL(const ASQL: string;
-  var AResultDataSet: TDataSet): TDbEngineAbstract;
+  var AResultDataSet: TDataSet): Integer;
 var
   LQuery: TSimpleDataSet;
 begin
-  Result := Self;
   LQuery := TSimpleDataSet.Create(nil);
   try
     LQuery.Connection := FConnectionComponent;
     LQuery.DataSet.CommandText := ASQL;
     LQuery.Open;
+    Result := LQuery.RecordCount
   finally
     AResultDataSet := LQuery;
   end;
 end;
 
-function TDbEngineDBExpress.ExecSQL(const ASQL: string): TDbEngineAbstract;
+function TDbEngineDBExpress.ExecSQL(const ASQL: string): Integer;
 begin
-  Result := Self;
   FRowsAffected := FConnectionComponent.ExecuteDirect(ASQL);
+  Result := FRowsAffected;
 end;
 
-Function TDbEngineDBExpress.InjectConnection(AConn: TComponent;
-  ATransactionObject: TObject): TDbEngineAbstract;
+procedure TDbEngineDBExpress.InjectConnection(AConn: TComponent;
+  ATransactionObject: TObject);
 begin
-  Result := Self;
-  if Assigned(FConnectionComponent) then
-    FreeAndNil(FConnectionComponent);
   if not (AConn is TSQLConnection) then
     raise Exception.Create('Invalid connection component instance for DBExpress. '+Self.UnitName);
+  if Assigned(FConnectionComponent) then
+    FreeAndNil(FConnectionComponent);
   FConnectionComponent := TSQLConnection(AConn);
   FInjectedConnection := True;
   if Assigned(ATransactionObject) then
@@ -160,25 +157,24 @@ begin
 end;
 
 function TDbEngineDBExpress.OpenSQL(const ASQL: string;
-  var AResultDataSet: TDataSet): TDbEngineAbstract;
+  var AResultDataSet: TDataSet): Integer;
 var
   LQuery: TSimpleDataSet;
 begin
-  Result := Self;
   LQuery := TSimpleDataSet.Create(nil);
   try
     LQuery.Connection := FConnectionComponent;
     LQuery.DataSet.CommandText := ASQL;
     LQuery.DataSet.CommandType := ctQuery;
     LQuery.Open;
+    Result := LQuery.RecordCount;
   finally
     AResultDataSet := LQuery;
   end;
 end;
 
-function TDbEngineDBExpress.RollbackTx: TDbEngineAbstract;
+procedure TDbEngineDBExpress.RollbackTx;
 begin
-  Result := Self;
   if Assigned(FTransactionComponent) and (not FInjectedConnection) and (not FInjectedTransaction) then
     FConnectionComponent.RollbackFreeAndNil(FTransactionComponent);
 end;
@@ -188,9 +184,8 @@ begin
   Result := FRowsAffected;
 end;
 
-function TDbEngineDBExpress.StartTx: TDbEngineAbstract;
+procedure TDbEngineDBExpress.StartTx;
 begin
-  Result := Self;
   if (not FInjectedConnection) and (not FInjectedTransaction) then
     FTransactionComponent :=  FConnectionComponent.BeginTransaction(TDBXIsolations.ReadCommitted);
 end;
