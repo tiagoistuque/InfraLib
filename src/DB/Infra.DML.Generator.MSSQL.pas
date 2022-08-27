@@ -54,12 +54,16 @@ procedure TDMLGeneratorMLSQL.GenerateSQLPaginating(const APage, ARowsPerPage: In
 var
   LSQLCommand: string;
   LSQLPaginating: string;
+  LOrderByFields: string;
 begin
   inherited;
   LSQLCommand := ASQL.Text;
+  LOrderByFields := GetOrderByFields(LSQLCommand);
+  ValidateOrderByFields(LOrderByFields);
+  LSQLCommand := RemoveOrderBy(LSQLCommand);
   LSQLPaginating := TemplatePaginating;
   LSQLPaginating := StringReplace(LSQLPaginating, MacroSQLCommand, LSQLCommand, [rfReplaceAll]);
-  LSQLPaginating := StringReplace(LSQLPaginating, MacroOrderByFields, GetOrderByFields(LSQLCommand), [rfReplaceAll]);
+  LSQLPaginating := StringReplace(LSQLPaginating, MacroOrderByFields, LOrderByFields, [rfReplaceAll]);
   LSQLPaginating := StringReplace(LSQLPaginating, MacroPageNum, APage.ToString, [rfReplaceAll]);
   LSQLPaginating := StringReplace(LSQLPaginating, MacroRowsPerPage, ARowsPerPage.ToString, [rfReplaceAll]);
 
@@ -69,7 +73,7 @@ end;
 
 function TDMLGeneratorMLSQL.GetColumnNameTotalPages: string;
 begin
-  Result := ColumnNameTotaPages;
+  Result := ColumnNameTotalPages;
 end;
 
 initialization

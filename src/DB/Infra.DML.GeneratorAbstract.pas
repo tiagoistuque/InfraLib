@@ -11,6 +11,7 @@ type
   protected
     function GetOrderByFields(const ASQL: string): string; virtual;
     procedure ValidateOrderByFields(const AOrderByFields: string); virtual;
+    function RemoveOrderBy(const ASQL: string): string; virtual;
   public
     constructor Create;
     destructor Destroy; override;
@@ -45,10 +46,24 @@ var
   LInitialPos: Integer;
   LOrderByFields: string;
 begin
-  LInitialPos := System.Pos('ORDER BY', ASQL);
-  Assert(LInitialPos > 0, 'An ORDER BY clause must be specified to use paging. Tip: Use a single space between ORDER BY words.');
+  LInitialPos := System.Pos('ORDER BY', AnsiUpperCase(ASQL));
+  Assert(LInitialPos > 0, 'An ORDER BY clause must be specified to use pagination. Tip: Use a single space between ORDER BY words.');
   LOrderByFields := Trim(Copy(ASQL, LInitialPos + 9, Length(ASQL)));
   Result := LOrderByFields;
+end;
+
+function TDMLGeneratorAbstract.RemoveOrderBy(const ASQL: string): string;
+var
+  LInitialPos: Integer;
+  LSQL: string;
+begin
+  Result := ASQL;
+  LInitialPos := System.Pos('ORDER BY', AnsiUpperCase(ASQL));
+  if LInitialPos > 0 then
+  begin
+    LSQL := ASQL;
+    Result := Trim(Copy(ASQL, 1, LInitialPos-1));
+  end;
 end;
 
 procedure TDMLGeneratorAbstract.ValidateOrderByFields(const AOrderByFields: string);

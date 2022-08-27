@@ -93,6 +93,7 @@ end;
 constructor TQueryEngineFireDAC.Create(
   const AConnection: TDbEngineAbstract);
 begin
+  inherited;
   FDbEngine := AConnection;
   FQuery := TFDQuery.Create(nil);
   FQuery.Connection := TFDConnection(AConnection.ConnectionComponent);
