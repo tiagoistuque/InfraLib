@@ -44,7 +44,7 @@ type
     function FindKey(const KeyValues: array of TVarRec): Boolean; override;
     function Params: TSQLParams; override;
     function SQLCommand: string; override;
-    function TotalPages: Integer;
+    function TotalPages: Integer; override;
     function RowsAffected: Integer; override;
     function RetornaAutoIncremento(const ASequenceName: string): Integer; overload; override;
     function RetornaAutoIncremento(const ASequenceName, ATableDest, AFieldDest: string): Integer; overload; override;
@@ -171,7 +171,7 @@ begin
   try
     FQuery.Close;
     FQuery.IndexFieldNames := EmptyStr;
-    if FPaginate then
+    if FPaginate and (FRowsPerPage > 0) and (FPage > 0) then
       FDMLGenerator.GenerateSQLPaginating(FPage, FRowsPerPage, FComandoSQL);
     FQuery.SQL.Assign(FComandoSQL);
     if FParams.Count > 0 then

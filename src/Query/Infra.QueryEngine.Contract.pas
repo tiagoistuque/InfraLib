@@ -32,7 +32,7 @@ type
     function RowsAffected: Integer;
     function RetornaAutoIncremento(const ASequenceName: string): Integer; overload;
     function RetornaAutoIncremento(const ASequenceName, ATableDest, AFieldDest: string): Integer; overload;
-    function Paginate(const APage, ARowsPerPage: Integer; const ASQL: TStrings): ISQLQuery;
+    function Paginate(const APage, ARowsPerPage: Integer): ISQLQuery;
     function TotalPages: Integer;
     {$IF DEFINED(INFRA_FIREDAC)}
     function SetAutoIncField(const AFieldName: string): ISQLQuery;

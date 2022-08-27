@@ -43,7 +43,7 @@ type
     function RowsAffected: Integer; virtual; abstract;
     function RetornaAutoIncremento(const ASequenceName: string): Integer; overload; virtual; abstract;
     function RetornaAutoIncremento(const ASequenceName, ATableDest, AFieldDest: string): Integer; overload; virtual; abstract;
-    function Paginate(const APage, ARowsPerPage: Integer; const ASQL: TStrings): ISQLQuery; virtual;
+    function Paginate(const APage, ARowsPerPage: Integer): ISQLQuery; virtual;
     function TotalPages: Integer; virtual; abstract;
     function DbEngine: TDbEngineAbstract;
     function SetAutoIncField(const AFieldName: string): ISQLQuery; virtual; abstract;
@@ -74,7 +74,7 @@ begin
   inherited;
 end;
 
-function TQueryEngineAbstract.Paginate(const APage, ARowsPerPage: Integer; const ASQL: TStrings): ISQLQuery;
+function TQueryEngineAbstract.Paginate(const APage, ARowsPerPage: Integer): ISQLQuery;
 begin
   Result := Self;
   FPaginate := True;
