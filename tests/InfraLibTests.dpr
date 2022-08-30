@@ -33,7 +33,8 @@ uses
   Infra.DML.Contracts in '..\src\DB\Infra.DML.Contracts.pas',
   Infra.DML.GeneratorAbstract in '..\src\DB\Infra.DML.GeneratorAbstract.pas',
   Infra.DBDriver.Register in '..\src\DB\Infra.DBDriver.Register.pas',
-  Infra.DML.Generator.Firebird in '..\src\DB\Infra.DML.Generator.Firebird.pas';
+  Infra.DML.Generator.Firebird in '..\src\DB\Infra.DML.Generator.Firebird.pas',
+  Infra.DML.Generator.MSSQL in '..\src\DB\Infra.DML.Generator.MSSQL.pas';
 
 var
   runner : ITestRunner;

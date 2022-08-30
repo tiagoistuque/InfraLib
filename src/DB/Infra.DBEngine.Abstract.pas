@@ -8,17 +8,12 @@ uses
   DB,
   {$IF DEFINED(INFRA_ORMBR)}
   dbebr.factory.interfaces,
-
   dbcbr.ddl.commands,
   dbcbr.database.compare,
   dbcbr.metadata.DB.factory,
   dbcbr.database.interfaces,
-  dbcbr.ddl.generator.firebird,
-  dbcbr.metadata.firebird,
-
   ormbr.modeldb.compare,
   ormbr.metadata.classe.factory,
-  ormbr.dml.generator.firebird,
   {$IFEND}
   Infra.DBEngine.Contract;
 
@@ -34,7 +29,7 @@ type
   public
     {$IF DEFINED(INFRA_ORMBR)}
     function Connection: IDBConnection;
-    function ExecuteMigrations: TDbEngineAbstract;
+    procedure ExecuteMigrations;
     {$IFEND}
     function ConnectionComponent: TComponent; virtual; abstract;
     procedure Connect; virtual;
@@ -69,7 +64,7 @@ begin
   Result := FDBConnection;
 end;
 
-function TDbEngineAbstract.ExecuteMigrations: TDbEngineAbstract;
+procedure TDbEngineAbstract.ExecuteMigrations;
 var
   LManager: IDatabaseCompare;
   LDDL: TDDLCommand;

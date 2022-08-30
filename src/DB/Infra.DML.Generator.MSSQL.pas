@@ -4,6 +4,12 @@ interface
 
 uses
   Classes, SysUtils,
+  {$IF DEFINED(INFRA_ORMBR)}
+  dbebr.factory.interfaces,
+  dbcbr.ddl.Generator.MSSQL,
+  dbcbr.metadata.MSSQL,
+  ormbr.DML.Generator.MSSQL,
+  {$IFEND}
   Infra.DML.GeneratorAbstract;
 
 type
@@ -41,7 +47,7 @@ const
     'TotalPages' + sLineBreak +
     'AS' + sLineBreak +
     '(' + sLineBreak +
-    '	SELECT IIF(TotalRows < '+MacroRowsPerPage+', 1, CEILING(TotalRows / '+MacroRowsPerPage+')) as TotalPages FROM  Count_CTE' + sLineBreak +
+    '	SELECT IIF(TotalRows < ' + MacroRowsPerPage + ', 1, CEILING(TotalRows / ' + MacroRowsPerPage + ')) as TotalPages FROM  Count_CTE' + sLineBreak +
     ')' + sLineBreak +
     'SELECT *' + sLineBreak +
     'FROM Data_CTE' + sLineBreak +
@@ -78,6 +84,6 @@ end;
 
 initialization
 
-TDBDriverRegister.RegisterDriver(TDBDriver.MSSQL, TDMLGeneratorMLSQL.Create);
+TDBDriverRegister.RegisterDriver(TDBDriver.MSSQL, {$IF DEFINED(INFRA_ORMBR)}TDriverName.dnMSSQL, {$IFEND}TDMLGeneratorMLSQL.Create);
 
 end.

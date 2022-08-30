@@ -19,6 +19,13 @@ uses
   FireDAC.Phys.FB,
   FireDAC.Phys.FBDef,
 
+  FireDAC.Phys.MSSQLDef,
+  FireDAC.Phys.ODBCBase,
+  FireDAC.Phys.MSSQL,
+  FireDAC.Phys.MSSQLCli,
+  FireDAC.Phys.MSSQLMeta,
+  FireDAC.Phys.MSSQLWrapper,
+
   FireDAC.VCLUI.Wait,
   FireDAC.Comp.Client,
   FireDAC.DApt.Intf,
@@ -31,7 +38,7 @@ type
   TDbEngineFireDAC = class(TDbEngineAbstract)
   private
     FConnectionComponent: TFDConnection;
-  	FInjectedConnection: Boolean;
+    FInjectedConnection: Boolean;
     FRowsAffected: Integer;
   public
     procedure Connect; override;
@@ -56,8 +63,9 @@ type
 
 implementation
 
-{$IF DEFINED(INFRA_ORMBR)} uses dbebr.factory.FireDAC; {$IFEND}
-
+uses
+  {$IF DEFINED(INFRA_ORMBR)}dbebr.factory.FireDAC, {$IFEND}
+  Infra.DBDriver.Register;
 
 procedure TDbEngineFireDAC.CommitTX;
 begin
@@ -94,31 +102,31 @@ begin
     LDriverID := DBDriverToStr(ADbConfig.Driver);
     case ADbConfig.Driver of
       TDBDriver.Firebird:
-      begin
-        LDriverID := 'FB';
-        LGUIDEndian := 'Big';
-        LOpenMode := 'OpenOrCreate';
-        LProtocol := 'TCPIP';
-        if not ADbConfig.GetExecuteMigrations then
-          LOpenMode := 'Open';
-      end;
+        begin
+          LDriverID := 'FB';
+          LGUIDEndian := 'Big';
+          LOpenMode := 'OpenOrCreate';
+          LProtocol := 'TCPIP';
+          if not ADbConfig.GetExecuteMigrations then
+            LOpenMode := 'Open';
+        end;
       TDBDriver.Interbase:
-      begin
-        LDriverID := 'IB';
-        LOpenMode := 'OpenOrCreate';
-        LProtocol := 'TCPIP';
-        if not ADbConfig.GetExecuteMigrations then
-          LOpenMode := 'Open';
-      end;
+        begin
+          LDriverID := 'IB';
+          LOpenMode := 'OpenOrCreate';
+          LProtocol := 'TCPIP';
+          if not ADbConfig.GetExecuteMigrations then
+            LOpenMode := 'Open';
+        end;
       TDBDriver.Oracle:
-      begin
-        LDriverID := 'Ora';
-        LAuthMode := 'SysDBA';
-      end;
+        begin
+          LDriverID := 'Ora';
+          LAuthMode := 'SysDBA';
+        end;
       TDBDriver.PostgreSQL:
-      begin
-        LDriverID := 'PG';
-      end;
+        begin
+          LDriverID := 'PG';
+        end;
     end;
     FConnectionComponent := TFDConnection.Create(nil);
     FConnectionComponent.FormatOptions.StrsTrim2Len := True;
@@ -128,18 +136,18 @@ begin
     FConnectionComponent.Params.Add('User_Name=' + ADbConfig.User);
     FConnectionComponent.Params.Add('Password=' + ADbConfig.Password);
     if not LProtocol.IsEmpty then
-      FConnectionComponent.Params.Add('Protocol='+LProtocol);
+      FConnectionComponent.Params.Add('Protocol=' + LProtocol);
     FConnectionComponent.Params.Add('Port=' + IntToStr(ADbConfig.Port));
     FConnectionComponent.Params.Add('Server=' + ADbConfig.Host);
     FConnectionComponent.Params.Add('CharacterSet=' + ADbConfig.CharSet);
     FConnectionComponent.Params.Add('DriverID=' + LDriverID);
     if not LOpenMode.IsEmpty then
-      FConnectionComponent.Params.Add('OpenMode='+LOpenMode);
+      FConnectionComponent.Params.Add('OpenMode=' + LOpenMode);
     if not LGUIDEndian.IsEmpty then
-      FConnectionComponent.Params.Add('GUIDEndian='+LGUIDEndian);
+      FConnectionComponent.Params.Add('GUIDEndian=' + LGUIDEndian);
     FConnectionComponent.LoginPrompt := False;
     {$IF DEFINED(INFRA_ORMBR)}
-    FDBConnection := TFactoryFireDAC.Create(TFDConnection(FConnectionComponent), dnFirebird);
+    FDBConnection := TFactoryFireDAC.Create(TFDConnection(FConnectionComponent), TDBDriverRegister.GetDriverName(ADbConfig.Driver));
     {$IFEND}
   end;
 end;

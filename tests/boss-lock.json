@@ -1,0 +1,46 @@
+{
+	"hash": "d41d8cd98f00b204e9800998ecf8427e",
+	"updated": "2022-08-29T21:52:29.3684021-03:00",
+	"installedModules": {
+		"github.com/hashload/cqlbr": {
+			"name": "cqlbr",
+			"version": "1.1.22",
+			"hash": "1fc80cfb0eab3cd8b90743ffdb54440b",
+			"artifacts": {},
+			"failed": false,
+			"changed": false
+		},
+		"github.com/hashload/dbcbr": {
+			"name": "dbcbr",
+			"version": "1.1.32",
+			"hash": "afd601d0345156fcc39d1f753d4919d9",
+			"artifacts": {},
+			"failed": false,
+			"changed": false
+		},
+		"github.com/hashload/dbebr": {
+			"name": "dbebr",
+			"version": "1.1.2",
+			"hash": "7bf28aad29be4dc73965107968c0d3c1",
+			"artifacts": {},
+			"failed": false,
+			"changed": false
+		},
+		"github.com/hashload/jsonbr": {
+			"name": "jsonbr",
+			"version": "1.1.2",
+			"hash": "8c61922df89a25a9172a233bcf4fba87",
+			"artifacts": {},
+			"failed": false,
+			"changed": false
+		},
+		"github.com/hashload/ormbr": {
+			"name": "ormbr",
+			"version": "1.1.22",
+			"hash": "6a1dcb79ac301135ecba581bc18a6167",
+			"artifacts": {},
+			"failed": false,
+			"changed": false
+		}
+	}
+}

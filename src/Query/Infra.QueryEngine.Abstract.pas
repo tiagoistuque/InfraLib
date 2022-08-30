@@ -60,7 +60,7 @@ constructor TQueryEngineAbstract.Create(
   const AConnection: TDbEngineAbstract);
 begin
   FDbEngine := AConnection;
-  FDMLGenerator := TDBDriverRegister.GetDriver(AConnection.DbDriver);
+  FDMLGenerator := TDBDriverRegister.GetDMLGeneratorCommand(AConnection.DbDriver);
 end;
 
 function TQueryEngineAbstract.DbEngine: TDbEngineAbstract;
