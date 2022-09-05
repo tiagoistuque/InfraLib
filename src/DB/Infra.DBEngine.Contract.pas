@@ -52,7 +52,7 @@ type
     function ConfigFileName: TFileName;
   end;
 
-  IDbEngineFactory = interface
+  IDbEngine = interface
     ['{53515CD9-9EA4-43F3-B275-D2C1FDAC30C3}']
     {$IF DEFINED(INFRA_ORMBR)}
     function Connection: IDBConnection;

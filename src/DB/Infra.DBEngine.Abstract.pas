@@ -18,7 +18,7 @@ uses
   Infra.DBEngine.Contract;
 
 type
-  TDbEngineAbstract = class abstract(TInterfacedObject, IDbEngineFactory)
+  TDbEngineAbstract = class abstract(TInterfacedObject, IDbEngine)
   protected
     FDBName: string;
     FAutoExcuteMigrations: Boolean;

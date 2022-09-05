@@ -11,79 +11,77 @@ uses
   Infra.DBConfig.EnvironmentVar;
 
 type
-  IDBEngine = Infra.DBEngine.Contract.IDbEngineFactory;
+  IDBEngine = Infra.DBEngine.Contract.IDBEngine;
   IDbEngineConfig = Infra.DBEngine.Contract.IDbEngineConfig;
-  TDbengineAbstract = Infra.DBEngine.Abstract.TDbEngineAbstract;
+  TDbEngine = Infra.DBEngine.Abstract.TDbEngineAbstract;
 
   TDbDriver = Infra.DBEngine.Contract.TDbDriver;
 
-  {$SCOPEDENUMS ON}
+{$SCOPEDENUMS ON}
   TTypeConfig = (EnvironmentVariable, IniFile, Memory);
-  {$SCOPEDENUMS OFF}
+{$SCOPEDENUMS OFF}
 
   TDBConfigFactory = class
   public
     class function CreateConfig(const AType: TTypeConfig; const APrefixVariable: string = ''): IDbEngineConfig;
   end;
 
-  TDBEngine = class
+  TDBEngineFactory = class
   public
-    class function New(const ADbConfig: IDbEngineConfig; const ASuffixDBName: string = ''): TDbEngineAbstract;
-    class function Create(const ADbConfig: IDbEngineConfig; const ASuffixDBName: string = ''): TDbEngineAbstract;
+    class function New(const ADbConfig: IDbEngineConfig; const ASuffixDBName: string = ''): IDBEngine;
+    class function Create(const ADbConfig: IDbEngineConfig; const ASuffixDBName: string = ''): TDbEngine;
   end;
 
 implementation
 
 uses
-  {$IF DEFINED(FPC)}
+{$IF DEFINED(FPC)}
   //
-  {$ELSE}
-  {$IF DEFINED(INFRA_DBEXPRESS)}
+{$ELSE}
+{$IF DEFINED(INFRA_DBEXPRESS)}
   Infra.DBEngine.DBExpress;
-  {$ELSEIF DEFINED(INFRA_ZEOS)}
+{$ELSEIF DEFINED(INFRA_ZEOS)}
   Infra.DBEngine.Zeos;
 {$ELSE}
   Infra.DBEngine.FireDAC;
 {$IFEND}
 {$IFEND}
-
-
-class function TDBEngine.New(const ADbConfig: IDbEngineConfig; const ASuffixDBName: string = ''): TDbEngineAbstract;
+class function TDBEngineFactory.New(const ADbConfig: IDbEngineConfig; const ASuffixDBName: string = ''): IDBEngine;
 begin
-  {$IF DEFINED(FPC)}
-  {$IF DEFINED(INFRA_ZEOS)}
+{$IF DEFINED(FPC)}
+{$IF DEFINED(INFRA_ZEOS)}
   Result := TDbEngineZeos.Create(ADbConfig, ASuffixDBName);
-  {$ELSE}
+{$ELSE}
   Result := TDbEngineSQLConnector.Create(ADbConfig, ASuffixDBName);
-  {$IFEND}
-  {$ELSE}
-  {$IF DEFINED(INFRA_DBEXPRESS)}
+{$IFEND}
+{$ELSE}
+{$IF DEFINED(INFRA_DBEXPRESS)}
   Result := TDbEngineDBExpress.Create(ADbConfig, ASuffixDBName);
-  {$ELSEIF DEFINED(INFRA_ZEOS)}
+{$ELSEIF DEFINED(INFRA_ZEOS)}
   Result := TDbEngineZeos.Create(ADbConfig, ASuffixDBName);
-  {$ELSE}
+{$ELSE}
   Result := TDbEngineFireDAC.Create(ADbConfig, ASuffixDBName);
-  {$IFEND}
-  {$IFEND}
+{$IFEND}
+{$IFEND}
 end;
 
-class function TDBEngine.Create(const ADbConfig: IDbEngineConfig; const ASuffixDBName: string = ''): TDbEngineAbstract;
+class function TDBEngineFactory.Create(const ADbConfig: IDbEngineConfig; const ASuffixDBName: string = ''): TDbEngine;
 begin
-  {$IF DEFINED(FPC)}
-  {$IF DEFINED(INFRA_ZEOS)}
+{$IF DEFINED(FPC)}
+{$IF DEFINED(INFRA_ZEOS)}
   Result := TDbEngineZeos.Create(ADbConfig, ASuffixDBName);
-  {$ELSE}
+{$ELSE}
   Result := TDbEngineSQLConnector.Create(ADbConfig, ASuffixDBName);
-  {$IFEND}
-  {$ELSE}
-  {$IF DEFINED(INFRA_DBEXPRESS)}
+{$IFEND}
+{$ELSE}
+{$IF DEFINED(INFRA_DBEXPRESS)}
   Result := TDbEngineDBExpress.Create(ADbConfig, ASuffixDBName);
-  {$ELSEIF DEFINED(INFRA_ZEOS)}
+{$ELSEIF DEFINED(INFRA_ZEOS)}
   Result := TDbEngineZeos.Create(ADbConfig, ASuffixDBName);
-  {$ELSE}
+{$ELSE}
   Result := TDbEngineFireDAC.Create(ADbConfig, ASuffixDBName);
-  {$IFEND}
-  {$IFEND}
+{$IFEND}
+{$IFEND}
 end;
 
 { TDBConfigFactory }
