@@ -37,7 +37,7 @@ end;
 
 procedure TDMLGeneratorAbstract.GenerateSQLPaginating(const APage, ARowsPerPage: Integer; const ASQL: TStrings);
 begin
-  if ASQL.Text.IsEmpty then
+  if Trim(ASQL.Text) = EmptyStr then
     raise Exception.Create('SQL command must be provided before applying pagination.');
 end;
 

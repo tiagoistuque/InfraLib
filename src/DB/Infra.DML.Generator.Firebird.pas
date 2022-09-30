@@ -64,8 +64,8 @@ begin
   LSQLPaginating := TemplatePaginating;
   LSQLPaginating := StringReplace(LSQLPaginating, MacroSQLCommand, LSQLCommand, [rfReplaceAll]);
   LSQLPaginating := StringReplace(LSQLPaginating, MacroOrderByFields, GetOrderByFields(LSQLCommand), [rfReplaceAll]);
-  LSQLPaginating := StringReplace(LSQLPaginating, MacroPageNum, APage.ToString, [rfReplaceAll]);
-  LSQLPaginating := StringReplace(LSQLPaginating, MacroRowsPerPage, ARowsPerPage.ToString, [rfReplaceAll]);
+  LSQLPaginating := StringReplace(LSQLPaginating, MacroPageNum, IntToStr(APage), [rfReplaceAll]);
+  LSQLPaginating := StringReplace(LSQLPaginating, MacroRowsPerPage, IntToStr(ARowsPerPage), [rfReplaceAll]);
 
   ASQL.Clear;
   ASQL.Text := LSQLPaginating;

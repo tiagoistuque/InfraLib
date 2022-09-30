@@ -78,7 +78,7 @@ var
 begin
   if not FDBDrivers.ContainsKey(ADriver) then
   begin
-    LDriverName := ADriver.ToString;
+    LDriverName := DBDriverToStr(ADriver);
     raise Exception.CreateFmt('O driver %s não está registrado. Adicione a unit "Infra.DML.Generator.%s.pas" na cláusula Uses do seu projeto!', [LDriverName, LDriverName]);
   end;
 end;

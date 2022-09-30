@@ -190,23 +190,11 @@ begin
 end;
 
 function TQueryEngineDBExpress.Params: TSQLParams;
-var
-  LParams: TParams;
-  I: Integer;
 begin
   if (Pos(':', FComandoSQL.Text) > 0) and (FParams.Count = 0) then
   begin
     FParams.Clear;
-    LParams := TParams.Create;
-    try
-      LParams.ParseSQL(FComandoSQL.Text, True);
-      for I := 0 to LParams.Count - 1 do
-      begin
-        FParams.AddParameter.Name := LParams.Items[I].Name;
-      end;
-    finally
-      LParams.Free;
-    end;
+    FParams.ParseSQL(FComandoSQL.Text, True);
   end;
   Result := FParams;
 end;
