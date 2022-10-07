@@ -31,6 +31,12 @@ type
   end;
   {$IFEND}
 
+
+  ETransactionException = class(Exception);
+  EStartTransactionException = class(ETransactionException);
+  ECommitTransactionException = class(ETransactionException);
+  ERollbackTransactionException = class(ETransactionException);
+
   IDbEngineConfig = interface
     ['{E3DB667A-5693-467E-97A1-28ED96AA402C}']
     function Driver: TDBDriver; overload;

@@ -37,9 +37,13 @@ type
     [Test]
     procedure TestRollbackTransaction;
 
+    [Test]
+    procedure TestStartTransaction2;
   end;
 
 implementation
+
+uses Infra.DBEngine.Contract;
 
 const
   SELECT_WITH_ERROR = 'SELECT CAST(CURRENT_TIMESTAMP AS INTEGER)  FROM RDB$DATABASE';
@@ -56,7 +60,7 @@ begin
     .CharSet('UTF8')
     .User('SYSDBA')
     .Password('masterkey');
-  FEngine := TDBEngine.New(FConfig);
+  FEngine := TDBEngineFactory.New(FConfig);
 end;
 
 procedure TTestDBEngine.TearDown;
@@ -89,6 +93,18 @@ begin
   FEngine.StartTx;
   Assert.IsTrue(FEngine.InTransaction);
   FEngine.RollbackTx;
+end;
+
+procedure TTestDBEngine.TestStartTransaction2;
+var
+  LProc: TProc;
+begin
+  LProc := procedure
+  begin
+    FEngine.StartTx;
+    FEngine.StartTx;
+  end;
+  Assert.WillRaise(LProc, EStartTransactionException);
 end;
 
 procedure TTestDBEngine.TestCommitTransaction;

@@ -226,6 +226,8 @@ end;
 
 procedure TDbEngineFireDAC.StartTx;
 begin
+  if InTransaction then
+    raise EStartTransactionException.Create('Necessário commit ou rollback da transação anterior para iniciar uma nova transação.');
   if not FConnectionComponent.Connected then
     FConnectionComponent.Connected := True;
   if (not FInjectedConnection) then

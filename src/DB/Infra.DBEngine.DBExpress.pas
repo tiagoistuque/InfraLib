@@ -49,7 +49,7 @@ implementation
 procedure TDbEngineDBExpress.CommitTX;
 begin
   if Assigned(FTransactionComponent) and (not FInjectedConnection) and (not FInjectedTransaction) then
-    FConnectionComponent.CommitFreeAndNil(FTransactionComponent);
+    FTransactionComponent.Connection.CommitFreeAndNil(FTransactionComponent);
 end;
 
 procedure TDbEngineDBExpress.Connect;
@@ -101,9 +101,8 @@ begin
   begin
     if Assigned(FTransactionComponent) then
     begin
-      FConnectionComponent.RollbackIncompleteFreeAndNil(FTransactionComponent);
+      FTransactionComponent.Connection.RollbackIncompleteFreeAndNil(FTransactionComponent);
     end;
-    FConnectionComponent.Free;
   end;
   inherited;
 end;
@@ -148,7 +147,7 @@ end;
 
 function TDbEngineDBExpress.InTransaction: Boolean;
 begin
-  Result := FConnectionComponent.InTransaction;
+  Result := FConnectionComponent.InTransaction or Assigned(FTransactionComponent);
 end;
 
 function TDbEngineDBExpress.IsConnected: Boolean;
@@ -176,7 +175,7 @@ end;
 procedure TDbEngineDBExpress.RollbackTx;
 begin
   if Assigned(FTransactionComponent) and (not FInjectedConnection) and (not FInjectedTransaction) then
-    FConnectionComponent.RollbackFreeAndNil(FTransactionComponent);
+    FTransactionComponent.Connection.RollbackFreeAndNil(FTransactionComponent);
 end;
 
 function TDbEngineDBExpress.RowsAffected: Integer;
@@ -186,8 +185,10 @@ end;
 
 procedure TDbEngineDBExpress.StartTx;
 begin
+  if InTransaction then
+    raise EStartTransactionException.Create('Necessário commit ou rollback da transação anterior para iniciar uma nova transação.');
   if (not FInjectedConnection) and (not FInjectedTransaction) then
-    FTransactionComponent :=  FConnectionComponent.BeginTransaction(TDBXIsolations.ReadCommitted);
+    FTransactionComponent :=  FConnectionComponent.DBXConnection.BeginTransaction(TDBXIsolations.ReadCommitted);
 end;
 
 end.
