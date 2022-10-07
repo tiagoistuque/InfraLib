@@ -19,12 +19,12 @@ uses
   FireDAC.Phys.FB,
   FireDAC.Phys.FBDef,
 
-//  FireDAC.Phys.MSSQLDef,
-//  FireDAC.Phys.ODBCBase,
-//  FireDAC.Phys.MSSQL,
-//  FireDAC.Phys.MSSQLCli,
-//  FireDAC.Phys.MSSQLMeta,
-//  FireDAC.Phys.MSSQLWrapper,
+  FireDAC.Phys.MSSQLDef,
+  FireDAC.Phys.ODBCBase,
+  FireDAC.Phys.MSSQL,
+  FireDAC.Phys.MSSQLCli,
+  FireDAC.Phys.MSSQLMeta,
+  FireDAC.Phys.MSSQLWrapper,
 
   FireDAC.UI.Intf,
   FireDAC.VCLUI.Wait,
@@ -157,7 +157,8 @@ destructor TDbEngineFireDAC.Destroy;
 begin
   if (not FInjectedConnection) then
   begin
-    FConnectionComponent.Rollback;
+    if IsConnected then
+      FConnectionComponent.Rollback;
     FConnectionComponent.Free;
   end;
   inherited;
