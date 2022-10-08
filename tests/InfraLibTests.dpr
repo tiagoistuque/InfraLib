@@ -34,7 +34,8 @@ uses
   Infra.DML.GeneratorAbstract in '..\src\DB\Infra.DML.GeneratorAbstract.pas',
   Infra.DBDriver.Register in '..\src\DB\Infra.DBDriver.Register.pas',
   Infra.DML.Generator.Firebird in '..\src\DB\Infra.DML.Generator.Firebird.pas',
-  Infra.DML.Generator.MSSQL in '..\src\DB\Infra.DML.Generator.MSSQL.pas';
+  Infra.DML.Generator.MSSQL in '..\src\DB\Infra.DML.Generator.MSSQL.pas',
+  InfraLib.Tests.QueryEngine in 'src\InfraLib.Tests.QueryEngine.pas';
 
 var
   runner : ITestRunner;
@@ -42,6 +43,7 @@ var
   logger : ITestLogger;
   nunitLogger : ITestLogger;
 begin
+  ReportMemoryLeaksOnShutdown := True;
 {$IFDEF TESTINSIGHT}
   TestInsight.DUnitX.RunRegisteredTests;
   exit;

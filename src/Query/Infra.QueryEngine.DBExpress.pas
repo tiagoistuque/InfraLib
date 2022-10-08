@@ -25,23 +25,24 @@ type
     constructor Create(const AConnection: TDbEngineAbstract); override;
     destructor Destroy; override;
 
-    function Reset: ISQLQuery; override;
-    function Clear: ISQLQuery; override;
-    function Add(Str: string): ISQLQuery; override;
-    function Open: ISQLQuery; override;
-    function Exec(const AReturn: Boolean = False): ISQLQuery; override;
-    function Close: ISQLQuery; override;
-    function IndexFieldNames(const Fields: string): ISQLQuery; override;
+    function Reset: IQueryEngine; override;
+    function Clear: IQueryEngine; override;
+    function Add(Str: string): IQueryEngine; override;
+    function Open: IQueryEngine; override;
+    function Exec(const AReturn: Boolean = False): IQueryEngine; override;
+    function Close: IQueryEngine; override;
+    function IndexFieldNames(const Fields: string): IQueryEngine; override;
   	function IndexFieldNames: string; override;
     function DataSet: TDataSet; override;
-    function ProviderFlags(const FieldName: string; ProviderFlags: TProviderFlags): ISQLQuery; override;
+    function ProviderFlags(const FieldName: string; ProviderFlags: TProviderFlags): IQueryEngine; override;
     function ApplyUpdates: Boolean; override;
     function Refresh: Boolean; override;
     function UpdatesPending: Boolean; override;
-    function CancelUpdates: ISQLQuery; override;
+    function CancelUpdates: IQueryEngine; override;
     function FindKey(const KeyValues: array of TVarRec): Boolean; override;
     function Params: TSQLParams; override;
     function SQLCommand: string; override;
+    function TotalPages: Integer; override;
     function RowsAffected: Integer; override;
     function RetornaAutoIncremento(const ASequenceName: string): Integer; overload; override;
     function RetornaAutoIncremento(const ASequenceName, ATableDest, AFieldDest: string): Integer; overload; override;
@@ -54,7 +55,7 @@ var
 
 { TQueryEngineDBExpress }
 
-function TQueryEngineDBExpress.Add(Str: string): ISQLQuery;
+function TQueryEngineDBExpress.Add(Str: string): IQueryEngine;
 begin
   Result := Self;
   FComandoSQL.Add(Str);
@@ -65,14 +66,14 @@ begin
   Result := FClientDataSet.ApplyUpdates(0) = 0;
 end;
 
-function TQueryEngineDBExpress.CancelUpdates: ISQLQuery;
+function TQueryEngineDBExpress.CancelUpdates: IQueryEngine;
 begin
   Result := Self;
   if FClientDataSet.Active then
     FClientDataSet.CancelUpdates;
 end;
 
-function TQueryEngineDBExpress.Clear: ISQLQuery;
+function TQueryEngineDBExpress.Clear: IQueryEngine;
 begin
   Result := Self;
   FParams.Clear;
@@ -80,7 +81,7 @@ begin
   FComandoSQL.Clear;
 end;
 
-function TQueryEngineDBExpress.Close: ISQLQuery;
+function TQueryEngineDBExpress.Close: IQueryEngine;
 begin
   Result := Self;
   FClientDataSet.Close;
@@ -128,7 +129,7 @@ begin
   inherited;
 end;
 
-function TQueryEngineDBExpress.Exec(const AReturn: Boolean = False): ISQLQuery;
+function TQueryEngineDBExpress.Exec(const AReturn: Boolean = False): IQueryEngine;
 begin
   Result := Self;
   try
@@ -158,7 +159,7 @@ begin
 end;
 
 function TQueryEngineDBExpress.IndexFieldNames(
-  const Fields: string): ISQLQuery;
+  const Fields: string): IQueryEngine;
 begin
   Result := Self;
   FClientDataSet.IndexFieldNames := Fields;
@@ -169,18 +170,22 @@ begin
   Result := FClientDataSet.IndexFieldNames;	
 end;
 
-function TQueryEngineDBExpress.Open: ISQLQuery;
+function TQueryEngineDBExpress.Open: IQueryEngine;
 begin
   Result := Self;
   try
     FQuery.Close;
     FClientDataSet.Close;
     FQuery.SQL.Clear;
+    if FPaginate and (FRowsPerPage > 0) and (FPage > 0) then
+      FDMLGenerator.GenerateSQLPaginating(FPage, FRowsPerPage, FComandoSQL);
     FQuery.SQL.Assign(FComandoSQL);
     if Assigned(FParams) and (FParams.Count > 0) then
       FQuery.Params.Assign(FParams);
     FQuery.Open;
     FClientDataSet.Open;
+    if FPaginate then
+      FTotalPages := FClientDataSet.FieldByName(FDMLGenerator.GetColumnNameTotalPages).AsInteger;
   except
     on E: Exception do
     begin
@@ -200,7 +205,7 @@ begin
 end;
 
 function TQueryEngineDBExpress.ProviderFlags(const FieldName: string;
-  ProviderFlags: TProviderFlags): ISQLQuery;
+  ProviderFlags: TProviderFlags): IQueryEngine;
 begin
   Result := Self;
   FClientDataSet.FieldByName(FieldName).ProviderFlags := ProviderFlags;
@@ -213,7 +218,7 @@ begin
   Result := True;
 end;
 
-function TQueryEngineDBExpress.Reset: ISQLQuery;
+function TQueryEngineDBExpress.Reset: IQueryEngine;
 begin
   Result := Self;
   Close.Clear;
@@ -250,6 +255,11 @@ end;
 function TQueryEngineDBExpress.SQLCommand: string;
 begin
   Result := FComandoSQL.Text;
+end;
+
+function TQueryEngineDBExpress.TotalPages: Integer;
+begin
+  Result := FTotalPages;
 end;
 
 function TQueryEngineDBExpress.UpdatesPending: Boolean;

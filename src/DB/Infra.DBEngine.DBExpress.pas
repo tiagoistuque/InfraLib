@@ -48,7 +48,7 @@ implementation
 
 procedure TDbEngineDBExpress.CommitTX;
 begin
-  if Assigned(FTransactionComponent) and (not FInjectedConnection) and (not FInjectedTransaction) then
+  if Assigned(FTransactionComponent) and (not FInjectedTransaction) then
     FTransactionComponent.Connection.CommitFreeAndNil(FTransactionComponent);
 end;
 
@@ -97,12 +97,13 @@ end;
 
 destructor TDbEngineDBExpress.Destroy;
 begin
-  if (not FInjectedConnection) and (not FInjectedTransaction) then
+  if Assigned(FTransactionComponent) and (not FInjectedTransaction) then
   begin
-    if Assigned(FTransactionComponent) then
-    begin
-      FTransactionComponent.Connection.RollbackIncompleteFreeAndNil(FTransactionComponent);
-    end;
+    FTransactionComponent.Connection.RollbackIncompleteFreeAndNil(FTransactionComponent);
+  end;
+  if (not FInjectedConnection) then
+  begin
+    FConnectionComponent.Free;
   end;
   inherited;
 end;
@@ -174,7 +175,7 @@ end;
 
 procedure TDbEngineDBExpress.RollbackTx;
 begin
-  if Assigned(FTransactionComponent) and (not FInjectedConnection) and (not FInjectedTransaction) then
+  if Assigned(FTransactionComponent) and (not FInjectedTransaction) then
     FTransactionComponent.Connection.RollbackFreeAndNil(FTransactionComponent);
 end;
 

@@ -9,7 +9,7 @@ uses
   Infra.QueryEngine.Abstract;
 
 type
-  IQueryEngine = Infra.QueryEngine.Contract.ISQLQuery;
+  IQueryEngine = Infra.QueryEngine.Contract.IQueryEngine;
 
   TQueryEngine = class
   public

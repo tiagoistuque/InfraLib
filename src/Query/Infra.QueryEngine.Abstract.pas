@@ -11,7 +11,7 @@ uses
 
 type
 
-  TQueryEngineAbstract = class abstract(TInterfacedObject, ISQLQuery)
+  TQueryEngineAbstract = class abstract(TInterfacedObject, IQueryEngine)
   protected
     FDbEngine: TDbEngineAbstract;
     FDMLGenerator: IDMLGeneratorCommand;
@@ -23,31 +23,33 @@ type
     constructor Create(const AConnection: TDbEngineAbstract); virtual;
     destructor Destroy; override;
 
-    function Reset: ISQLQuery; virtual; abstract;
-    function Clear: ISQLQuery; virtual; abstract;
-    function Add(Str: string): ISQLQuery; virtual; abstract;
-    function Open: ISQLQuery; virtual; abstract;
-    function Exec(const AReturn: Boolean = False): ISQLQuery; virtual; abstract;
-    function Close: ISQLQuery; virtual; abstract;
-    function IndexFieldNames(const Fields: string): ISQLQuery; overload; virtual; abstract;
+    function Reset: IQueryEngine; virtual; abstract;
+    function Clear: IQueryEngine; virtual; abstract;
+    function Add(Str: string): IQueryEngine; virtual; abstract;
+    function Open: IQueryEngine; virtual; abstract;
+    function Exec(const AReturn: Boolean = False): IQueryEngine; virtual; abstract;
+    function Close: IQueryEngine; virtual; abstract;
+    function IndexFieldNames(const Fields: string): IQueryEngine; overload; virtual; abstract;
 	  function IndexFieldNames: string; overload; virtual; abstract;
     function DataSet: TDataSet; virtual; abstract;
-    function ProviderFlags(const FieldName: string; ProviderFlags: TProviderFlags): ISQLQuery; virtual; abstract;
+    function ProviderFlags(const FieldName: string; ProviderFlags: TProviderFlags): IQueryEngine; virtual; abstract;
     function ApplyUpdates: Boolean; virtual; abstract;
     function Refresh: Boolean; virtual; abstract;
     function UpdatesPending: Boolean; virtual; abstract;
-    function CancelUpdates: ISQLQuery; virtual; abstract;
+    function CancelUpdates: IQueryEngine; virtual; abstract;
     function FindKey(const KeyValues: array of TVarRec): Boolean; virtual; abstract;
     function Params: TSQLParams;  virtual; abstract;
     function SQLCommand: string; virtual; abstract;
     function RowsAffected: Integer; virtual; abstract;
     function RetornaAutoIncremento(const ASequenceName: string): Integer; overload; virtual; abstract;
     function RetornaAutoIncremento(const ASequenceName, ATableDest, AFieldDest: string): Integer; overload; virtual; abstract;
-    function Paginate(const APage, ARowsPerPage: Integer): ISQLQuery; virtual;
-    function TotalPages: Integer; virtual; abstract;
+    function Paginate(const APage, ARowsPerPage: Integer): IQueryEngine; virtual;
+    function TotalPages: Integer; virtual;
     function DbEngine: TDbEngineAbstract;
-    function SetAutoIncField(const AFieldName: string): ISQLQuery; virtual; abstract;
-    function SetAutoIncGeneratorName(const AGeneratorName: string): ISQLQuery; virtual; abstract;
+    {$IF DEFINED(INFRA_FIREDAC)}
+    function SetAutoIncField(const AFieldName: string): IQueryEngine; virtual; abstract;
+    function SetAutoIncGeneratorName(const AGeneratorName: string): IQueryEngine; virtual; abstract;
+    {$IFEND}
   end;
 
 implementation
@@ -74,12 +76,17 @@ begin
   inherited;
 end;
 
-function TQueryEngineAbstract.Paginate(const APage, ARowsPerPage: Integer): ISQLQuery;
+function TQueryEngineAbstract.Paginate(const APage, ARowsPerPage: Integer): IQueryEngine;
 begin
   Result := Self;
   FPaginate := True;
   FPage := APage;
   FRowsPerPage := ARowsPerPage;
+end;
+
+function TQueryEngineAbstract.TotalPages: Integer;
+begin
+  Result := FTotalPages;
 end;
 
 end.

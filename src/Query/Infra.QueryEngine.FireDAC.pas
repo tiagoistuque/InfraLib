@@ -27,20 +27,20 @@ type
     constructor Create(const AConnection: TDbEngineAbstract); override;
     destructor Destroy; override;
 
-    function Reset: ISQLQuery; override;
-    function Clear: ISQLQuery; override;
-    function Add(Str: string): ISQLQuery; override;
-    function Open: ISQLQuery; override;
-    function Exec(const AReturn: Boolean = False): ISQLQuery; override;
-    function Close: ISQLQuery; override;
-    function IndexFieldNames(const Fields: string): ISQLQuery; override;
+    function Reset: IQueryEngine; override;
+    function Clear: IQueryEngine; override;
+    function Add(Str: string): IQueryEngine; override;
+    function Open: IQueryEngine; override;
+    function Exec(const AReturn: Boolean = False): IQueryEngine; override;
+    function Close: IQueryEngine; override;
+    function IndexFieldNames(const Fields: string): IQueryEngine; override;
     function IndexFieldNames: string; override;
     function DataSet: TDataSet; override;
-    function ProviderFlags(const FieldName: string; ProviderFlags: TProviderFlags): ISQLQuery; override;
+    function ProviderFlags(const FieldName: string; ProviderFlags: TProviderFlags): IQueryEngine; override;
     function ApplyUpdates: Boolean; override;
     function Refresh: Boolean; override;
     function UpdatesPending: Boolean; override;
-    function CancelUpdates: ISQLQuery; override;
+    function CancelUpdates: IQueryEngine; override;
     function FindKey(const KeyValues: array of TVarRec): Boolean; override;
     function Params: TSQLParams; override;
     function SQLCommand: string; override;
@@ -48,8 +48,8 @@ type
     function RowsAffected: Integer; override;
     function RetornaAutoIncremento(const ASequenceName: string): Integer; overload; override;
     function RetornaAutoIncremento(const ASequenceName, ATableDest, AFieldDest: string): Integer; overload; override;
-    function SetAutoIncField(const AFieldName: string): ISQLQuery; override;
-    function SetAutoIncGeneratorName(const AGeneratorName: string): ISQLQuery; override;
+    function SetAutoIncField(const AFieldName: string): IQueryEngine; override;
+    function SetAutoIncGeneratorName(const AGeneratorName: string): IQueryEngine; override;
   end;
 {$IFEND}
 
@@ -58,7 +58,7 @@ implementation
 {$IF DEFINED(INFRA_FIREDAC)}
 { TQueryEngineFireDAC }
 
-function TQueryEngineFireDAC.Add(Str: string): ISQLQuery;
+function TQueryEngineFireDAC.Add(Str: string): IQueryEngine;
 begin
   Result := Self;
   FComandoSQL.Add(Str);
@@ -69,14 +69,14 @@ begin
   Result := FQuery.ApplyUpdates(0) = 0;
 end;
 
-function TQueryEngineFireDAC.CancelUpdates: ISQLQuery;
+function TQueryEngineFireDAC.CancelUpdates: IQueryEngine;
 begin
   Result := Self;
   if FQuery.Active then
     FQuery.CancelUpdates;
 end;
 
-function TQueryEngineFireDAC.Clear: ISQLQuery;
+function TQueryEngineFireDAC.Clear: IQueryEngine;
 begin
   Result := Self;
   FParams.Clear;
@@ -84,7 +84,7 @@ begin
   FComandoSQL.Clear;
 end;
 
-function TQueryEngineFireDAC.Close: ISQLQuery;
+function TQueryEngineFireDAC.Close: IQueryEngine;
 begin
   Result := Self;
   FQuery.Close;
@@ -119,7 +119,7 @@ begin
   inherited;
 end;
 
-function TQueryEngineFireDAC.Exec(const AReturn: Boolean = False): ISQLQuery;
+function TQueryEngineFireDAC.Exec(const AReturn: Boolean = False): IQueryEngine;
 begin
   Result := Self;
   try
@@ -155,7 +155,7 @@ begin
 end;
 
 function TQueryEngineFireDAC.IndexFieldNames(
-  const Fields: string): ISQLQuery;
+  const Fields: string): IQueryEngine;
 begin
   Result := Self;
   FQuery.IndexFieldNames := Fields;
@@ -166,7 +166,7 @@ begin
   Result := FQuery.IndexFieldNames;
 end;
 
-function TQueryEngineFireDAC.Open: ISQLQuery;
+function TQueryEngineFireDAC.Open: IQueryEngine;
 begin
   Result := Self;
   try
@@ -211,7 +211,7 @@ begin
 end;
 
 function TQueryEngineFireDAC.ProviderFlags(const FieldName: string;
-  ProviderFlags: TProviderFlags): ISQLQuery;
+  ProviderFlags: TProviderFlags): IQueryEngine;
 begin
   Result := Self;
   FQuery.FieldByName(FieldName).ProviderFlags := ProviderFlags;
@@ -223,7 +223,7 @@ begin
   Result := True;
 end;
 
-function TQueryEngineFireDAC.Reset: ISQLQuery;
+function TQueryEngineFireDAC.Reset: IQueryEngine;
 begin
   Result := Self;
   Close.Clear;
@@ -257,7 +257,7 @@ begin
   Result := FRowsAffected;
 end;
 
-function TQueryEngineFireDAC.SetAutoIncField(const AFieldName: string): ISQLQuery;
+function TQueryEngineFireDAC.SetAutoIncField(const AFieldName: string): IQueryEngine;
 begin
   Result := Self;
   if FQuery.Active then
@@ -265,7 +265,7 @@ begin
   FQuery.UpdateOptions.AutoIncFields := AFieldName;
 end;
 
-function TQueryEngineFireDAC.SetAutoIncGeneratorName(const AGeneratorName: string): ISQLQuery;
+function TQueryEngineFireDAC.SetAutoIncGeneratorName(const AGeneratorName: string): IQueryEngine;
 begin
   Result := Self;
   if FQuery.Active then
