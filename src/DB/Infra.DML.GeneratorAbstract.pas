@@ -49,6 +49,8 @@ begin
   LInitialPos := System.Pos('ORDER BY', AnsiUpperCase(ASQL));
   Assert(LInitialPos > 0, 'An ORDER BY clause must be specified to use pagination. Tip: Use a single space between ORDER BY words.');
   LOrderByFields := Trim(Copy(ASQL, LInitialPos + 9, Length(ASQL)));
+  if Copy(LOrderByFields, Length(LOrderByFields) - 1, 1) = ';' then
+    LOrderByFields := Copy(LOrderByFields, 1, Length(LOrderByFields) - 1);
   Result := LOrderByFields;
 end;
 
