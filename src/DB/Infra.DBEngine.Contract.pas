@@ -16,6 +16,7 @@ type
   TDBDriver = (
     unknown,
     MSSQL,
+    MSAcc,
     MySQL,
     Firebird,
     SQLite,
@@ -125,6 +126,8 @@ begin
       Result := 'Unknown';
     TDBDriver.MSSQL:
       Result := 'MSSQL';
+    TDBDriver.MSAcc:
+      Result := 'MSAcc';
     TDBDriver.MySQL:
       Result := 'MySQL';
     TDBDriver.Firebird:
@@ -145,7 +148,8 @@ function StrToDBDriver(const AValue: string): TDBDriver;
 begin
   case AnsiIndexStr(AValue,
     ['MSSQL', 'MySQL','Firebird', 'SQLite',
-    'Interbase', 'Oracle', 'PostgreSQL', 'Unknown']) of
+    'Interbase', 'Oracle', 'PostgreSQL', 'Unknown',
+    'MSAcc']) of
     0:
       Result := TDBDriver.MSSQL;
     1:
@@ -162,6 +166,8 @@ begin
       Result := TDBDriver.PostgreSQL;
     7:
       Result := TDBDriver.unknown;
+    8:
+      Result := TDBDriver.MSAcc;
   else
     Result := TDBDriver.unknown;
   end;
@@ -174,6 +180,8 @@ begin
       Result := 'Unknown';
     TDBDriver.MSSQL:
       Result := 'MSSQL';
+    TDBDriver.MSAcc:
+      Result := 'MSAcc';
     TDBDriver.MySQL:
       Result := 'MySQL';
     TDBDriver.Firebird:

@@ -19,6 +19,9 @@ uses
   FireDAC.Phys.FB,
   FireDAC.Phys.FBDef,
 
+  FireDAC.Phys.MSAcc,
+  FireDAC.Phys.MSAccDef,
+
   FireDAC.Phys.MSSQLDef,
   FireDAC.Phys.ODBCBase,
   FireDAC.Phys.MSSQL,
