@@ -42,7 +42,7 @@ const
     'Count_CTE ' + sLineBreak +
     'AS ' + sLineBreak +
     '(' + sLineBreak +
-    '    SELECT COUNT(*) AS TotalRows FROM Data_CTE' + sLineBreak +
+    '    SELECT COUNT(*) * 1.0 AS TotalRows FROM Data_CTE' + sLineBreak +
     '),' + sLineBreak +
     'TotalPages' + sLineBreak +
     'AS' + sLineBreak +
