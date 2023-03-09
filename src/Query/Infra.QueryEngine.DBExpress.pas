@@ -103,7 +103,8 @@ begin
 
   FClientDataSet := TClientDataSet.Create(DM);
   FProvider.DataSet := FQuery;
-  FProvider.Name := 'DSP' + Format('%s%d',[FormatDateTime('YYYYMMDDHHNNSSZZZ', Now), Random(32768)]);
+  Sleep(1);
+  FProvider.Name := 'InfraDSP' + Format('%s%d',[FormatDateTime('YYYYMMDDHHNNSSZZZ', Now), Random(32768)]);
   FClientDataSet.ProviderName := FProvider.Name;
 
   FParams := TSQLParams.Create;

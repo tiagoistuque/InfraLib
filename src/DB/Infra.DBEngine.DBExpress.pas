@@ -76,6 +76,7 @@ begin
       GetDriverFunc := 'getSQLDriverINTERBASE';
       KeepConnection := True;
       LoginPrompt := False;
+      SQLHourGlass := False;
       with Params do
       begin
         Clear;
