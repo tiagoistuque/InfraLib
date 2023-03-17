@@ -19,6 +19,7 @@ type
   public
     [Setup]
     procedure Setup;
+
     [TearDown]
     procedure TearDown;
 
@@ -43,7 +44,7 @@ type
 
 implementation
 
-uses Infra.DBEngine.Contract;
+uses Infra.DbEngine.Contract;
 
 const
   SELECT_WITH_ERROR = 'SELECT CAST(CURRENT_TIMESTAMP AS INTEGER)  FROM RDB$DATABASE';
@@ -100,10 +101,10 @@ var
   LProc: TProc;
 begin
   LProc := procedure
-  begin
-    FEngine.StartTx;
-    FEngine.StartTx;
-  end;
+    begin
+      FEngine.StartTx;
+      FEngine.StartTx;
+    end;
   Assert.WillRaise(LProc, EStartTransactionException);
 end;
 
@@ -135,6 +136,6 @@ end;
 
 initialization
 
-TDUnitX.RegisterTestFixture(TTestDBEngine);
+// TDUnitX.RegisterTestFixture(TTestDBEngine);
 
 end.

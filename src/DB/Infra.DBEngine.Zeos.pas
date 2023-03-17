@@ -10,6 +10,8 @@ uses
   ZAbstractConnection,
   ZConnection,
   ZDataSet,
+  ZCompatibility,
+  ZDbcIntfs,
 
   Infra.DBEngine.Abstract,
   Infra.DBEngine.Contract;
@@ -18,18 +20,20 @@ type
   TDbEngineZeos = class(TDbEngineAbstract)
   private
     FConnectionComponent: TZConnection;
-  	FInjectedConnection: Boolean;
+    FInjectedConnection: Boolean;
     FRowsAffected: Integer;
   public
     function ConnectionComponent: TComponent; override;
     procedure Connect; override;
+    procedure Disconnect; override;
     function ExecSQL(const ASQL: string): Integer; override;
-    function ExceSQL(const ASQL: string; var AResultDataSet: TDataSet ): Integer; override;
-    function OpenSQL(const ASQL: string; var AResultDataSet: TDataSet ): Integer; override;
+    function ExceSQL(const ASQL: string; var AResultDataSet: TDataSet): Integer; override;
+    function OpenSQL(const ASQL: string; var AResultDataSet: TDataSet): Integer; override;
     procedure StartTx; override;
     procedure CommitTX; override;
     procedure RollbackTx; override;
     function InTransaction: Boolean; override;
+    function IsConnected: Boolean; override;
     function RowsAffected: Integer; override;
     procedure InjectConnection(AConn: TComponent; ATransactionObject: TObject); override;
 
@@ -41,7 +45,9 @@ type
 
 implementation
 
-{$IF DEFINED(INFRA_ORMBR)} uses dbebr.factory.Zeos; {$IFEND}
+uses
+  {$IF DEFINED(INFRA_ORMBR)} dbebr.factory.Zeos, {$IFEND}
+  Infra.DBDriver.Register;
 
 procedure TDbEngineZeos.CommitTX;
 begin
@@ -50,7 +56,8 @@ end;
 
 procedure TDbEngineZeos.Connect;
 begin
-  FConnectionComponent.Connect;
+  if not FConnectionComponent.Connected then
+    FConnectionComponent.Connected := True;
   inherited;
 end;
 
@@ -74,10 +81,13 @@ begin
     Database := FDBName;
     User := ADbConfig.User;
     Password := ADbConfig.Password;
+    ClientCodepage := ADbConfig.CharSet;
+    // ControlsCodePage := cCP_UTF8;
+    TransactIsolationLevel := tiReadCommitted;
     Connected := True;
   end;
   {$IF DEFINED(INFRA_ORMBR)}
-  FDBConnection := TFactoryZeos.Create(FConnectionComponent, dnFirebird);
+  FDBConnection := TFactoryZeos.Create(FConnectionComponent, TDBDriverRegister.GetDriverName(ADbConfig.Driver));
   {$IFEND}
 end;
 
@@ -85,9 +95,17 @@ destructor TDbEngineZeos.Destroy;
 begin
   if (not FInjectedConnection) then
   begin
-    FConnectionComponent.Rollback;
+    if FConnectionComponent.InTransaction then
+      FConnectionComponent.Rollback;
     FConnectionComponent.Free;
   end;
+  inherited;
+end;
+
+procedure TDbEngineZeos.Disconnect;
+begin
+  if FConnectionComponent.Connected then
+    FConnectionComponent.Connected := False;
   inherited;
 end;
 
@@ -118,8 +136,8 @@ end;
 procedure TDbEngineZeos.InjectConnection(AConn: TComponent;
   ATransactionObject: TObject);
 begin
-  if not (AConn is TZConnection) then
-    raise Exception.Create('Invalid connection component instance for ZeosDBO. '+Self.UnitName);
+  if not(AConn is TZConnection) then
+    raise Exception.Create('Invalid connection component instance for ZeosDBO. ' + Self.UnitName);
   if Assigned(FConnectionComponent) then
     FreeAndNil(FConnectionComponent);
   FInjectedConnection := True;
@@ -129,6 +147,11 @@ end;
 function TDbEngineZeos.InTransaction: Boolean;
 begin
   Result := FConnectionComponent.InTransaction;
+end;
+
+function TDbEngineZeos.IsConnected: Boolean;
+begin
+  Result := FConnectionComponent.Connected;
 end;
 
 function TDbEngineZeos.OpenSQL(const ASQL: string;

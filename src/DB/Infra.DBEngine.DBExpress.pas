@@ -25,6 +25,7 @@ type
   public
     function ConnectionComponent: TComponent; override;
     procedure Connect; override;
+    procedure Disconnect; override;
     function ExecSQL(const ASQL: string): Integer; override;
     function ExceSQL(const ASQL: string; var AResultDataSet: TDataSet ): Integer; override;
     function OpenSQL(const ASQL: string; var AResultDataSet: TDataSet ): Integer; override;
@@ -106,6 +107,12 @@ begin
   begin
     FConnectionComponent.Free;
   end;
+  inherited;
+end;
+
+procedure TDbEngineDBExpress.Disconnect;
+begin
+  FConnectionComponent.Connected := False;
   inherited;
 end;
 

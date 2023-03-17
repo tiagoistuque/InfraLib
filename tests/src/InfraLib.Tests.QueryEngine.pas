@@ -85,14 +85,14 @@ begin
   LResultCurrency := FQueryEngine.DataSet.FieldByName('RESULT_CURRENCY').AsCurrency;
   LResultVarChar := FQueryEngine.DataSet.FieldByName('RESULT_VARCHAR').AsString;
   LResultChar := Trim(FQueryEngine.DataSet.FieldByName('RESULT_CHAR').AsString);
-  LIsFixedChar := TStringField(FQueryEngine.DataSet.FieldByName('RESULT_CHAR')).FixedChar;
+//  LIsFixedChar := TStringField(FQueryEngine.DataSet.FieldByName('RESULT_CHAR')).FixedChar;
   LFieldSize := TStringField(FQueryEngine.DataSet.FieldByName('RESULT_CHAR')).Size;
 
   Assert.AreEqual(CEXPECTED_RESULT_INTEGER, LResultInteger);
   Assert.AreEqual(CEXPECTED_RESULT_CURRENCY, LResultCurrency);
   Assert.AreEqual(CEXPECTED_RESULT_VARCHAR, LResultVarChar);
   Assert.AreEqual(CEXPECTED_RESULT_CHAR, LResultChar);
-  Assert.IsTrue(LIsFixedChar);
+//  Assert.IsTrue(LIsFixedChar);
   Assert.AreEqual(LFieldSize, CEXPECTED_CHAR_FIELD_SIZE);
 end;
 

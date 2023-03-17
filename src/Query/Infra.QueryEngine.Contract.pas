@@ -26,7 +26,11 @@ type
     function Refresh: Boolean;
     function UpdatesPending: Boolean;
     function CancelUpdates: IQueryEngine;
+    {$IF DEFINED(INFRA_ZEOS)}
+    function Locate(const KeyFields: string; const KeyValues: Variant; Options: TLocateOptions): Boolean;
+    {$ELSE}
     function FindKey(const KeyValues: array of TVarRec): Boolean;
+    {$IFEND}
     function Params: TSQLParams;
     function SQLCommand: string;
     function RowsAffected: Integer;
@@ -34,7 +38,7 @@ type
     function RetornaAutoIncremento(const ASequenceName, ATableDest, AFieldDest: string): Integer; overload;
     function Paginate(const APage, ARowsPerPage: Integer): IQueryEngine;
     function TotalPages: Integer;
-    {$IF DEFINED(INFRA_FIREDAC)}
+    {$IF DEFINED(INFRA_FIREDAC) OR DEFINED(INFRA_ZEOS)}
     function SetAutoIncField(const AFieldName: string): IQueryEngine;
     function SetAutoIncGeneratorName(const AGeneratorName: string): IQueryEngine;
     {$IFEND}

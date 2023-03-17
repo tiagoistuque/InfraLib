@@ -36,7 +36,8 @@ uses
   Infra.DML.Generator.Firebird in '..\src\DB\Infra.DML.Generator.Firebird.pas',
   Infra.DML.Generator.MSSQL in '..\src\DB\Infra.DML.Generator.MSSQL.pas',
   InfraLib.Tests.QueryEngine in 'src\InfraLib.Tests.QueryEngine.pas',
-  Infra.DML.Generator.MSAccess in '..\src\DB\Infra.DML.Generator.MSAccess.pas';
+  Infra.DML.Generator.MSAccess in '..\src\DB\Infra.DML.Generator.MSAccess.pas',
+  Infra.QueryEngine.Zeos in '..\src\Query\Infra.QueryEngine.Zeos.pas';
 
 var
   runner : ITestRunner;
