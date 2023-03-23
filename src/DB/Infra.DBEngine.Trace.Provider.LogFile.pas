@@ -10,8 +10,8 @@ uses
 {$IFDEF FPC}
   Classes,
 {$ELSE}
-  System.Classes,
-  Winapi.Windows,
+  Classes,
+  Windows,
 {$ENDIF}
   Infra.DbEngine.Trace;
 
@@ -58,7 +58,9 @@ uses
 {$IFDEF FPC}
   SysUtils, fpJSON, SyncObjs;
 {$ELSE}
-  System.SysUtils, System.IOUtils, System.JSON, System.SyncObjs;
+  SysUtils, IOUtils,
+  {$IF CompilerVersion >= 22.0}System.JSON,{$ELSE}DBXJSON,{$IFEND}
+  SyncObjs;
 {$ENDIF}
 
 { TDbEngineTraceProviderLogFile }
@@ -112,6 +114,8 @@ var
   LValue: {$IFDEF FPC}TDbEngineTraceLogItemString{$ELSE}string{$ENDIF};
   LLogStr, LFilename, LLogName: string;
   LTextFile: TextFile;
+  LCandidate: TJSONPair;
+  J: Integer;
 begin
   if FConfig = nil then
     FConfig := TDbEngineTraceLogFileConfig.New;
@@ -145,8 +149,21 @@ begin
           if LLog.Find(LParams[Z], LValue) then
             LLogStr := LLogStr.Replace('${' + LParams[Z] + '}', LValue.AsString);
           {$ELSE}
-          if LLog.TryGetValue<string>(LParams[Z], LValue) then
-            LLogStr := LLogStr.Replace('${' + LParams[Z] + '}', LValue);
+            {$IF CompilerVersion >= 22.0}
+            if LLog.TryGetValue<string>(LParams[Z], LValue) then
+              LLogStr := LLogStr.Replace('${' + LParams[Z] + '}', LValue);
+            {$ELSE}
+            for J := 0 to LLog.Size - 1 do
+            begin
+              LCandidate := LLog.Get(J);
+              if (LCandidate.JsonString.Value = LParams[Z]) then
+              begin
+                LValue := LCandidate.JsonValue.Value;
+                LLogStr := StringReplace(LLogStr, '${' + LParams[Z] + '}', LValue, [rfReplaceAll]);
+                Break;
+              end;
+            end;
+            {$IFEND}
           {$ENDIF}
         end;
       end;
@@ -181,8 +198,8 @@ begin
   FLogName := 'TraceSQL_';
   {$ELSE}
   SetString(FDir, LPath, GetModuleFileName(HInstance, LPath, SizeOf(LPath)));
-  FDir := FDir.Replace(INVALID_PATH, EmptyStr);
-  FLogName := 'TraceSQL_' + ExtractFileName(FDir).Replace(ExtractFileExt(FDir), EmptyStr);
+  FDir := StringReplace(FDir, INVALID_PATH, EmptyStr, [rfReplaceAll]);
+  FLogName := 'TraceSQL_' + StringReplace(ExtractFileName(FDir), ExtractFileExt(FDir), EmptyStr, [rfReplaceAll]);
   FDir := ExtractFilePath(FDir) ;
   {$ENDIF}
   FDir := FDir + '\logs';

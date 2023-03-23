@@ -32,7 +32,8 @@ begin
 
   for LIndex := 0 to LMatches.Count - 1 do
   begin
-    Result[LIndex] := LMatches.Item[LIndex].Value.Substring(2, LMatches.Item[LIndex].Value.Length - 3)
+//    Result[LIndex] := LMatches.Item[LIndex].Value.Substring(2, LMatches.Item[LIndex].Value.Length - 3)
+    Result[LIndex] := Copy(LMatches.Item[LIndex].Value, 3, Length(LMatches.Item[LIndex].Value) - 3);
   end;
 end;
 
