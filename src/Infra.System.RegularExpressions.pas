@@ -151,7 +151,7 @@ type
 implementation
 
 uses
-  System.Classes, System.Variants, System.RegularExpressionsAPI, System.RegularExpressionsConsts;
+  Classes, Variants, pcre, Infra.System.RegularExpressionsConsts;
 
 { Helper classes and functions }
 
