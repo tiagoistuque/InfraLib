@@ -720,6 +720,7 @@ end;
 function TRegEx.Split(const Input: string; Count, StartPos: Integer): TArray<string>;
 var
   List: TStringList;
+  I: Integer;
 begin
   if Input <> '' then
   begin
@@ -727,7 +728,9 @@ begin
     try
       FRegEx.Subject := Input;
       FRegEx.SplitCapture(List, Count, UnicodeIndexToUTF8(Input, StartPos) + 1);
-      Result := List.ToStringArray;
+      SetLength(Result, List.Count);
+      for I := 0 to List.Count - 1 do
+        Result[I] := List.Strings[I];
     finally
       List.Free;
     end;
@@ -756,18 +759,18 @@ function TRegEx.UnicodeIndexToUTF8(const S: string; AIndex: Integer): Integer;
 var
   I: Integer;
 begin
-  if AIndex > S.Length + 1 then
+  if AIndex > Length(S) + 1 then
     raise ERegularExpressionError.CreateResFmt(@SRegExIndexOutOfBounds, [AIndex]);
 
   Result := 0;
   I := 0;
   while I < (AIndex - 1) do
   begin
-    if S.Chars[I] <= #$007F then
+    if S[I] <= #$007F then
       Inc(Result)
-    else if S.Chars[I] <= #$7FF then
+    else if S[I] <= #$7FF then
       Inc(Result, 2)
-    else if IsLeadChar(S.Chars[I]) then
+    else if IsLeadChar(S[I]) then
     begin
       Inc(I);
       Inc(Result, 4);
