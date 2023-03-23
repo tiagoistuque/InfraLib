@@ -21,7 +21,6 @@ type
   private
     FQuery: TFDQuery;
     FParams: TSQLParams;
-    FComandoSQL: TStringList;
     FRowsAffected: Integer;
   public
     constructor Create(const AConnection: TDbEngineAbstract); override;
@@ -43,7 +42,6 @@ type
     function CancelUpdates: IQueryEngine; override;
     function FindKey(const KeyValues: array of TVarRec): Boolean; override;
     function Params: TSQLParams; override;
-    function SQLCommand: string; override;
     function TotalPages: Integer; override;
     function RowsAffected: Integer; override;
     function RetornaAutoIncremento(const ASequenceName: string): Integer; overload; override;
@@ -94,7 +92,6 @@ constructor TQueryEngineFireDAC.Create(
   const AConnection: TDbEngineAbstract);
 begin
   inherited;
-  FDbEngine := AConnection;
   FQuery := TFDQuery.Create(nil);
   FQuery.Connection := TFDConnection(AConnection.ConnectionComponent);
   FQuery.CachedUpdates := True;
@@ -102,7 +99,6 @@ begin
   FQuery.FetchOptions.RowsetSize := -1;
   FQuery.ResourceOptions.ParamCreate := False;
   FParams := TSQLParams.Create;
-  FComandoSQL := TStringList.Create;
 end;
 
 function TQueryEngineFireDAC.DataSet: TDataSet;
@@ -115,7 +111,6 @@ begin
   FQuery.Close;
   FQuery.Free;
   FParams.Free;
-  FComandoSQL.Free;
   inherited;
 end;
 
@@ -123,6 +118,7 @@ function TQueryEngineFireDAC.Exec(const AReturn: Boolean = False): IQueryEngine;
 begin
   Result := Self;
   try
+    FExecutionStartTime := Now;
     FQuery.Close;
     FQuery.IndexFieldNames := EmptyStr;
     FQuery.SQL.Clear;
@@ -138,6 +134,7 @@ begin
       else
         FQuery.ExecSQL;
     end;
+    FExecutionEndTime := Now;
     FRowsAffected := FQuery.RowsAffected;
   except
     on E: Exception do
@@ -170,6 +167,7 @@ function TQueryEngineFireDAC.Open: IQueryEngine;
 begin
   Result := Self;
   try
+    FExecutionStartTime := Now;
     FQuery.Close;
     FQuery.IndexFieldNames := EmptyStr;
     if FPaginate and (FRowsPerPage > 0) and (FPage > 0) then
@@ -178,6 +176,7 @@ begin
     if FParams.Count > 0 then
       FQuery.Params.Assign(FParams);
     FQuery.Open;
+    FExecutionEndTime := Now;
     if FPaginate then
       FTotalPages := FQuery.FieldByName(FDMLGenerator.GetColumnNameTotalPages).AsInteger;
   except
@@ -271,11 +270,6 @@ begin
   if FQuery.Active then
     raise Exception.Create('SetAutoIncGeneratorName - Operation not allowed with active dataset.');
   FQuery.UpdateOptions.GeneratorName := AGeneratorName;
-end;
-
-function TQueryEngineFireDAC.SQLCommand: string;
-begin
-  Result := FComandoSQL.Text;
 end;
 
 function TQueryEngineFireDAC.TotalPages: Integer;

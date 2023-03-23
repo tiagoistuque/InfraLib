@@ -19,6 +19,7 @@ type
     FPort: Integer;
     FUser: string;
     FPassword: string;
+    FSaveLog: Boolean;
   protected
     function Driver: TDBDriver; override;
     function Host: string; override;
@@ -27,6 +28,7 @@ type
     function CharSet: string; override;
     function User: string; override;
     function Password: string; override;
+    function SaveTrace: Boolean; override;
     function GetExecuteMigrations: Boolean; override;
     function Driver(const AValue: TDBDriver): IDbEngineConfig; overload; override;
     function Host(const AValue: string): IDbEngineConfig; overload; override;
@@ -35,6 +37,7 @@ type
     function CharSet(const AValue: string): IDbEngineConfig; overload; override;
     function User(const AValue: string): IDbEngineConfig; overload; override;
     function Password(const AValue: string): IDbEngineConfig; overload; override;
+    function SaveTrace(const AValue: Boolean): IDbEngineConfig; overload; override;
     function SetExecuteMigrations(const AValue: Boolean): IDbEngineConfig; overload; override;
   public
     constructor Create(const APrefixVariable: string); override;
@@ -44,6 +47,17 @@ type
 implementation
 
 { TDBConfigMemory }
+
+function TDBConfigMemory.SaveTrace(const AValue: Boolean): IDbEngineConfig;
+begin
+  Result := Self;
+  FSaveLog := AValue;
+end;
+
+function TDBConfigMemory.SaveTrace: Boolean;
+begin
+  Result := FSaveLog;
+end;
 
 function TDBConfigMemory.SetExecuteMigrations(
   const AValue: Boolean): IDbEngineConfig;

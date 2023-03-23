@@ -20,7 +20,6 @@ type
     FQuery: TZQuery;
     FParams: TSQLParams;
     FZSequence: TZSequence;
-    FComandoSQL: TStringList;
     FRowsAffected: Integer;
   public
     constructor Create(const AConnection: TDbEngineAbstract); override;
@@ -42,7 +41,6 @@ type
     function CancelUpdates: IQueryEngine; override;
     function Locate(const KeyFields: string; const KeyValues: Variant; Options: TLocateOptions): Boolean; override;
     function Params: TSQLParams; override;
-    function SQLCommand: string; override;
     function TotalPages: Integer; override;
     function RowsAffected: Integer; override;
     function RetornaAutoIncremento(const ASequenceName: string): Integer; overload; override;
@@ -99,12 +97,10 @@ constructor TQueryEngineZeos.Create(
   const AConnection: TDbEngineAbstract);
 begin
   inherited;
-  FDbEngine := AConnection;
   FQuery := TZQuery.Create(nil);
   FQuery.Connection := TZConnection(AConnection.ConnectionComponent);
   FQuery.CachedUpdates := True;
   FParams := TSQLParams.Create;
-  FComandoSQL := TStringList.Create;
   FZSequence := TZSequence.Create(nil);
   FZSequence.Connection := TZConnection(AConnection.ConnectionComponent);
   FQuery.Sequence := FZSequence;
@@ -120,7 +116,6 @@ begin
   FQuery.Close;
   FQuery.Free;
   FParams.Free;
-  FComandoSQL.Free;
   inherited;
 end;
 
@@ -128,6 +123,7 @@ function TQueryEngineZeos.Exec(const AReturn: Boolean = False): IQueryEngine;
 begin
   Result := Self;
   try
+    FExecutionStartTime := Now;
     FQuery.Close;
     FQuery.IndexFieldNames := EmptyStr;
     FQuery.SQL.Clear;
@@ -140,6 +136,7 @@ begin
     begin
       FQuery.ExecSQL;
     end;
+    FExecutionEndTime := Now;
     FRowsAffected := FQuery.RowsAffected;
   except
     on E: Exception do
@@ -167,6 +164,7 @@ function TQueryEngineZeos.Open: IQueryEngine;
 begin
   Result := Self;
   try
+    FExecutionStartTime := Now;
     FQuery.Close;
     FQuery.IndexFieldNames := EmptyStr;
     if FPaginate and (FRowsPerPage > 0) and (FPage > 0) then
@@ -175,6 +173,7 @@ begin
     if FParams.Count > 0 then
       FQuery.Params.Assign(FParams);
     FQuery.Open;
+    FExecutionEndTime := Now;
     if FPaginate then
       FTotalPages := FQuery.FieldByName(FDMLGenerator.GetColumnNameTotalPages).AsInteger;
   except
@@ -254,11 +253,6 @@ function TQueryEngineZeos.SetAutoIncGeneratorName(const AGeneratorName: string):
 begin
   Result := Self;
   FZSequence.SequenceName := AGeneratorName;
-end;
-
-function TQueryEngineZeos.SQLCommand: string;
-begin
-  Result := FComandoSQL.Text;
 end;
 
 function TQueryEngineZeos.TotalPages: Integer;

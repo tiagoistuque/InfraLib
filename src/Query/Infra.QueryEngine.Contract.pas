@@ -33,6 +33,7 @@ type
     {$IFEND}
     function Params: TSQLParams;
     function SQLCommand: string;
+    function SQLCommandParameterized: string;
     function RowsAffected: Integer;
     function RetornaAutoIncremento(const ASequenceName: string): Integer; overload;
     function RetornaAutoIncremento(const ASequenceName, ATableDest, AFieldDest: string): Integer; overload;
@@ -43,6 +44,8 @@ type
     function SetAutoIncGeneratorName(const AGeneratorName: string): IQueryEngine;
     {$IFEND}
     function DbEngine: TDbEngineAbstract;
+    function ExecutionStartTime: TDateTime;
+    function ExecutionEndTime: TDateTime;
   end;
 
 implementation

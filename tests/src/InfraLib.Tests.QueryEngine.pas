@@ -23,13 +23,17 @@ type
     procedure TearDown;
     [Test]
     procedure TestSelectDataTypes;
+    [Test]
+    procedure TestSQLCommand;
   end;
 
 implementation
 
 
 uses
-  DB;
+  DB,
+  Infra.DBEngine.Trace,
+  Infra.DBEngine.Trace.Provider.LogFile;
 
 procedure TTestQueryEngine.Setup;
 begin
@@ -41,9 +45,14 @@ begin
     .Database(ExtractFilePath(ParamStr(0)) + 'data\TESTE.FDB')
     .CharSet('UTF8')
     .User('SYSDBA')
-    .Password('masterkey');
+    .Password('masterkey')
+    .SaveTrace(True);
+
   FEngine := TDBEngineFactory.New(FConfig);
   FQueryEngine := TQueryEngine.New(TDbEngine(FEngine));
+
+  TDbEngineTraceManager.RegisterProvider(TDbEngineTraceProviderLogFile.New());
+
 end;
 
 procedure TTestQueryEngine.TearDown;
@@ -94,6 +103,28 @@ begin
   Assert.AreEqual(CEXPECTED_RESULT_CHAR, LResultChar);
 //  Assert.IsTrue(LIsFixedChar);
   Assert.AreEqual(LFieldSize, CEXPECTED_CHAR_FIELD_SIZE);
+end;
+
+procedure TTestQueryEngine.TestSQLCommand;
+var
+  LSQLCommand: string;
+begin
+  FQueryEngine.Reset
+    .Add('SELECT')
+    .Add(':pTipoString,')
+    .Add(':pTipoInteger,')
+    .Add(':pTipoNumeric,')
+    .Add(':pTipoDate,')
+    .Add(':pTipoDateTime')
+    .Add('FROM RDB$DATABASE')
+    .Add(';');
+  FQueryEngine.Params.ParamByName('pTipoString').AsString := 'String';
+  FQueryEngine.Params.ParamByName('pTipoInteger').AsInteger := 2023;
+  FQueryEngine.Params.ParamByName('pTipoNumeric').AsFloat := 2023.03;
+  FQueryEngine.Params.ParamByName('pTipoDate').AsDate := Date;
+  FQueryEngine.Params.ParamByName('pTipoDateTime').AsDateTime := Now;
+  LSQLCommand := FQueryEngine.SQLCommand;
+  Assert.DoesNotContain(':', LSQLCommand);
 end;
 
 initialization

@@ -12,6 +12,7 @@ uses
   ZDataSet,
   ZCompatibility,
   ZDbcIntfs,
+  ZSqlMonitor,
 
   Infra.DBEngine.Abstract,
   Infra.DBEngine.Contract;
@@ -22,6 +23,8 @@ type
     FConnectionComponent: TZConnection;
     FInjectedConnection: Boolean;
     FRowsAffected: Integer;
+    FZSQLMonitor: TZSQLMonitor;
+    procedure TraceLogEvent(Sender: TObject; Event: TZLoggingEvent);
   public
     function ConnectionComponent: TComponent; override;
     procedure Connect; override;
@@ -47,6 +50,7 @@ implementation
 
 uses
   {$IF DEFINED(INFRA_ORMBR)} dbebr.factory.Zeos, {$IFEND}
+  Infra.DBEngine.Trace, Infra.DBEngine.Context,
   Infra.DBDriver.Register;
 
 procedure TDbEngineZeos.CommitTX;
@@ -86,6 +90,14 @@ begin
     TransactIsolationLevel := tiReadCommitted;
     Connected := True;
   end;
+  if ADbConfig.SaveTrace then
+  begin
+    FZSQLMonitor := TZSQLMonitor.Create(nil);
+    FZSQLMonitor.Active := True;
+    FZSQLMonitor.AutoSave := False;
+    FZSQLMonitor.OnLogTrace := TraceLogEvent;
+
+  end;
   {$IF DEFINED(INFRA_ORMBR)}
   FDBConnection := TFactoryZeos.Create(FConnectionComponent, TDBDriverRegister.GetDriverName(ADbConfig.Driver));
   {$IFEND}
@@ -98,6 +110,10 @@ begin
     if FConnectionComponent.InTransaction then
       FConnectionComponent.Rollback;
     FConnectionComponent.Free;
+  end;
+  if Assigned(FZSQLMonitor) then
+  begin
+    FZSQLMonitor.Free;
   end;
   inherited;
 end;
@@ -189,6 +205,22 @@ begin
     FConnectionComponent.Connected := True;
   if (not FInjectedConnection) then
     FConnectionComponent.StartTransaction;
+end;
+
+procedure TDbEngineZeos.TraceLogEvent(Sender: TObject; Event: TZLoggingEvent);
+var
+  Msg: string;
+  LDbEngineTraceLog: TDbEngineTrace;
+  LDbEngineContextRequest: TDbEngineContextRequest;
+begin
+  Msg := Event.Message;
+  LDbEngineTraceLog := TDbEngineTrace.Create(Msg);
+  try
+    LDbEngineContextRequest := TDbEngineTraceManager.DbEngineContextRequest();
+    LDbEngineContextRequest(LDbEngineTraceLog);
+  finally
+    LDbEngineTraceLog.Free;
+  end;
 end;
 
 end.

@@ -9,6 +9,7 @@ uses
   SqlExpr,
   SimpleDS,
   DBXCommon,
+  DBCommonTypes,
   DBXFirebird,
 
   Infra.DBEngine.Abstract,
@@ -22,13 +23,15 @@ type
     FInjectedConnection: Boolean;
     FInjectedTransaction: Boolean;
     FRowsAffected: Integer;
+    FDbEngineConfig: IDbEngineConfig;
+    function InvokeCallBack(TraceInfo: TDBXTraceInfo): CBRType;
   public
     function ConnectionComponent: TComponent; override;
     procedure Connect; override;
     procedure Disconnect; override;
     function ExecSQL(const ASQL: string): Integer; override;
-    function ExceSQL(const ASQL: string; var AResultDataSet: TDataSet ): Integer; override;
-    function OpenSQL(const ASQL: string; var AResultDataSet: TDataSet ): Integer; override;
+    function ExceSQL(const ASQL: string; var AResultDataSet: TDataSet): Integer; override;
+    function OpenSQL(const ASQL: string; var AResultDataSet: TDataSet): Integer; override;
     procedure StartTx; override;
     procedure CommitTX; override;
     procedure RollbackTx; override;
@@ -45,7 +48,10 @@ type
 
 implementation
 
-{$IF DEFINED(INFRA_ORMBR)} uses dbebr.factory.DBExpress; {$IFEND}
+uses
+  {$IF DEFINED(INFRA_ORMBR)}dbebr.factory.DBExpress, {$IFEND}
+  Infra.DBEngine.Trace, Infra.DBEngine.Context,
+  Infra.DBDriver.Register;
 
 procedure TDbEngineDBExpress.CommitTX;
 begin
@@ -69,10 +75,10 @@ begin
   inherited;
   if Assigned(ADbConfig) then
   begin
+    FDbEngineConfig := ADbConfig;
     FConnectionComponent := TSQLConnection.Create(nil);
     with FConnectionComponent do
     begin
-
       DriverName := 'Firebird';
       GetDriverFunc := 'getSQLDriverINTERBASE';
       KeepConnection := True;
@@ -83,16 +89,21 @@ begin
         Clear;
         Add('Database=' + Format('%s/%d:%s', [ADbConfig.Host, ADbConfig.Port, FDBName]));
         Add('Rolename=Rolename');
-        Add('User_name=' + ADBConfig.User);
-        Add('Password=' + ADBConfig.Password);
+        Add('User_name=' + ADbConfig.User);
+        Add('Password=' + ADbConfig.Password);
         Add('SQLDialect=3');
-        Add('ServerCharSet=' + ADBConfig.CharSet);
+        Add('ServerCharSet=' + ADbConfig.CharSet);
         Add('Isolationlevel=ReadCommitted');
       end;
       Connected := True;
     end;
+    if ADbConfig.SaveTrace then
+    begin
+      FConnectionComponent.SetTraceEvent(InvokeCallBack);
+    end;
+
     {$IF DEFINED(INFRA_ORMBR)}
-    FDBConnection := TFactoryDBExpress.Create(FConnectionComponent, dnFirebird);
+    FDBConnection := TFactoryDBExpress.Create(FConnectionComponent, TDBDriverRegister.GetDriverName(ADbConfig.Driver));
     {$IFEND}
   end;
 end;
@@ -141,8 +152,8 @@ end;
 procedure TDbEngineDBExpress.InjectConnection(AConn: TComponent;
   ATransactionObject: TObject);
 begin
-  if not (AConn is TSQLConnection) then
-    raise Exception.Create('Invalid connection component instance for DBExpress. '+Self.UnitName);
+  if not(AConn is TSQLConnection) then
+    raise Exception.Create('Invalid connection component instance for DBExpress. ' + Self.UnitName);
   if Assigned(FConnectionComponent) then
     FreeAndNil(FConnectionComponent);
   FConnectionComponent := TSQLConnection(AConn);
@@ -157,6 +168,23 @@ end;
 function TDbEngineDBExpress.InTransaction: Boolean;
 begin
   Result := FConnectionComponent.InTransaction or Assigned(FTransactionComponent);
+end;
+
+function TDbEngineDBExpress.InvokeCallBack(TraceInfo: TDBXTraceInfo): CBRType;
+var
+  Msg: string;
+  LDbEngineTraceLog: TDbEngineTrace;
+  LDbEngineContextRequest: TDbEngineContextRequest;
+begin
+  Result := cbrUSEDEF;
+  Msg := TraceInfo.Message;
+  LDbEngineTraceLog := TDbEngineTrace.Create(Msg);
+  try
+    LDbEngineContextRequest := TDbEngineTraceManager.DbEngineContextRequest();
+    LDbEngineContextRequest(LDbEngineTraceLog);
+  finally
+    LDbEngineTraceLog.Free;
+  end;
 end;
 
 function TDbEngineDBExpress.IsConnected: Boolean;
@@ -197,7 +225,7 @@ begin
   if InTransaction then
     raise EStartTransactionException.Create('Necessário commit ou rollback da transação anterior para iniciar uma nova transação.');
   if (not FInjectedConnection) and (not FInjectedTransaction) then
-    FTransactionComponent :=  FConnectionComponent.DBXConnection.BeginTransaction(TDBXIsolations.ReadCommitted);
+    FTransactionComponent := FConnectionComponent.DBXConnection.BeginTransaction(TDBXIsolations.ReadCommitted);
 end;
 
 end.

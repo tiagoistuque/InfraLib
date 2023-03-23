@@ -37,7 +37,18 @@ uses
   Infra.DML.Generator.MSSQL in '..\src\DB\Infra.DML.Generator.MSSQL.pas',
   InfraLib.Tests.QueryEngine in 'src\InfraLib.Tests.QueryEngine.pas',
   Infra.DML.Generator.MSAccess in '..\src\DB\Infra.DML.Generator.MSAccess.pas',
-  Infra.QueryEngine.Zeos in '..\src\Query\Infra.QueryEngine.Zeos.pas';
+  Infra.QueryEngine.Zeos in '..\src\Query\Infra.QueryEngine.Zeos.pas',
+  Infra.DBEngine.Trace.Types in '..\src\DB\Infra.DBEngine.Trace.Types.pas',
+  Infra.DBEngine.Trace.Provider in '..\src\DB\Infra.DBEngine.Trace.Provider.pas',
+  Infra.DBEngine.Trace.Utils in '..\src\DB\Infra.DBEngine.Trace.Utils.pas',
+  PerlRegEx in '..\src\PerlRegEx\PerlRegEx.pas',
+  Infra.System.RegularExpressions in '..\src\Infra.System.RegularExpressions.pas',
+  pcre in '..\src\PerlRegEx\pcre.pas',
+  Infra.DBEngine.Trace.Thread in '..\src\DB\Infra.DBEngine.Trace.Thread.pas',
+  Infra.DBEngine.Trace.Manager in '..\src\DB\Infra.DBEngine.Trace.Manager.pas',
+  Infra.DBEngine.Trace.Provider.LogFile in '..\src\DB\Infra.DBEngine.Trace.Provider.LogFile.pas',
+  Infra.DBEngine.Trace in '..\src\DB\Infra.DBEngine.Trace.pas',
+  Infra.DBEngine.Context in '..\src\DB\Infra.DBEngine.Context.pas';
 
 var
   runner : ITestRunner;

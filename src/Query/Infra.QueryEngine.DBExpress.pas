@@ -19,7 +19,6 @@ type
     FClientDataSet: TClientDataSet;
     FProvider: TDataSetProvider;
     FParams: TSQLParams;
-    FComandoSQL: TStringList;
     FRowsAffected: Integer;
   public
     constructor Create(const AConnection: TDbEngineAbstract); override;
@@ -41,7 +40,6 @@ type
     function CancelUpdates: IQueryEngine; override;
     function FindKey(const KeyValues: array of TVarRec): Boolean; override;
     function Params: TSQLParams; override;
-    function SQLCommand: string; override;
     function TotalPages: Integer; override;
     function RowsAffected: Integer; override;
     function RetornaAutoIncremento(const ASequenceName: string): Integer; overload; override;
@@ -93,7 +91,7 @@ end;
 constructor TQueryEngineDBExpress.Create(
   const AConnection: TDbEngineAbstract);
 begin
-  FDbEngine := AConnection;
+  inherited;
   FQuery := TSQLQuery.Create(DM);
   FQuery.SQLConnection := TSQLConnection(AConnection.ConnectionComponent);
 
@@ -108,7 +106,6 @@ begin
   FClientDataSet.ProviderName := FProvider.Name;
 
   FParams := TSQLParams.Create;
-  FComandoSQL := TStringList.Create;
 end;
 
 function TQueryEngineDBExpress.DataSet: TDataSet;
@@ -126,7 +123,6 @@ begin
   FProvider.Free;
   FQuery.Close;
   FQuery.Free;
-  FComandoSQL.Free;
   inherited;
 end;
 
@@ -134,6 +130,7 @@ function TQueryEngineDBExpress.Exec(const AReturn: Boolean = False): IQueryEngin
 begin
   Result := Self;
   try
+    FExecutionStartTime := Now;
     FQuery.Close;
     FQuery.SQL.Clear;
     FQuery.SQL.Assign(FComandoSQL);
@@ -143,6 +140,7 @@ begin
       FQuery.Open
     else
       FQuery.ExecSQL;
+    FExecutionEndTime := Now;
     FRowsAffected := FQuery.RowsAffected;
   except
     on E: Exception do
@@ -175,6 +173,7 @@ function TQueryEngineDBExpress.Open: IQueryEngine;
 begin
   Result := Self;
   try
+    FExecutionStartTime := Now;
     FQuery.Close;
     FClientDataSet.Close;
     FQuery.SQL.Clear;
@@ -185,6 +184,7 @@ begin
       FQuery.Params.Assign(FParams);
     FQuery.Open;
     FClientDataSet.Open;
+    FExecutionEndTime := Now;
     if FPaginate then
       FTotalPages := FClientDataSet.FieldByName(FDMLGenerator.GetColumnNameTotalPages).AsInteger;
   except
@@ -251,11 +251,6 @@ end;
 function TQueryEngineDBExpress.RowsAffected: Integer;
 begin
   Result := FRowsAffected;
-end;
-
-function TQueryEngineDBExpress.SQLCommand: string;
-begin
-  Result := FComandoSQL.Text;
 end;
 
 function TQueryEngineDBExpress.TotalPages: Integer;

@@ -18,6 +18,7 @@ type
     function CharSet: string; override;
     function User: string; override;
     function Password: string; override;
+    function SaveTrace: Boolean; override;
     function GetExecuteMigrations: Boolean; override;
   public
     constructor Create(const APrefixVariable: string); override;
@@ -74,6 +75,7 @@ begin
     Result := '127.0.0.1';
 end;
 
+
 class function TDBConfigEnvironmentVar.New(
   const APrefixVariable: string): IDbEngineConfig;
 begin
@@ -90,6 +92,11 @@ end;
 function TDBConfigEnvironmentVar.Port: Integer;
 begin
   Result := StrToIntDef(GetEnvironmentVariable(FPrefixVariable + SConfigPort), 3053);
+end;
+
+function TDBConfigEnvironmentVar.SaveTrace: Boolean;
+begin
+  Result := StrToBoolDef(GetEnvironmentVariable(FPrefixVariable + SConfigSaveTrace), False);
 end;
 
 function TDBConfigEnvironmentVar.User: string;

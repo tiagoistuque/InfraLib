@@ -9,7 +9,7 @@ uses
   DB,
   SysUtils,
   StrUtils,
-  Classes;
+  Classes, Infra.DBEngine.Context;
 
 type
   {$SCOPEDENUMS ON}
@@ -47,6 +47,7 @@ type
     function CharSet: string; overload;
     function User: string; overload;
     function Password: string; overload;
+    function SaveTrace: Boolean; overload;
     function GetExecuteMigrations: Boolean; overload;
     function Driver(const AValue: TDBDriver): IDbEngineConfig; overload;
     function Host(const AValue: string): IDbEngineConfig; overload;
@@ -55,6 +56,7 @@ type
     function CharSet(const AValue: string): IDbEngineConfig; overload;
     function User(const AValue: string): IDbEngineConfig; overload;
     function Password(const AValue: string): IDbEngineConfig; overload;
+    function SaveTrace(const aValue: Boolean): IDbEngineConfig; overload;
     function SetExecuteMigrations(const AValue: Boolean): IDbEngineConfig; overload;
     function ConfigFileName: TFileName;
   end;
@@ -90,6 +92,7 @@ const
   SConfigCharSet = 'DBCONFIG_CHARSET';
   SConfigUser = 'DBCONFIG_USER';
   SConfigPassword = 'DBCONFIG_PASSWORD';
+  SConfigSaveTrace = 'DBCONFIG_SAVETRACE';
   SConfigBuildDB = 'DBCONFIG_BUILD_DB';
 
   {$IF DEFINED(INFRA_ORMBR)}

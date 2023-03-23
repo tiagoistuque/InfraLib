@@ -14,10 +14,7 @@ type
   private
     FIniFile: TIniFile;
     FFileName: TFileName;
-
-  const
-    ASECTIONDB = 'DBCONFIG';
-
+    FSaveLog: Boolean;
   protected
     function Driver: TDBDriver; override;
     function Host: string; override;
@@ -26,6 +23,7 @@ type
     function CharSet: string; override;
     function User: string; override;
     function Password: string; override;
+    function SaveTrace: Boolean; override;
     function GetExecuteMigrations: Boolean; overload; override;
     function Driver(const AValue: TDBDriver): IDbEngineConfig; overload; override;
     function Host(const AValue: string): IDbEngineConfig; overload; override;
@@ -34,6 +32,7 @@ type
     function CharSet(const AValue: string): IDbEngineConfig; overload; override;
     function User(const AValue: string): IDbEngineConfig; overload; override;
     function Password(const AValue: string): IDbEngineConfig; overload; override;
+    function SaveTrace(const AValue: Boolean): IDbEngineConfig; overload; override;
     function SetExecuteMigrations(const AValue: Boolean): IDbEngineConfig; overload; override;
     function ConfigFileName: TFileName; override;
 
@@ -49,9 +48,23 @@ implementation
 uses
   Infra.SysInfo;
 
+const
+  ASECTIONDB = 'DBCONFIG';
+
 function TDBConfigIniFile.CharSet: string;
 begin
   Result := FIniFile.ReadString(ASECTIONDB, SConfigCharSet, '');
+end;
+
+function TDBConfigIniFile.SaveTrace(const AValue: Boolean): IDbEngineConfig;
+begin
+  Result := Self;
+  FSaveLog := AValue;
+end;
+
+function TDBConfigIniFile.SaveTrace: Boolean;
+begin
+  Result := FSaveLog;
 end;
 
 function TDBConfigIniFile.SetExecuteMigrations(const AValue: Boolean): IDbEngineConfig;

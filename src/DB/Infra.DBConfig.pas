@@ -10,6 +10,7 @@ type
   TDBConfigDef = class abstract(TInterfacedObject, IDbEngineConfig)
   protected
     FPrefixVariable: string;
+  protected
     function Driver: TDBDriver; overload; virtual; abstract;
     function Host: string; overload; virtual; abstract;
     function Port: Integer; overload; virtual; abstract;
@@ -17,6 +18,7 @@ type
     function CharSet: string; overload; virtual; abstract;
     function User: string; overload; virtual; abstract;
     function Password: string; overload; virtual; abstract;
+    function SaveTrace: Boolean; overload; virtual; abstract;
     function GetExecuteMigrations: Boolean; overload; virtual; abstract;
     function Driver(const AValue: TDBDriver): IDbEngineConfig; overload; virtual; abstract;
     function Host(const AValue: string): IDbEngineConfig; overload; virtual; abstract;
@@ -25,6 +27,7 @@ type
     function CharSet(const AValue: string): IDbEngineConfig; overload; virtual; abstract;
     function User(const AValue: string): IDbEngineConfig; overload; virtual; abstract;
     function Password(const AValue: string): IDbEngineConfig; overload; virtual; abstract;
+    function SaveTrace(const AValue: Boolean): IDbEngineConfig; overload; virtual; abstract;
     function SetExecuteMigrations(const AValue: Boolean): IDbEngineConfig; overload; virtual; abstract;
     function ConfigFileName: TFileName; virtual; abstract;
   public
@@ -35,3 +38,4 @@ type
 implementation
 
 end.
+

@@ -132,7 +132,6 @@ end;
 
 destructor TDbEngineAbstract.Destroy;
 begin
-
   inherited;
 end;
 

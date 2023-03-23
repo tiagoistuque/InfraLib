@@ -60,7 +60,8 @@ begin
     .Database(ExtractFilePath(ParamStr(0)) + 'data\TESTE.FDB')
     .CharSet('UTF8')
     .User('SYSDBA')
-    .Password('masterkey');
+    .Password('masterkey')
+    .SaveTrace(True);
   FEngine := TDBEngineFactory.New(FConfig);
 end;
 
@@ -136,6 +137,6 @@ end;
 
 initialization
 
-// TDUnitX.RegisterTestFixture(TTestDBEngine);
+ TDUnitX.RegisterTestFixture(TTestDBEngine);
 
 end.
