@@ -214,7 +214,7 @@ var
   LDbEngineContextRequest: TDbEngineContextRequest;
 begin
   Msg := Event.Message;
-  LDbEngineTraceLog := TDbEngineTrace.Create(Msg);
+  LDbEngineTraceLog := TDbEngineTrace.Create(Msg, FDBName);
   try
     LDbEngineContextRequest := TDbEngineTraceManager.DbEngineContextRequest();
     LDbEngineContextRequest(LDbEngineTraceLog);

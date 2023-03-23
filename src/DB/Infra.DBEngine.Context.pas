@@ -10,11 +10,13 @@ type
   private
     FTraceLog: string;
     FTimeStamp: TDateTime;
+    FDatabase: String;
 
   public
-    constructor Create(const ATraceLog: string);
+    constructor Create(const ATraceLog: string; const aDatabase: string);
     property TimeStamp: TDateTime read FTimeStamp;
     property TraceLog: string read FTraceLog;
+    property Database: String read FDatabase;
   end;
 
 
@@ -24,9 +26,10 @@ implementation
 
 { TDbEngineContext }
 
-constructor TDbEngineTrace.Create(const ATraceLog: string);
+constructor TDbEngineTrace.Create(const ATraceLog: string; const aDatabase: string);
 begin
   FTraceLog := ATraceLog;
+  FDatabase := aDatabase;
   FTimeStamp := Now();
 end;
 

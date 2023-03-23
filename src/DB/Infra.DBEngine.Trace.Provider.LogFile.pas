@@ -65,7 +65,7 @@ uses
 
 const
   DEFAULT_DBENGINE_LOG_FORMAT =
-    '[${time}] "${request_tracelog}"';
+    '[${time}] "${database}" "${request_tracelog}"';
 
 constructor TDbEngineTraceProviderLogFile.Create(const AConfig: TDbEngineTraceLogFileConfig = nil);
 begin
@@ -178,11 +178,11 @@ begin
   FLogFormat := DEFAULT_DBENGINE_LOG_FORMAT;
   {$IFDEF FPC}
   FDir := ExtractFileDir(ParamStr(0));
-  FLogName := 'access';
+  FLogName := 'TraceSQL_';
   {$ELSE}
   SetString(FDir, LPath, GetModuleFileName(HInstance, LPath, SizeOf(LPath)));
   FDir := FDir.Replace(INVALID_PATH, EmptyStr);
-  FLogName := 'access_' + ExtractFileName(FDir).Replace(ExtractFileExt(FDir), EmptyStr);
+  FLogName := 'TraceSQL_' + ExtractFileName(FDir).Replace(ExtractFileExt(FDir), EmptyStr);
   FDir := ExtractFilePath(FDir) ;
   {$ENDIF}
   FDir := FDir + '\logs';

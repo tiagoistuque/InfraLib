@@ -56,6 +56,7 @@ begin
   try
     LLog.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('time', TDbEngineTraceManager.ValidateValue(AReq.TimeStamp, False));
     LLog.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('time_short', TDbEngineTraceManager.ValidateValue(AReq.TimeStamp, True));
+    LLog.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('database', TDbEngineTraceManager.ValidateValue(AReq.Database));
     LLog.{$IFDEF FPC}Add{$ELSE}AddPair{$ENDIF}('request_tracelog', TDbEngineTraceManager.ValidateValue(AReq.TraceLog));
   finally
     TDbEngineTraceManager.GetDefaultManager.NewLog(LLog);

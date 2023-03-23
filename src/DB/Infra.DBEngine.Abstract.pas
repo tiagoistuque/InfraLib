@@ -23,6 +23,7 @@ type
     FDBName: string;
     FAutoExcuteMigrations: Boolean;
     FDbDriver: TDBDriver;
+    FDbEngineConfig: IDbEngineConfig;
     {$IF DEFINED(INFRA_ORMBR)}
     FDBConnection: IDBConnection;
     {$IFEND}
@@ -110,6 +111,7 @@ var
   LDBNameExtension: string;
   LDBNameWithoutExtension: string;
 begin
+  FDbEngineConfig := ADbConfig;
   FAutoExcuteMigrations := False;
   if Assigned(ADbConfig) then
   begin

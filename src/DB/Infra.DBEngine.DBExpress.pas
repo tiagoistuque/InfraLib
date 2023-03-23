@@ -23,7 +23,6 @@ type
     FInjectedConnection: Boolean;
     FInjectedTransaction: Boolean;
     FRowsAffected: Integer;
-    FDbEngineConfig: IDbEngineConfig;
     function InvokeCallBack(TraceInfo: TDBXTraceInfo): CBRType;
   public
     function ConnectionComponent: TComponent; override;
@@ -75,7 +74,6 @@ begin
   inherited;
   if Assigned(ADbConfig) then
   begin
-    FDbEngineConfig := ADbConfig;
     FConnectionComponent := TSQLConnection.Create(nil);
     with FConnectionComponent do
     begin
@@ -178,7 +176,7 @@ var
 begin
   Result := cbrUSEDEF;
   Msg := TraceInfo.Message;
-  LDbEngineTraceLog := TDbEngineTrace.Create(Msg);
+  LDbEngineTraceLog := TDbEngineTrace.Create(Msg, FDBName);
   try
     LDbEngineContextRequest := TDbEngineTraceManager.DbEngineContextRequest();
     LDbEngineContextRequest(LDbEngineTraceLog);
