@@ -233,7 +233,7 @@ end;
 
 function TGroup.GetValue: string;
 begin
-  Result := FValue.Substring(FIndex - 1, FLength);
+  Result := Copy(FValue, FIndex, FLength);
 end;
 
 { TGroupCollection }
