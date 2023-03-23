@@ -3,7 +3,8 @@ unit Infra.DBEngine.Trace.Types;
 interface
 
 uses
-  JSON, Generics.Collections;
+  {$IF CompilerVersion >= 22.0}System.JSON,{$ELSE}DBXJSON,{$IFEND}
+  Generics.Collections;
 
 type
   TDbEngineTraceCache = TObjectList<TJSONObject>;

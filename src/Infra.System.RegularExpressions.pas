@@ -1,10 +1,10 @@
 unit Infra.System.RegularExpressions;
 
 interface
-{$HPPEMIT LEGACYHPP}
+//{$HPPEMIT LEGACYHPP}
 
 uses
-  System.SysUtils, System.RegularExpressionsCore;
+  SysUtils, PerlRegEx;
 
 type
   TRegExOption = (roNone, roIgnoreCase, roMultiLine, roExplicitCapture,
@@ -109,7 +109,7 @@ type
     FMatchEvaluator: TMatchEvaluator;
     FNotifier: IInterface;
     FRegEx: TPerlRegEx;
-    procedure InternalOnReplace(Sender: TObject; var ReplaceWith: string);
+    procedure InternalOnReplace(Sender: TObject; var ReplaceWith: PCREString);
     function UnicodeIndexToUTF8(const S: string; AIndex: Integer): Integer;
   public
     constructor Create(const Pattern: string; Options: TRegExOptions = [roNotEmpty]);
@@ -492,7 +492,7 @@ begin
   Result := Match.Success;
 end;
 
-procedure TRegEx.InternalOnReplace(Sender: TObject; var ReplaceWith: string);
+procedure TRegEx.InternalOnReplace(Sender: TObject; var ReplaceWith: PCREString);
 var
   Match: TMatch;
 begin

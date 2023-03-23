@@ -229,6 +229,8 @@ type
     property MatchedRegEx: TPerlRegEx read FMatchedRegEx;
   end;
 
+  ERegularExpressionError = class(Exception);
+
 implementation
 
 

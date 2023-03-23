@@ -10,7 +10,9 @@ uses
 {$IFDEF FPC }
   SysUtils, Classes, SyncObjs, Generics.Collections, fpjson,
 {$ELSE}
-  SysUtils, JSON, SyncObjs, Classes, Generics.Collections,
+  SysUtils,
+  {$IF CompilerVersion >= 22.0}System.JSON,{$ELSE}DBXJSON,{$IFEND}
+  SyncObjs, Classes, Generics.Collections,
 {$ENDIF}
   Infra.DbEngine.Trace.Types, Infra.DbEngine.Trace.Provider, Infra.DbEngine.Trace.Thread,
   Infra.DBEngine.Context;
