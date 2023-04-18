@@ -20,6 +20,7 @@ type
     FUser: string;
     FPassword: string;
     FSaveLog: Boolean;
+    FVendorLib: string;
   protected
     function Driver: TDBDriver; override;
     function Host: string; override;
@@ -29,6 +30,7 @@ type
     function User: string; override;
     function Password: string; override;
     function SaveTrace: Boolean; override;
+    function VendorLib: string; override;
     function GetExecuteMigrations: Boolean; override;
     function Driver(const AValue: TDBDriver): IDbEngineConfig; overload; override;
     function Host(const AValue: string): IDbEngineConfig; overload; override;
@@ -38,6 +40,7 @@ type
     function User(const AValue: string): IDbEngineConfig; overload; override;
     function Password(const AValue: string): IDbEngineConfig; overload; override;
     function SaveTrace(const AValue: Boolean): IDbEngineConfig; overload; override;
+    function VendorLib(const AValue: string): IDbEngineConfig; overload; override;
     function SetExecuteMigrations(const AValue: Boolean): IDbEngineConfig; overload; override;
   public
     constructor Create(const APrefixVariable: string); override;
@@ -158,6 +161,17 @@ function TDBConfigMemory.User(const AValue: string): IDbEngineConfig;
 begin
   Result := Self;
   FUser := AValue;
+end;
+
+function TDBConfigMemory.VendorLib: string;
+begin
+  Result := FVendorLib;
+end;
+
+function TDBConfigMemory.VendorLib(const AValue: string): IDbEngineConfig;
+begin
+  Result := Self;
+  FVendorLib := AValue;
 end;
 
 end.

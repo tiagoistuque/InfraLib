@@ -44,6 +44,7 @@ type
     FConnectionComponent: TFDConnection;
     FInjectedConnection: Boolean;
     FRowsAffected: Integer;
+    FFDPhysFBDriverLink: TFDPhysDriverLink;
   public
     procedure Connect; override;
     procedure Disconnect; override;
@@ -116,7 +117,7 @@ begin
         end;
       TDBDriver.FirebirdEmbedded:
         begin
-          LDriverID := 'FBEmbedded';
+          LDriverID := 'FB';
           LGUIDEndian := 'Big';
           LOpenMode := 'OpenOrCreate';
           LProtocol := 'local';
@@ -154,6 +155,12 @@ begin
       FConnectionComponent.Params.Add('Password=' + ADbConfig.Password);
       FConnectionComponent.Params.Add('Port=' + IntToStr(ADbConfig.Port));
       FConnectionComponent.Params.Add('Server=' + ADbConfig.Host);
+    end
+    else
+    begin
+      FFDPhysFBDriverLink := TFDPhysFBDriverLink.Create(nil);
+      FFDPhysFBDriverLink.VendorHome := '';
+      FFDPhysFBDriverLink.VendorLib := ADbConfig.VendorLib;
     end;
     FConnectionComponent.Params.Add('CharacterSet=' + ADbConfig.CharSet);
     FConnectionComponent.Params.Add('DriverID=' + LDriverID);

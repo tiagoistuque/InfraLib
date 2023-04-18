@@ -59,7 +59,7 @@ type
     function User(const AValue: string): IDbEngineConfig; overload;
     function Password(const AValue: string): IDbEngineConfig; overload;
     function SaveTrace(const aValue: Boolean): IDbEngineConfig; overload;
-    function VendorLib(const AValues: string): IDbEngineConfig; overload;
+    function VendorLib(const AValue: string): IDbEngineConfig; overload;
     function SetExecuteMigrations(const AValue: Boolean): IDbEngineConfig; overload;
     function ConfigFileName: TFileName;
   end;

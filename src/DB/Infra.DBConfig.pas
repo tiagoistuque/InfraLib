@@ -29,7 +29,7 @@ type
     function User(const AValue: string): IDbEngineConfig; overload; virtual; abstract;
     function Password(const AValue: string): IDbEngineConfig; overload; virtual; abstract;
     function SaveTrace(const AValue: Boolean): IDbEngineConfig; overload; virtual; abstract;
-    function VendorLib(const AValues: string): IDbEngineConfig; overload; virtual; abstract;
+    function VendorLib(const AValue: string): IDbEngineConfig; overload; virtual; abstract;
     function SetExecuteMigrations(const AValue: Boolean): IDbEngineConfig; overload; virtual; abstract;
     function ConfigFileName: TFileName; virtual; abstract;
   public
