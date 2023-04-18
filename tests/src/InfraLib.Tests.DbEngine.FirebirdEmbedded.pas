@@ -57,7 +57,7 @@ begin
     .Driver(TDbDriver.FirebirdEmbedded)
     .Database(ExtractFilePath(ParamStr(0)) + 'data\TESTE.FDB')
     .CharSet('UTF8')
-//    .User('SYSDBA')
+    .User('SYSDBA')
     .SaveTrace(True);
   FEngine := TDBEngineFactory.New(FConfig);
 end;

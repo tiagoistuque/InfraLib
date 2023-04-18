@@ -116,7 +116,7 @@ begin
         end;
       TDBDriver.FirebirdEmbedded:
         begin
-          LDriverID := 'FB';
+          LDriverID := 'FBEmbedded';
           LGUIDEndian := 'Big';
           LOpenMode := 'OpenOrCreate';
           LProtocol := 'local';
@@ -147,11 +147,14 @@ begin
     FConnectionComponent.TxOptions.Isolation := xiReadCommitted;
     FConnectionComponent.Params.Add('Database=' + FDbName);
     FConnectionComponent.Params.Add('User_Name=' + ADbConfig.User);
-    FConnectionComponent.Params.Add('Password=' + ADbConfig.Password);
     if not LProtocol.IsEmpty then
       FConnectionComponent.Params.Add('Protocol=' + LProtocol);
-    FConnectionComponent.Params.Add('Port=' + IntToStr(ADbConfig.Port));
-    FConnectionComponent.Params.Add('Server=' + ADbConfig.Host);
+    if ADbConfig.Driver <> TDBDriver.FirebirdEmbedded then
+    begin
+      FConnectionComponent.Params.Add('Password=' + ADbConfig.Password);
+      FConnectionComponent.Params.Add('Port=' + IntToStr(ADbConfig.Port));
+      FConnectionComponent.Params.Add('Server=' + ADbConfig.Host);
+    end;
     FConnectionComponent.Params.Add('CharacterSet=' + ADbConfig.CharSet);
     FConnectionComponent.Params.Add('DriverID=' + LDriverID);
     if not LOpenMode.IsEmpty then
