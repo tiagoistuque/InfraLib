@@ -19,6 +19,7 @@ type
     MSAcc,
     MySQL,
     Firebird,
+    FirebirdEmbedded,
     SQLite,
     Interbase,
     Oracle,
@@ -48,6 +49,7 @@ type
     function User: string; overload;
     function Password: string; overload;
     function SaveTrace: Boolean; overload;
+    function VendorLib: string; overload;
     function GetExecuteMigrations: Boolean; overload;
     function Driver(const AValue: TDBDriver): IDbEngineConfig; overload;
     function Host(const AValue: string): IDbEngineConfig; overload;
@@ -57,6 +59,7 @@ type
     function User(const AValue: string): IDbEngineConfig; overload;
     function Password(const AValue: string): IDbEngineConfig; overload;
     function SaveTrace(const aValue: Boolean): IDbEngineConfig; overload;
+    function VendorLib(const AValues: string): IDbEngineConfig; overload;
     function SetExecuteMigrations(const AValue: Boolean): IDbEngineConfig; overload;
     function ConfigFileName: TFileName;
   end;
@@ -133,7 +136,7 @@ begin
       Result := 'MSAcc';
     TDBDriver.MySQL:
       Result := 'MySQL';
-    TDBDriver.Firebird:
+    TDBDriver.Firebird, TDBDriver.FirebirdEmbedded:
       Result := 'Firebird';
     TDBDriver.SQLite:
       Result := 'SQLite';
@@ -152,7 +155,7 @@ begin
   case AnsiIndexStr(AValue,
     ['MSSQL', 'MySQL','Firebird', 'SQLite',
     'Interbase', 'Oracle', 'PostgreSQL', 'Unknown',
-    'MSAcc']) of
+    'MSAcc', 'FirebirdEmbedded']) of
     0:
       Result := TDBDriver.MSSQL;
     1:
@@ -171,6 +174,8 @@ begin
       Result := TDBDriver.unknown;
     8:
       Result := TDBDriver.MSAcc;
+    9:
+      Result := TDBDriver.FirebirdEmbedded;
   else
     Result := TDBDriver.unknown;
   end;
@@ -187,7 +192,7 @@ begin
       Result := 'MSAcc';
     TDBDriver.MySQL:
       Result := 'MySQL';
-    TDBDriver.Firebird:
+    TDBDriver.Firebird, TDBDriver.FirebirdEmbedded:
       Result := 'Firebird';
     TDBDriver.SQLite:
       Result := 'SQLite';

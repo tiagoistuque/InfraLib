@@ -49,7 +49,8 @@ uses
   Infra.DBEngine.Trace.Provider.LogFile in '..\src\DB\Infra.DBEngine.Trace.Provider.LogFile.pas',
   Infra.DBEngine.Trace in '..\src\DB\Infra.DBEngine.Trace.pas',
   Infra.DBEngine.Context in '..\src\DB\Infra.DBEngine.Context.pas',
-  Infra.System.RegularExpressionsConsts in '..\src\Infra.System.RegularExpressionsConsts.pas';
+  Infra.System.RegularExpressionsConsts in '..\src\Infra.System.RegularExpressionsConsts.pas',
+  InfraLib.Tests.DbEngine.FirebirdEmbedded in 'src\InfraLib.Tests.DbEngine.FirebirdEmbedded.pas';
 
 var
   runner : ITestRunner;

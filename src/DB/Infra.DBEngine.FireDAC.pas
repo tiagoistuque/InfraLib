@@ -114,6 +114,15 @@ begin
           if not ADbConfig.GetExecuteMigrations then
             LOpenMode := 'Open';
         end;
+      TDBDriver.FirebirdEmbedded:
+        begin
+          LDriverID := 'FB';
+          LGUIDEndian := 'Big';
+          LOpenMode := 'OpenOrCreate';
+          LProtocol := 'local';
+          if not ADbConfig.GetExecuteMigrations then
+            LOpenMode := 'Open';
+        end;
       TDBDriver.Interbase:
         begin
           LDriverID := 'IB';
