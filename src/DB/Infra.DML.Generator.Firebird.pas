@@ -79,5 +79,6 @@ end;
 initialization
 
 TDBDriverRegister.RegisterDriver(TDBDriver.Firebird, {$IF DEFINED(INFRA_ORMBR)}TDriverName.dnFirebird, {$IFEND}TDMLGeneratorFirebid.Create);
+TDBDriverRegister.RegisterDriver(TDBDriver.FirebirdEmbedded, {$IF DEFINED(INFRA_ORMBR)}TDriverName.dnFirebird, {$IFEND}TDMLGeneratorFirebid.Create);
 
 end.
