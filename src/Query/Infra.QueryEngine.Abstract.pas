@@ -45,6 +45,7 @@ type
     function Locate(const KeyFields: string; const KeyValues: Variant; Options: TLocateOptions): Boolean; virtual; abstract;
     {$ELSE}
     function FindKey(const KeyValues: array of TVarRec): Boolean; virtual; abstract;
+    procedure FindNearest(const AKeyValues: array of const); virtual; abstract;
     {$IFEND}
     function Params: TSQLParams; virtual; abstract;
     function SQLCommand: string; virtual;

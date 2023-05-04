@@ -41,6 +41,7 @@ type
     function UpdatesPending: Boolean; override;
     function CancelUpdates: IQueryEngine; override;
     function FindKey(const KeyValues: array of TVarRec): Boolean; override;
+    procedure FindNearest(const AKeyValues: array of const); override;
     function Params: TSQLParams; override;
     function TotalPages: Integer; override;
     function RowsAffected: Integer; override;
@@ -149,6 +150,11 @@ function TQueryEngineFireDAC.FindKey(
   const KeyValues: array of TVarRec): Boolean;
 begin
   Result := FQuery.Active and (FQuery.FindKey(KeyValues));
+end;
+
+procedure TQueryEngineFireDAC.FindNearest(const AKeyValues: array of const);
+begin
+  FQuery.FindNearest(AKeyValues);
 end;
 
 function TQueryEngineFireDAC.IndexFieldNames(
