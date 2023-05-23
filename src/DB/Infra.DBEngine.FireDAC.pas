@@ -155,8 +155,8 @@ begin
       FConnectionComponent.Params.Add('Password=' + ADbConfig.Password);
       FConnectionComponent.Params.Add('Port=' + IntToStr(ADbConfig.Port));
       FConnectionComponent.Params.Add('Server=' + ADbConfig.Host);
-    end
-    else
+    end;
+    if ADbConfig.VendorLib <> EmptyStr then
     begin
       FFDPhysFBDriverLink := TFDPhysFBDriverLink.Create(nil);
       FFDPhysFBDriverLink.VendorHome := '';
