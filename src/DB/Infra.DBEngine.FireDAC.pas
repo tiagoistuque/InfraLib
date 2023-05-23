@@ -98,6 +98,7 @@ var
 begin
   inherited;
   // for complete parameters definitions see : https://docwiki.embarcadero.com/RADStudio/Sydney/en/Database_Connectivity_(FireDAC)
+  FFDPhysFBDriverLink := nil;
   if Assigned(ADbConfig) then
   begin
     LGUIDEndian := EmptyStr;
@@ -183,6 +184,8 @@ begin
       FConnectionComponent.Rollback;
     FConnectionComponent.Free;
   end;
+  if Assigned(FFDPhysFBDriverLink) then
+    FreeAndNil(FFDPhysFBDriverLink);
   inherited;
 end;
 
