@@ -12,6 +12,7 @@ uses
   FireDAC.Stan.Def,
   FireDAC.Stan.Pool,
   FireDAC.Stan.Async,
+  FireDAC.Stan.Consts,
 
   FireDAC.Phys,
   FireDAC.Phys.Intf,
@@ -44,7 +45,7 @@ type
     FConnectionComponent: TFDConnection;
     FInjectedConnection: Boolean;
     FRowsAffected: Integer;
-    FFDPhysFBDriverLink: TFDPhysDriverLink;
+    FFDPhysFBDriverLink: TFDPhysFBDriverLink;
   public
     procedure Connect; override;
     procedure Disconnect; override;
@@ -121,7 +122,6 @@ begin
           LDriverID := 'FB';
           LGUIDEndian := 'Big';
           LOpenMode := 'OpenOrCreate';
-          LProtocol := 'local';
           if not ADbConfig.GetExecuteMigrations then
             LOpenMode := 'Open';
         end;
@@ -156,12 +156,24 @@ begin
       FConnectionComponent.Params.Add('Password=' + ADbConfig.Password);
       FConnectionComponent.Params.Add('Port=' + IntToStr(ADbConfig.Port));
       FConnectionComponent.Params.Add('Server=' + ADbConfig.Host);
+    end
+    else
+    begin
+      FConnectionComponent.Params.Add(S_FD_ConnParam_FB_Embedded+'=True');
     end;
-    if ADbConfig.VendorLib <> EmptyStr then
+    if (ADbConfig.VendorLib <> EmptyStr) or (ADbConfig.VendorHome <> EmptyStr) then
     begin
       FFDPhysFBDriverLink := TFDPhysFBDriverLink.Create(nil);
-      FFDPhysFBDriverLink.VendorHome := '';
-      FFDPhysFBDriverLink.VendorLib := ADbConfig.VendorLib;
+      FFDPhysFBDriverLink.Embedded := ADbConfig.Driver = TDBDriver.FirebirdEmbedded;
+      if (ADbConfig.VendorLib <> EmptyStr) then
+      begin
+        FFDPhysFBDriverLink.VendorHome := '';
+        FFDPhysFBDriverLink.VendorLib := ADbConfig.VendorLib;
+      end;
+      if (ADbConfig.VendorHome <> EmptyStr)  then
+      begin
+        FFDPhysFBDriverLink.VendorHome := ADbConfig.VendorHome;
+      end;
     end;
     FConnectionComponent.Params.Add('CharacterSet=' + ADbConfig.CharSet);
     FConnectionComponent.Params.Add('DriverID=' + LDriverID);

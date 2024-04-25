@@ -44,7 +44,9 @@ type
 
 implementation
 
-uses Infra.DbEngine.Contract;
+uses
+  Infra.SysInfo,
+  Infra.DbEngine.Contract;
 
 const
   SELECT_WITH_ERROR = 'SELECT CAST(CURRENT_TIMESTAMP AS INTEGER)  FROM RDB$DATABASE';
@@ -57,10 +59,11 @@ begin
     .Driver(TDbDriver.Firebird)
     .Host('localhost')
     .Port(3053)
-    .Database(ExtractFilePath(ParamStr(0)) + 'data\TESTE.FDB')
+    .Database(ExtractFilePath(ParamStr(0)) + 'data\TESTE_FB_3.0.FDB')
     .CharSet('UTF8')
     .User('SYSDBA')
     .Password('masterkey')
+    .VendorLib(SystemInfo.AppPath + 'FB_3.0\fbclient_x86.dll')
     .SaveTrace(True);
   FEngine := TDBEngineFactory.New(FConfig);
 end;

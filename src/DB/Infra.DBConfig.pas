@@ -19,6 +19,7 @@ type
     function User: string; overload; virtual; abstract;
     function Password: string; overload; virtual; abstract;
     function SaveTrace: Boolean; overload; virtual; abstract;
+    function VendorHome: string; overload; virtual; abstract;
     function VendorLib: string; overload; virtual; abstract;
     function GetExecuteMigrations: Boolean; overload; virtual; abstract;
     function Driver(const AValue: TDBDriver): IDbEngineConfig; overload; virtual; abstract;
@@ -29,6 +30,7 @@ type
     function User(const AValue: string): IDbEngineConfig; overload; virtual; abstract;
     function Password(const AValue: string): IDbEngineConfig; overload; virtual; abstract;
     function SaveTrace(const AValue: Boolean): IDbEngineConfig; overload; virtual; abstract;
+    function VendorHome(const AValue: string): IDbEngineConfig; overload; virtual; abstract;
     function VendorLib(const AValue: string): IDbEngineConfig; overload; virtual; abstract;
     function SetExecuteMigrations(const AValue: Boolean): IDbEngineConfig; overload; virtual; abstract;
     function ConfigFileName: TFileName; virtual; abstract;

@@ -14,7 +14,6 @@ type
   private
     FIniFile: TIniFile;
     FFileName: TFileName;
-    FSaveLog: Boolean;
   protected
     function Driver: TDBDriver; override;
     function Host: string; override;
@@ -24,6 +23,8 @@ type
     function User: string; override;
     function Password: string; override;
     function SaveTrace: Boolean; override;
+    function VendorHome: string; override;
+    function VendorLib: string; override;
     function GetExecuteMigrations: Boolean; overload; override;
     function Driver(const AValue: TDBDriver): IDbEngineConfig; overload; override;
     function Host(const AValue: string): IDbEngineConfig; overload; override;
@@ -33,6 +34,8 @@ type
     function User(const AValue: string): IDbEngineConfig; overload; override;
     function Password(const AValue: string): IDbEngineConfig; overload; override;
     function SaveTrace(const AValue: Boolean): IDbEngineConfig; overload; override;
+    function VendorHome(const AValue: string): IDbEngineConfig; overload; override;
+    function VendorLib(const AValue: string): IDbEngineConfig; overload; override;
     function SetExecuteMigrations(const AValue: Boolean): IDbEngineConfig; overload; override;
     function ConfigFileName: TFileName; override;
 
@@ -59,12 +62,12 @@ end;
 function TDBConfigIniFile.SaveTrace(const AValue: Boolean): IDbEngineConfig;
 begin
   Result := Self;
-  FSaveLog := AValue;
+  FIniFile.WriteBool(ASECTIONDB, SConfigSaveTrace, AValue);
 end;
 
 function TDBConfigIniFile.SaveTrace: Boolean;
 begin
-  Result := FSaveLog;
+  Result := FIniFile.ReadBool(ASECTIONDB, SConfigSaveTrace, False);
 end;
 
 function TDBConfigIniFile.SetExecuteMigrations(const AValue: Boolean): IDbEngineConfig;
@@ -172,6 +175,29 @@ function TDBConfigIniFile.User(const AValue: string): IDbEngineConfig;
 begin
   Result := Self;
   FIniFile.WriteString(ASECTIONDB, SConfigUser, AValue);
+end;
+
+function TDBConfigIniFile.VendorHome(
+  const AValue: string): IDbEngineConfig;
+begin
+  Result := Self;
+  FIniFile.WriteString(ASECTIONDB, SConfigVendorHome, AValue);
+end;
+
+function TDBConfigIniFile.VendorHome: string;
+begin
+  Result := FIniFile.ReadString(ASECTIONDB, SConfigVendorHome, '');
+end;
+
+function TDBConfigIniFile.VendorLib(const AValue: string): IDbEngineConfig;
+begin
+  Result := Self;
+  FIniFile.WriteString(ASECTIONDB, SConfigVendorLib, AValue);
+end;
+
+function TDBConfigIniFile.VendorLib: string;
+begin
+  Result := FIniFile.ReadString(ASECTIONDB, SConfigVendorLib, '');
 end;
 
 end.

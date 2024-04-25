@@ -44,7 +44,9 @@ type
 
 implementation
 
-uses Infra.DbEngine.Contract;
+uses
+  Infra.SysInfo,
+  Infra.DbEngine.Contract;
 
 const
   SELECT_WITH_ERROR = 'SELECT CAST(CURRENT_TIMESTAMP AS INTEGER)  FROM RDB$DATABASE';
@@ -52,12 +54,13 @@ const
 
 procedure TTestDBEngineFirebidEmbedded.Setup;
 begin
-  FConfig := TDBConfigFactory.CreateConfig(TTypeConfig.IniFile);
+  FConfig := TDBConfigFactory.CreateConfig(TTypeConfig.IniFile,'Embedded');
   FConfig
     .Driver(TDbDriver.FirebirdEmbedded)
-    .Database(ExtractFilePath(ParamStr(0)) + 'data\TESTE.FDB')
-    .CharSet('UTF8')
-    .User('SYSDBA')
+    .Database(ExtractFilePath(ParamStr(0)) + 'data\TESTE_FB_4.0.FDB')
+    .CharSet('WIN1252')
+    .User('sysdba')
+    .VendorLib(SystemInfo.AppPath + 'FB_4.0_x86\fbclient.dll')
     .SaveTrace(True);
   FEngine := TDBEngineFactory.New(FConfig);
 end;

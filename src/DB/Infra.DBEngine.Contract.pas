@@ -49,6 +49,7 @@ type
     function User: string; overload;
     function Password: string; overload;
     function SaveTrace: Boolean; overload;
+    function VendorHome: string; overload;
     function VendorLib: string; overload;
     function GetExecuteMigrations: Boolean; overload;
     function Driver(const AValue: TDBDriver): IDbEngineConfig; overload;
@@ -59,6 +60,7 @@ type
     function User(const AValue: string): IDbEngineConfig; overload;
     function Password(const AValue: string): IDbEngineConfig; overload;
     function SaveTrace(const aValue: Boolean): IDbEngineConfig; overload;
+    function VendorHome(const AValue: string): IDbEngineConfig; overload;
     function VendorLib(const AValue: string): IDbEngineConfig; overload;
     function SetExecuteMigrations(const AValue: Boolean): IDbEngineConfig; overload;
     function ConfigFileName: TFileName;
@@ -96,6 +98,8 @@ const
   SConfigUser = 'DBCONFIG_USER';
   SConfigPassword = 'DBCONFIG_PASSWORD';
   SConfigSaveTrace = 'DBCONFIG_SAVETRACE';
+  SConfigVendorHome = 'DBCONFIG_VENDORHOME';
+  SConfigVendorLib = 'DBCONFIG_VENDORLIB';
   SConfigBuildDB = 'DBCONFIG_BUILD_DB';
 
   {$IF DEFINED(INFRA_ORMBR)}
@@ -192,8 +196,10 @@ begin
       Result := 'MSAcc';
     TDBDriver.MySQL:
       Result := 'MySQL';
-    TDBDriver.Firebird, TDBDriver.FirebirdEmbedded:
+    TDBDriver.Firebird:
       Result := 'Firebird';
+    TDBDriver.FirebirdEmbedded:
+      Result := 'FirebirdEmbedded';
     TDBDriver.SQLite:
       Result := 'SQLite';
     TDBDriver.Interbase:
