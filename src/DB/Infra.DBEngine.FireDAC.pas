@@ -71,7 +71,7 @@ implementation
 
 uses
   {$IF DEFINED(INFRA_ORMBR)}dbebr.factory.FireDAC, {$IFEND}
-  Infra.DBDriver.Register;
+  Infra.DBDriver.Register, Infra.DBEngine.Error;
 
 procedure TDbEngineFireDAC.CommitTX;
 begin

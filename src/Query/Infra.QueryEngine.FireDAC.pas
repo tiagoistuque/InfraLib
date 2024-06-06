@@ -4,12 +4,14 @@ interface
 
 {$IF DEFINED(INFRA_FIREDAC)}
 
+
 uses
   DB,
   Classes, SysUtils,
   FireDAC.Stan.Intf, FireDAC.Stan.Option, FireDAC.Stan.Param, FireDAC.Stan.Error, FireDAC.DatS,
   FireDAC.Phys.Intf, FireDAC.DApt.Intf, FireDAC.Comp.DataSet, FireDAC.Comp.Client,
   FireDAC.Stan.Util,
+  Infra.DBEngine.Error,
   Infra.QueryEngine.Abstract,
   Infra.DBEngine.Abstract,
   Infra.DBEngine.Contract,
@@ -22,6 +24,7 @@ type
     FQuery: TFDQuery;
     FParams: TSQLParams;
     FRowsAffected: Integer;
+    procedure _ParseException(const aExceptionFD: EFDDBEngineException; var aExceptionDBEngine: EDBEngineException);
   public
     constructor Create(const AConnection: TDbEngineAbstract); override;
     destructor Destroy; override;
@@ -50,12 +53,12 @@ type
     function SetAutoIncField(const AFieldName: string): IQueryEngine; override;
     function SetAutoIncGeneratorName(const AGeneratorName: string): IQueryEngine; override;
   end;
-{$IFEND}
+  {$IFEND}
 
 implementation
 
 {$IF DEFINED(INFRA_FIREDAC)}
-{ TQueryEngineFireDAC }
+
 
 function TQueryEngineFireDAC.Add(Str: string): IQueryEngine;
 begin
@@ -115,7 +118,67 @@ begin
   inherited;
 end;
 
+procedure TQueryEngineFireDAC._ParseException(const aExceptionFD: EFDDBEngineException; var aExceptionDBEngine: EDBEngineException);
+var
+  I: Integer;
+  LKind: TDBEngineCommandExceptionKind;
+begin
+  aExceptionDBEngine.ObjName := aExceptionFD.FDObjName;
+  aExceptionDBEngine.SQL := aExceptionFD.SQL;
+  aExceptionDBEngine.Code := aExceptionFD.FDCode;
+
+  case aExceptionFD.Kind of
+    ekOther:
+      LKind := TDBEngineCommandExceptionKind.Other;
+    ekNoDataFound:
+      LKind := TDBEngineCommandExceptionKind.NoDataFound;
+    ekTooManyRows:
+      LKind := TDBEngineCommandExceptionKind.TooManyRows;
+    ekRecordLocked:
+      LKind := TDBEngineCommandExceptionKind.RecordLocked;
+    ekUKViolated:
+      LKind := TDBEngineCommandExceptionKind.UKViolated;
+    ekFKViolated:
+      LKind := TDBEngineCommandExceptionKind.FKViolated;
+    ekObjNotExists:
+      LKind := TDBEngineCommandExceptionKind.ObjNotExists;
+    ekUserPwdInvalid:
+      LKind := TDBEngineCommandExceptionKind.UserPwdInvalid;
+    ekUserPwdExpired:
+      LKind := TDBEngineCommandExceptionKind.UserPwdExpired;
+    ekUserPwdWillExpire:
+      LKind := TDBEngineCommandExceptionKind.UserPwdWillExpire;
+    ekCmdAborted:
+      LKind := TDBEngineCommandExceptionKind.CmdAborted;
+    ekServerGone:
+      LKind := TDBEngineCommandExceptionKind.ServerGone;
+    ekServerOutput:
+      LKind := TDBEngineCommandExceptionKind.ServerOutput;
+    ekArrExecMalfunc:
+      LKind := TDBEngineCommandExceptionKind.ArrExecMalfunc;
+    ekInvalidParams:
+      LKind := TDBEngineCommandExceptionKind.InvalidParams;
+    else
+      LKind := TDBEngineCommandExceptionKind.Other;
+  end;
+
+  for I := 0 to aExceptionFD.ErrorCount - 1 do
+  begin
+    aExceptionDBEngine.AppendError(
+      aExceptionFD.Errors[I].Level,
+      aExceptionFD.Errors[I].ErrorCode,
+      aExceptionFD.Errors[I].Message,
+      aExceptionFD.Errors[I].ObjName,
+      LKind,
+      aExceptionFD.Errors[I].CommandTextOffset,
+      aExceptionFD.Errors[I].RowIndex);
+  end;
+
+end;
+
 function TQueryEngineFireDAC.Exec(const AReturn: Boolean = False): IQueryEngine;
+var
+  LEx: EDBEngineException;
 begin
   Result := Self;
   try
@@ -138,10 +201,16 @@ begin
     FExecutionEndTime := Now;
     FRowsAffected := FQuery.RowsAffected;
   except
+    on E: EFDDBEngineException do
+    begin
+      LEx := EDBEngineException.Create(E.FDCode, E.Message);
+      _ParseException(E, LEx);
+      raise LEx;
+    end;
     on E: Exception do
     begin
       raise Exception.Create('Erro ao executar Query: ' + FQuery.SQL.Text + sLineBreak +
-        'Excessão: ' + E.message);
+        'Excessão: ' + E.Message);
     end;
   end;
 end;
@@ -288,5 +357,6 @@ begin
   Result := FQuery.Active and (FQuery.UpdatesPending);
 end;
 {$IFEND}
+
 
 end.

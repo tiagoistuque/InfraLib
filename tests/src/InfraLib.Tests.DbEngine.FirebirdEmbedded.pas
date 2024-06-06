@@ -46,7 +46,7 @@ implementation
 
 uses
   Infra.SysInfo,
-  Infra.DbEngine.Contract;
+  Infra.DbEngine.Contract, Infra.DBEngine.Error;
 
 const
   SELECT_WITH_ERROR = 'SELECT CAST(CURRENT_TIMESTAMP AS INTEGER)  FROM RDB$DATABASE';

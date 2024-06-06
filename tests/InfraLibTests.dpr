@@ -50,7 +50,8 @@ uses
   Infra.DBEngine.Trace in '..\src\DB\Infra.DBEngine.Trace.pas',
   Infra.DBEngine.Context in '..\src\DB\Infra.DBEngine.Context.pas',
   Infra.System.RegularExpressionsConsts in '..\src\Infra.System.RegularExpressionsConsts.pas',
-  InfraLib.Tests.DbEngine.FirebirdEmbedded in 'src\InfraLib.Tests.DbEngine.FirebirdEmbedded.pas';
+  InfraLib.Tests.DbEngine.FirebirdEmbedded in 'src\InfraLib.Tests.DbEngine.FirebirdEmbedded.pas',
+  Infra.DBEngine.Error in '..\src\DB\Infra.DBEngine.Error.pas';
 
 var
   runner : ITestRunner;

@@ -8,12 +8,14 @@ uses
   Infra.DBConfig,
   Infra.DBConfig.IniFile,
   Infra.DBConfig.Memory,
-  Infra.DBConfig.EnvironmentVar;
+  Infra.DBConfig.EnvironmentVar,
+  Infra.DBEngine.Error;
 
 type
   IDBEngine = Infra.DBEngine.Contract.IDBEngine;
   IDbEngineConfig = Infra.DBEngine.Contract.IDbEngineConfig;
   TDbEngine = Infra.DBEngine.Abstract.TDbEngineAbstract;
+  EDbEngineError = Infra.DBEngine.Error.EDBEngineException;
 
   TDbDriver = Infra.DBEngine.Contract.TDbDriver;
 

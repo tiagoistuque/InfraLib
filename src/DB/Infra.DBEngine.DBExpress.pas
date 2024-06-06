@@ -50,7 +50,7 @@ implementation
 uses
   {$IF DEFINED(INFRA_ORMBR)}dbebr.factory.DBExpress, {$IFEND}
   Infra.DBEngine.Trace, Infra.DBEngine.Context,
-  Infra.DBDriver.Register;
+  Infra.DBDriver.Register, Infra.DBEngine.Error;
 
 procedure TDbEngineDBExpress.CommitTX;
 begin
