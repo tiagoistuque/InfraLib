@@ -4,7 +4,6 @@ interface
 
 {$IF DEFINED(INFRA_FIREDAC)}
 
-
 uses
   DB,
   Classes, SysUtils,

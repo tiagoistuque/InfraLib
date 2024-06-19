@@ -5,6 +5,7 @@ interface
 uses
   DB, Classes, SysUtils, StrUtils,
   {$IF DEFINED(INFRA_FIREDAC)}FireDAC.Stan.Param, {$IFEND}
+  {$IF DEFINED(INFRA_ADO)}ADODB, {$IFEND}
   Infra.DBEngine.Contract,
   Infra.DBEngine.Abstract,
   Infra.QueryEngine.Contract,
@@ -41,7 +42,7 @@ type
     function Refresh: Boolean; virtual; abstract;
     function UpdatesPending: Boolean; virtual; abstract;
     function CancelUpdates: IQueryEngine; virtual; abstract;
-    {$IF DEFINED(INFRA_ZEOS)}
+    {$IF DEFINED(INFRA_ZEOS) OR DEFINED(INFRA_ADO)}
     function Locate(const KeyFields: string; const KeyValues: Variant; Options: TLocateOptions): Boolean; virtual; abstract;
     {$ELSE}
     function FindKey(const KeyValues: array of TVarRec): Boolean; virtual; abstract;
@@ -111,15 +112,21 @@ function TQueryEngineAbstract.SQLCommand: string;
 var
   i: Integer;
   LParamValue: string;
+  LValueString: string;
 begin
   Result := FComandoSQL.Text;
   for i := 0 to Params.Count - 1 do
   begin
+    {$IF DEFINED(INFRA_ADO)}
+    LValueString := Params.Items[i].Value;
+    {$ELSE}
+    LValueString := Params.Items[i].AsString;
+    {$IFEND}
     case Params.Items[i].DataType of
-      ftString, ftDate, ftDateTime:
-        LParamValue := QuotedStr(Params[i].AsString);
+      ftString, ftWideString, ftDate, ftDateTime, ftTime, ftTimeStamp, ftTimeStampOffset:
+        LParamValue := QuotedStr(LValueString);
     else
-      LParamValue := Params[i].AsString;
+      LParamValue := LValueString;
     end;
     Result := StringReplace(Result, ':' + Params.Items[i].Name, LParamValue, []);
   end;

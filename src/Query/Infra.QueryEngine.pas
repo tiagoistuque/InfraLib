@@ -27,10 +27,12 @@ uses
   Infra.QueryEngine.DBExpress;
   {$ELSEIF DEFINED(INFRA_ZEOS)}
   Infra.QueryEngine.Zeos;
-{$ELSE}
+  {$ELSEIF DEFINED(INFRA_ADO)}
+  Infra.QueryEngine.ADO;
+  {$ELSE}
   Infra.QueryEngine.FireDAC;
-{$IFEND}
-{$IFEND}
+  {$IFEND}
+  {$IFEND}
 
 
 class function TQueryEngine.New(const AConnection: TDbEngineAbstract): IQueryEngine;
@@ -46,6 +48,8 @@ begin
   Result := TQueryEngineDBExpress.Create(AConnection);
   {$ELSEIF DEFINED(INFRA_ZEOS)}
   Result := TQueryEngineZeos.Create(AConnection);
+  {$ELSEIF DEFINED(INFRA_ADO)}
+  Result := TQueryEngineADO.Create(AConnection);
   {$ELSE}
   Result := TQueryEngineFireDAC.Create(AConnection);
   {$IFEND}
@@ -63,8 +67,8 @@ begin
   {$ELSE}
   {$IF DEFINED(INFRA_DBEXPRESS)}
   Result := TQueryEngineDBExpress.Create(AConnection);
-  {$ELSEIF DEFINED(INFRA_ZEOS)}
-  Result := TQueryEngineZeos.Create(AConnection);
+  {$ELSEIF DEFINED(INFRA_ADO)}
+  Result := TQueryEngineADO.Create(AConnection);
   {$ELSE}
   Result := TQueryEngineFireDAC.Create(AConnection);
   {$IFEND}

@@ -51,7 +51,9 @@ uses
   Infra.DBEngine.Context in '..\src\DB\Infra.DBEngine.Context.pas',
   Infra.System.RegularExpressionsConsts in '..\src\Infra.System.RegularExpressionsConsts.pas',
   InfraLib.Tests.DbEngine.FirebirdEmbedded in 'src\InfraLib.Tests.DbEngine.FirebirdEmbedded.pas',
-  Infra.DBEngine.Error in '..\src\DB\Infra.DBEngine.Error.pas';
+  Infra.DBEngine.Error in '..\src\DB\Infra.DBEngine.Error.pas',
+  Infra.DBEngine.ADODB in '..\src\DB\Infra.DBEngine.ADODB.pas',
+  Infra.QueryEngine.ADO in '..\src\Query\Infra.QueryEngine.ADO.pas';
 
 var
   runner : ITestRunner;

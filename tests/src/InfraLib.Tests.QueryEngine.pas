@@ -79,7 +79,7 @@ var
   LResultVarChar: string;
   LResultChar: string;
   select_return_datatypes: string;
-  LIsFixedChar: Boolean;
+//  LIsFixedChar: Boolean;
   LFieldSize: Integer;
 begin
   select_return_datatypes := 'SELECT CAST(' + CRESULT_INTEGER + ' AS INTEGER) AS RESULT_INTEGER, ' +
