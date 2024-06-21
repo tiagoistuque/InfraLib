@@ -1,5 +1,6 @@
 unit Infra.DBEngine;
-
+
+
 interface
 
 uses
@@ -44,6 +45,8 @@ uses
   Infra.DBEngine.DBExpress;
 {$ELSEIF DEFINED(INFRA_ZEOS)}
   Infra.DBEngine.Zeos;
+{$ELSEIF DEFINED(INFRA_ADO)}
+  Infra.DBEngine.ADODB;
 {$ELSE}
   Infra.DBEngine.FireDAC;
 {$IFEND}
@@ -61,6 +64,8 @@ begin
   Result := TDbEngineDBExpress.Create(ADbConfig, ASuffixDBName);
 {$ELSEIF DEFINED(INFRA_ZEOS)}
   Result := TDbEngineZeos.Create(ADbConfig, ASuffixDBName);
+{$ELSEIF DEFINED(INFRA_ADO)}
+  Result := TDbEngineado.Create(ADbConfig, ASuffixDBName);
 {$ELSE}
   Result := TDbEngineFireDAC.Create(ADbConfig, ASuffixDBName);
 {$IFEND}
@@ -80,6 +85,8 @@ begin
   Result := TDbEngineDBExpress.Create(ADbConfig, ASuffixDBName);
 {$ELSEIF DEFINED(INFRA_ZEOS)}
   Result := TDbEngineZeos.Create(ADbConfig, ASuffixDBName);
+{$ELSEIF DEFINED(INFRA_ADO)}
+  Result := TDbEngineado.Create(ADbConfig, ASuffixDBName);
 {$ELSE}
   Result := TDbEngineFireDAC.Create(ADbConfig, ASuffixDBName);
 {$IFEND}
@@ -102,4 +109,4 @@ begin
 end;
 
 end.
-
+

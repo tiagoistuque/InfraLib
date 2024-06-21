@@ -68,6 +68,11 @@ begin
   if Assigned(ADbConfig) then
   begin
     FConnectionComponent := TADOConnection.Create(nil);
+    FConnectionComponent.LoginPrompt := False;
+    FConnectionComponent.IsolationLevel := ilReadCommitted;
+    FConnectionComponent.Mode := cmShareDenyNone;
+    FConnectionComponent.CursorLocation := clUseServer;
+    FConnectionComponent.KeepConnection := True;
     FConnectionComponent.ConnectionString := Format('Provider=SQLOLEDB.1; Persist Security Info=False; User ID=%s; Password=%s; Data Source=%s; Initial Catalog=%s', [ADBconfig.User, ADBConfig.Password, ADBConfig.Host, ADBConfig.Database]);
 
     {$IF DEFINED(INFRA_ORMBR)}
