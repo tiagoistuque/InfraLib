@@ -25,7 +25,7 @@ type
   {$SCOPEDENUMS OFF}
 
   TDBEngineError = class(TObject)
-  private
+  strict private
     FMessage: string;
     FErrorCode: Integer;
     FLevel: Integer;
@@ -49,7 +49,7 @@ type
   end;
 
   EDBEngineException = class(EDatabaseError)
-  private
+  strict private
     FCode: Integer;
     FObjName: string;
     FItems: TList;
@@ -155,7 +155,7 @@ begin
   AValue.Message := Message;
   AValue.Code := FCode;
   AValue.ObjName := FObjName;
-  EDBEngineException(AValue).FParams.SetStrings(FParams);
+  EDBEngineException(AValue).SetParams(FParams);
   EDBEngineException(AValue).FSQL := FSQL;
   for i := 0 to FItems.Count - 1 do
   begin
@@ -224,7 +224,13 @@ end;
 
 procedure EDBEngineException.SetParams(const AValue: TStrings);
 begin
-  FParams.SetStrings(AValue);
+  FParams.BeginUpdate;
+  try
+    FParams.Clear;
+    FParams.AddStrings(AValue);
+  finally
+    FParams.EndUpdate;
+  end;
 end;
 
 { TDBEngineError }
