@@ -1,5 +1,6 @@
 unit Infra.DBEngine.FireDAC;
-
+
+
 interface
 
 uses
@@ -23,12 +24,24 @@ uses
   FireDAC.Phys.MSAcc,
   FireDAC.Phys.MSAccDef,
 
+  {$IFDEF FDMSSQL}
   FireDAC.Phys.MSSQLDef,
   FireDAC.Phys.ODBCBase,
   FireDAC.Phys.MSSQL,
   FireDAC.Phys.MSSQLCli,
   FireDAC.Phys.MSSQLMeta,
   FireDAC.Phys.MSSQLWrapper,
+  {$ENDIF}
+
+  {$IFDEF FDSQLite}
+  FireDAC.Phys.SQLite,
+  FireDAC.Phys.SQLiteCli,
+  FireDAC.Phys.MySQLDef,
+  FireDAC.Phys.SQLiteMeta,
+  FireDAC.Phys.SQLiteVDataSet,
+  FireDAC.Phys.SQLiteWrapper,
+  FireDAC.Phys.SQLiteWrapper.Stat,
+  {$ENDIF}
 
   FireDAC.UI.Intf,
   FireDAC.VCLUI.Wait,
@@ -141,6 +154,11 @@ begin
       TDBDriver.PostgreSQL:
         begin
           LDriverID := 'PG';
+        end;
+      TDBDriver.SQLite:
+        begin
+          LOpenMode := 'CreateUTF8';
+          LDriverID := 'SQLite';
         end;
     end;
     FConnectionComponent := TFDConnection.Create(nil);
@@ -273,4 +291,4 @@ begin
 end;
 
 end.
-
+
