@@ -169,8 +169,7 @@ procedure TDbEngineADO.StartTx;
 begin
   if InTransaction then
     raise EStartTransactionException.Create('Necessário commit ou rollback da transação anterior para iniciar uma nova transação.');
-  if (not FInjectedConnection) then
-    FConnectionComponent.BeginTrans;
+  FConnectionComponent.BeginTrans;
 end;
 
 end.
