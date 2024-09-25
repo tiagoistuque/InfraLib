@@ -36,7 +36,7 @@ uses
   {$IFDEF FDSQLite}
   FireDAC.Phys.SQLite,
   FireDAC.Phys.SQLiteCli,
-  FireDAC.Phys.MySQLDef,
+  FireDAC.Phys.SQLiteDef,
   FireDAC.Phys.SQLiteMeta,
   FireDAC.Phys.SQLiteVDataSet,
   FireDAC.Phys.SQLiteWrapper,
