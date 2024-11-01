@@ -34,6 +34,7 @@ type
     procedure FindNearest(const AKeyValues: array of const);
     {$IFEND}
     function Params: TSQLParams;
+    function FieldDefs: TFieldDefs;
     function SQLCommand: string;
     function SQLCommandParameterized: string;
     function RowsAffected: Integer;

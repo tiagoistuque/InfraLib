@@ -38,6 +38,7 @@ type
     function UpdatesPending: Boolean; override;
     function CancelUpdates: IQueryEngine; override;
     function Params: TSQLParams; override;
+    function FieldDefs: TFieldDefs; override;
     function TotalPages: Integer; override;
     function RowsAffected: Integer; override;
     function RetornaAutoIncremento(const ASequenceName: string): Integer; overload; override;
@@ -179,6 +180,21 @@ begin
     FParams.ParseSQL(FComandoSQL.Text, True);
   end;
   Result := FParams;
+end;
+
+function TQueryEngineADO.FieldDefs: TFieldDefs;
+begin
+  if FQuery.SQL.IsEmpty then
+  begin
+    FQuery.Close;
+    FQuery.SQL.Clear;
+    if FPaginate and (FRowsPerPage > 0) and (FPage > 0) then
+      FDMLGenerator.GenerateSQLPaginating(FPage, FRowsPerPage, FComandoSQL);
+    FQuery.SQL.Assign(FComandoSQL);
+    if Assigned(FParams) and (FParams.Count > 0) then
+      FQuery.Parameters.Assign(FParams);
+  end;
+  Result := FQuery.FieldDefs;
 end;
 
 function TQueryEngineADO.ProviderFlags(const FieldName: string;

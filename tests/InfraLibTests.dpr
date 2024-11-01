@@ -53,7 +53,8 @@ uses
   InfraLib.Tests.DbEngine.FirebirdEmbedded in 'src\InfraLib.Tests.DbEngine.FirebirdEmbedded.pas',
   Infra.DBEngine.Error in '..\src\DB\Infra.DBEngine.Error.pas',
   Infra.DBEngine.ADODB in '..\src\DB\Infra.DBEngine.ADODB.pas',
-  Infra.QueryEngine.ADO in '..\src\Query\Infra.QueryEngine.ADO.pas';
+  Infra.QueryEngine.ADO in '..\src\Query\Infra.QueryEngine.ADO.pas',
+  Infra.DML.Generator.SQLite in '..\src\DB\Infra.DML.Generator.SQLite.pas';
 
 var
   runner : ITestRunner;

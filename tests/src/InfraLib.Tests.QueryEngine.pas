@@ -120,11 +120,19 @@ begin
     .Add(':pTipoDateTime')
     .Add('FROM RDB$DATABASE')
     .Add(';');
+  {$IFNDEF INFRA_ADO}
   FQueryEngine.Params.ParamByName('pTipoString').AsString := 'String';
   FQueryEngine.Params.ParamByName('pTipoInteger').AsInteger := 2023;
   FQueryEngine.Params.ParamByName('pTipoNumeric').AsFloat := 2023.03;
   FQueryEngine.Params.ParamByName('pTipoDate').AsDate := Date;
   FQueryEngine.Params.ParamByName('pTipoDateTime').AsDateTime := Now;
+  {$ELSE}
+  FQueryEngine.Params.ParamByName('pTipoString').Value := 'String';
+  FQueryEngine.Params.ParamByName('pTipoInteger').Value := 2023;
+  FQueryEngine.Params.ParamByName('pTipoNumeric').Value := 2023.03;
+  FQueryEngine.Params.ParamByName('pTipoDate').Value := Date;
+  FQueryEngine.Params.ParamByName('pTipoDateTime').Value := Now;
+  {$ENDIF}
   LSQLCommand := FQueryEngine.SQLCommand;
   Assert.DoesNotContain(':', LSQLCommand);
 end;
