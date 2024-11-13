@@ -44,7 +44,8 @@ implementation
 uses
   {$IF DEFINED(INFRA_ORMBR)}dbebr.factory.ado, {$IFEND}
   Infra.DBEngine.Trace, Infra.DBEngine.Context,
-  Infra.DBDriver.Register, Infra.DBEngine.Error;
+  Infra.DBDriver.Register, Infra.DBEngine.Error,
+  Winapi.ActiveX;
 
 procedure TDbEngineADO.CommitTX;
 begin
@@ -67,6 +68,7 @@ begin
   inherited;
   if Assigned(ADbConfig) then
   begin
+    CoInitialize(nil);
     FConnectionComponent := TADOConnection.Create(nil);
     FConnectionComponent.LoginPrompt := False;
     FConnectionComponent.IsolationLevel := ilReadCommitted;
@@ -83,6 +85,7 @@ end;
 
 destructor TDbEngineADO.Destroy;
 begin
+  CoUninitialize;
   if (not FInjectedConnection) then
   begin
     FConnectionComponent.Free;
