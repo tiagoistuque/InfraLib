@@ -25,8 +25,8 @@ type
     function Reset: IQueryEngine; override;
     function Clear: IQueryEngine; override;
     function Add(Str: string): IQueryEngine; override;
-    function Open: IQueryEngine; override;
-    function Exec(const AReturn: Boolean = False): IQueryEngine; override;
+    function Open(const ATimeout: Integer = 0): IQueryEngine; override;
+    function Exec(const AReturn: Boolean = False; const ATimeout: Integer = 0): IQueryEngine; override;
     function Close: IQueryEngine; override;
     function IndexFieldNames(const Fields: string): IQueryEngine; override;
   	function IndexFieldNames: string; override;
@@ -105,7 +105,7 @@ begin
   inherited;
 end;
 
-function TQueryEngineADO.Exec(const AReturn: Boolean = False): IQueryEngine;
+function TQueryEngineADO.Exec(const AReturn: Boolean = False; const ATimeout: Integer = 0): IQueryEngine;
 begin
   Result := Self;
   try
@@ -115,6 +115,8 @@ begin
     FQuery.SQL.Assign(FComandoSQL);
     if FParams.Count > 0 then
       FQuery.Parameters.Assign(FParams);
+    if ATimeout > 0 then
+      FQuery.CommandTimeout := ATimeout;
     if AReturn then
       FQuery.Open
     else
@@ -148,7 +150,7 @@ begin
   Result := FQuery.Locate(KeyFields, KeyValues, Options);
 end;
 
-function TQueryEngineADO.Open: IQueryEngine;
+function TQueryEngineADO.Open(const ATimeout: Integer = 0): IQueryEngine;
 begin
   Result := Self;
   try
@@ -160,6 +162,8 @@ begin
     FQuery.SQL.Assign(FComandoSQL);
     if Assigned(FParams) and (FParams.Count > 0) then
       FQuery.Parameters.Assign(FParams);
+    if ATimeout > 0 then
+      FQuery.CommandTimeout := ATimeout;
     FQuery.Open;
     FExecutionEndTime := Now;
     if FPaginate then

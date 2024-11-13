@@ -16,8 +16,13 @@ type
     function Reset: IQueryEngine;
     function Clear: IQueryEngine;
     function Add(Str: string): IQueryEngine;
+    {$IF DEFINED(INFRA_ADO)}
+    function Open(const ATimeout: Integer = 0): IQueryEngine;
+    function Exec(const AReturn: Boolean = False; const ATimeout: Integer = 0): IQueryEngine;
+    {$ELSE}
     function Open: IQueryEngine;
     function Exec(const AReturn: Boolean = False): IQueryEngine;
+    {$ENDIF}
     function Close: IQueryEngine;
     function IndexFieldNames(const Fields: string): IQueryEngine; overload;
     function IndexFieldNames: string; overload;
