@@ -18,12 +18,13 @@ type
     FConnectionComponent: TADOConnection;
     FInjectedConnection: Boolean;
     FRowsAffected: Integer;
+    FDbConfig: IDbEngineConfig;
   public
     function ConnectionComponent: TComponent; override;
     procedure Connect; override;
     procedure Disconnect; override;
     function ExecSQL(const ASQL: string): Integer; override;
-    function ExceSQL(const ASQL: string; var AResultDataSet: TDataSet): Integer; override;
+    function ExecSQL(const ASQL: string; var AResultDataSet: TDataSet): Integer; override;
     function OpenSQL(const ASQL: string; var AResultDataSet: TDataSet): Integer; override;
     procedure StartTx; override;
     procedure CommitTX; override;
@@ -69,6 +70,7 @@ begin
   if Assigned(ADbConfig) then
   begin
     CoInitialize(nil);
+    FDbConfig := ADbConfig;
     FConnectionComponent := TADOConnection.Create(nil);
     FConnectionComponent.LoginPrompt := False;
     FConnectionComponent.IsolationLevel := ilReadCommitted;
@@ -99,7 +101,7 @@ begin
   inherited;
 end;
 
-function TDbEngineADO.ExceSQL(const ASQL: string;
+function TDbEngineADO.ExecSQL(const ASQL: string;
   var AResultDataSet: TDataSet): Integer;
 var
   LQuery: TADOQuery;
@@ -129,6 +131,9 @@ begin
   if Assigned(FConnectionComponent) then
     FreeAndNil(FConnectionComponent);
   FConnectionComponent := TADOConnection(AConn);
+  {$IF DEFINED(INFRA_ORMBR)}
+  FDBConnection := TFactoryADO.Create(FConnectionComponent, TDBDriverRegister.GetDriverName(FDbConfig.Driver));
+  {$IFEND}
   FInjectedConnection := True;
 end;
 

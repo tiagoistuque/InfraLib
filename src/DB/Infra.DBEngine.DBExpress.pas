@@ -23,13 +23,14 @@ type
     FInjectedConnection: Boolean;
     FInjectedTransaction: Boolean;
     FRowsAffected: Integer;
+    FDbConfig: IDbEngineConfig;
     function InvokeCallBack(TraceInfo: TDBXTraceInfo): CBRType;
   public
     function ConnectionComponent: TComponent; override;
     procedure Connect; override;
     procedure Disconnect; override;
     function ExecSQL(const ASQL: string): Integer; override;
-    function ExceSQL(const ASQL: string; var AResultDataSet: TDataSet): Integer; override;
+    function ExecSQL(const ASQL: string; var AResultDataSet: TDataSet): Integer; override;
     function OpenSQL(const ASQL: string; var AResultDataSet: TDataSet): Integer; override;
     procedure StartTx; override;
     procedure CommitTX; override;
@@ -74,6 +75,7 @@ begin
   inherited;
   if Assigned(ADbConfig) then
   begin
+    FDbConfig := ADbConfig;
     FConnectionComponent := TSQLConnection.Create(nil);
     with FConnectionComponent do
     begin
@@ -125,7 +127,7 @@ begin
   inherited;
 end;
 
-function TDbEngineDBExpress.ExceSQL(const ASQL: string;
+function TDbEngineDBExpress.ExecSQL(const ASQL: string;
   var AResultDataSet: TDataSet): Integer;
 var
   LQuery: TSimpleDataSet;
@@ -155,6 +157,9 @@ begin
   if Assigned(FConnectionComponent) then
     FreeAndNil(FConnectionComponent);
   FConnectionComponent := TSQLConnection(AConn);
+  {$IF DEFINED(INFRA_ORMBR)}
+  FDBConnection := TFactoryDBExpress.Create(FConnectionComponent, TDBDriverRegister.GetDriverName(FDbConfig.Driver));
+  {$IFEND}
   FInjectedConnection := True;
   if Assigned(ATransactionObject) then
   begin

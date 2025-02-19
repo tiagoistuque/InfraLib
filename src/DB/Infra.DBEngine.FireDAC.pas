@@ -59,11 +59,12 @@ type
     FInjectedConnection: Boolean;
     FRowsAffected: Integer;
     FFDPhysFBDriverLink: TFDPhysFBDriverLink;
+    FDbConfig: IDbEngineConfig;
   public
     procedure Connect; override;
     procedure Disconnect; override;
     function ExecSQL(const ASQL: string): Integer; override;
-    function ExceSQL(const ASQL: string; var AResultDataSet: TDataSet): Integer; override;
+    function ExecSQL(const ASQL: string; var AResultDataSet: TDataSet): Integer; override;
     function OpenSQL(const ASQL: string; var AResultDataSet: TDataSet): Integer; override;
     procedure StartTx; override;
     procedure CommitTX; override;
@@ -115,6 +116,7 @@ begin
   FFDPhysFBDriverLink := nil;
   if Assigned(ADbConfig) then
   begin
+    FDbConfig := ADbConfig;
     LGUIDEndian := EmptyStr;
     LOpenMode := EmptyStr;
     LAuthMode := EmptyStr;
@@ -224,7 +226,7 @@ begin
   FConnectionComponent.Connected := False;
 end;
 
-function TDbEngineFireDAC.ExceSQL(const ASQL: string;
+function TDbEngineFireDAC.ExecSQL(const ASQL: string;
   var AResultDataSet: TDataSet): Integer;
 begin
   if Assigned(AResultDataSet) then
@@ -246,8 +248,11 @@ begin
     raise Exception.Create('Invalid connection component instance for FireDAC. ' + Self.UnitName);
   if Assigned(FConnectionComponent) then
     FreeAndNil(FConnectionComponent);
-  FInjectedConnection := True;
   FConnectionComponent := TFDConnection(AConn);
+  {$IF DEFINED(INFRA_ORMBR)}
+  FDBConnection := TFactoryFireDAC.Create(FConnectionComponent, TDBDriverRegister.GetDriverName(FDbConfig.Driver));
+  {$IFEND}
+  FInjectedConnection := True;
 end;
 
 function TDbEngineFireDAC.InTransaction: Boolean;

@@ -70,7 +70,7 @@ type
     procedure Connect;
     procedure Disconnect;
     function ExecSQL(const ASQL: string): Integer; overload;
-    function ExceSQL(const ASQL: string; var AResultDataSet: TDataSet): Integer; overload;
+    function ExecSQL(const ASQL: string; var AResultDataSet: TDataSet): Integer; overload;
     function OpenSQL(const ASQL: string; var AResultDataSet: TDataSet): Integer; overload;
     function OpenSQL(const ASQL: string; var AResultDataSet: TDataSet; const APage: Integer; const ARowsPerPage: Integer): Integer; overload;
     procedure StartTx;

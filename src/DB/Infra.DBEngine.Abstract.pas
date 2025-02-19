@@ -35,8 +35,8 @@ type
     function ConnectionComponent: TComponent; virtual; abstract;
     procedure Connect; virtual;
     procedure Disconnect; virtual;
-    function ExecSQL(const ASQL: string): Integer; virtual; abstract;
-    function ExceSQL(const ASQL: string; var AResultDataSet: TDataSet ): Integer; virtual; abstract;
+    function ExecSQL(const ASQL: string): Integer; overload; virtual; abstract;
+    function ExecSQL(const ASQL: string; var AResultDataSet: TDataSet ): Integer; overload; virtual; abstract;
     function OpenSQL(const ASQL: string; var AResultDataSet: TDataSet ): Integer; overload; virtual; abstract;
     function OpenSQL(const ASQL: string; var AResultDataSet: TDataSet; const APage: Integer; const ARowsPerPage: Integer): Integer; overload; virtual; abstract;
     procedure StartTx; virtual; abstract;
