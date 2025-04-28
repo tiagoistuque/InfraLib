@@ -18,6 +18,7 @@ type
     FQuery: TADOQuery;
     FParams: TSQLParams;
     FRowsAffected: Integer;
+    procedure SynchronizeParams;
   public
     constructor Create(const AConnection: TDbEngineAbstract); override;
     destructor Destroy; override;
@@ -85,11 +86,14 @@ end;
 
 constructor TQueryEngineADO.Create(
   const AConnection: TDbEngineAbstract);
+var
+  LADOCommand: TADOCommand;
 begin
   inherited;
   FQuery := TADOQuery.Create(nil);
   FQuery.Connection := TADOConnection(AConnection.ConnectionComponent);
-  FParams := TSQLParams.Create(TADOCommand.Create(FQuery), TParameter);
+  LADOCommand := TADOCommand.Create(FQuery);
+  FParams := TSQLParams.Create(LADOCommand, TParameter);
 end;
 
 function TQueryEngineADO.DataSet: TDataSet;
@@ -114,7 +118,7 @@ begin
     FQuery.SQL.Clear;
     FQuery.SQL.Assign(FComandoSQL);
     if FParams.Count > 0 then
-      FQuery.Parameters.Assign(FParams);
+      SynchronizeParams;
     if ATimeout > 0 then
       FQuery.CommandTimeout := ATimeout;
     if AReturn then
@@ -161,7 +165,7 @@ begin
       FDMLGenerator.GenerateSQLPaginating(FPage, FRowsPerPage, FComandoSQL);
     FQuery.SQL.Assign(FComandoSQL);
     if Assigned(FParams) and (FParams.Count > 0) then
-      FQuery.Parameters.Assign(FParams);
+      SynchronizeParams;
     if ATimeout > 0 then
       FQuery.CommandTimeout := ATimeout;
     FQuery.Open;
@@ -196,7 +200,7 @@ begin
       FDMLGenerator.GenerateSQLPaginating(FPage, FRowsPerPage, FComandoSQL);
     FQuery.SQL.Assign(FComandoSQL);
     if Assigned(FParams) and (FParams.Count > 0) then
-      FQuery.Parameters.Assign(FParams);
+      SynchronizeParams;
   end;
   Result := FQuery.FieldDefs;
 end;
@@ -256,6 +260,24 @@ end;
 function TQueryEngineADO.UpdatesPending: Boolean;
 begin
   Result := FQuery.Active and ( rsPendingChanges in FQuery.RecordStatus );
+end;
+
+procedure TQueryEngineADO.SynchronizeParams;
+var
+  I: Integer;
+  SrcParam: TParameter;
+  DestParam: TParameter;
+begin
+  for I := 0 to FParams.Count - 1 do
+  begin
+    SrcParam := FParams[I];
+    if FQuery.Parameters.FindParam(SrcParam.Name) <> nil then
+    begin
+      DestParam := FQuery.Parameters.ParamByName(SrcParam.Name);
+      DestParam.DataType := SrcParam.DataType;
+      DestParam.Value := SrcParam.Value;
+    end;
+  end;
 end;
 
 {$IFEND}
