@@ -29,7 +29,7 @@
 
 unit Infra.SysInfo;
 
-{$i QuickLib.inc}
+{$i Infra.inc}
 
 interface
 

@@ -29,7 +29,7 @@
 
 unit Infra.Commons;
 
-{$i QuickLib.inc}
+{$i Infra.inc}
 
 interface
 

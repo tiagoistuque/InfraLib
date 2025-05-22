@@ -29,7 +29,7 @@
 
 unit Infra.Files;
 
-{$i QuickLib.inc}
+{$i Infra.inc}
 
 interface
 
