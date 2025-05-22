@@ -1,20 +1,49 @@
-unit Infra.Commons;
+﻿{ ***************************************************************************
 
-{$i Infra.inc}
+  Copyright (c) 2016-2024 Kike P�rez
+
+  Unit        : Quick.Commons
+  Description : Common functions
+  Author      : Kike P�rez
+  Version     : 2.0
+  Created     : 14/07/2017
+  Modified    : 14/03/2024
+
+  This file is part of QuickLib: https://github.com/exilon/QuickLib
+
+ ***************************************************************************
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+
+ *************************************************************************** }
+
+unit Quick.Commons;
+
+{$i QuickLib.inc}
 
 interface
 
-uses
+  uses
     Classes,
     SysUtils,
-    Generics.Collections,
-    System.Types,
+    Types,
     {$IFDEF MSWINDOWS}
       Windows,
+      ActiveX,
       ShlObj,
     {$ENDIF MSWINDOWS}
     {$IFDEF FPC}
-    Infra.Files,
+    Quick.Files,
       {$IFDEF LINUX}
       FileInfo,
       {$ENDIF}
@@ -26,6 +55,9 @@ uses
     Androidapi.Helpers,
     Androidapi.JNI.JavaTypes,
     Androidapi.JNI.GraphicsContentViewText,
+    {$IFDEF DELPHIRX103_UP}
+      Androidapi.JNI.App,
+    {$ENDIF}
     {$ENDIF}
     {$IFDEF IOS}
     iOSapi.UIKit,
@@ -46,6 +78,23 @@ uses
     {$ENDIF}
     DateUtils;
 
+type
+
+ TLogEventType = (etInfo, etSuccess, etWarning, etError, etDebug, etDone, etTrace, etCritical, etException);
+ TLogVerbose = set of TLogEventType;
+
+const
+  LOG_ONLYERRORS = [etInfo,etError];
+  LOG_ERRORSANDWARNINGS = [etInfo,etWarning,etError];
+  LOG_TRACE = [etInfo,etError,etWarning,etTrace];
+  LOG_ALL = [etInfo, etSuccess, etWarning, etError, etDebug, etDone, etTrace, etCritical, etException];
+  LOG_DEBUG = [etInfo,etSuccess,etWarning,etError,etDebug];
+  {$IFDEF DELPHIXE7_UP}
+  EventStr : array of string = ['INFO','SUCC','WARN','ERROR','DEBUG','DONE','TRACE','CRITICAL','EXCEPTION'];
+  {$ELSE}
+  EventStr : array[0..8] of string = ('INFO','SUCC','WARN','ERROR','DEBUG','DONE','TRACE','CRITICAL','EXCEPTION');
+  {$ENDIF}
+  CRLF = #13#10;
 type
   TPasswordComplexity = set of (pfIncludeNumbers,pfIncludeSigns);
 
@@ -75,7 +124,7 @@ type
   TFileHelper = record helper for TFile
     {$IF DEFINED(MSWINDOWS) OR DEFINED(DELPHILINUX)}
     class function IsInUse(const FileName : string) : Boolean; static;
-    {$IFEND}
+    {$ENDIF}
     class function GetSize(const FileName: String): Int64; static;
   end;
 
@@ -126,24 +175,24 @@ type
   end;
 
   {$IFNDEF FPC}
-//
+
   {$IFNDEF DELPHIXE7_UP}
   TArrayUtil<T> = class
     class procedure Delete(var aArray : TArray<T>; aIndex : Integer);
   end;
   {$ENDIF}
-//
-//  TArrayOfStringHelper = record helper for TArray<string>
-//  public
-//    function Any : Boolean; overload;
-//    function Any(const aValue : string) : Boolean; overload;
-//    function Add(const aValue : string) : Integer;
-//    function AddIfNotExists(const aValue : string; aCaseSense : Boolean = False) : Integer;
-//    function Remove(const aValue : string) : Boolean;
-//    function Exists(const aValue : string) : Boolean;
-//    function Count : Integer;
-//  end;
-//  TDelegate<T> = reference to procedure(Value : T);
+
+  TArrayOfStringHelper = record helper for TArray<string>
+  public
+    function Any : Boolean; overload;
+    function Any(const aValue : string) : Boolean; overload;
+    function Add(const aValue : string) : Integer;
+    function AddIfNotExists(const aValue : string; aCaseSense : Boolean = False) : Integer;
+    function Remove(const aValue : string) : Boolean;
+    function Exists(const aValue : string) : Boolean;
+    function Count : Integer;
+  end;
+  TDelegate<T> = reference to procedure(Value : T);
   {$ENDIF}
 
   TPairItem = record
@@ -182,13 +231,49 @@ type
     procedure Clear;
   end;
 
+  {$IFDEF DELPHIXE7_UP}
+  TDateTimeHelper = record helper for TDateTime
+  public
+    function ToSQLString : string;
+    procedure FromNow;
+    procedure FromUTC(const aUTCTime : TDateTime);
+    function IncDay(const aValue : Cardinal = 1) : TDateTime;
+    function DecDay(const aValue : Cardinal = 1) : TDateTime;
+    function IncMonth(const aValue : Cardinal = 1) : TDateTime;
+    function DecMonth(const aValue : Cardinal = 1) : TDateTime;
+    function IncYear(const aValue : Cardinal = 1) : TDateTime;
+    function DecYear(const aValue : Cardinal = 1) : TDateTime;
+    function IsEqualTo(const aDateTime : TDateTime) : Boolean;
+    function IsAfter(const aDateTime : TDateTime) : Boolean;
+    function IsBefore(const aDateTime : TDateTime) : Boolean;
+    function IsSameDay(const aDateTime : TDateTime) : Boolean;
+    function IsSameTime(const aTime : TTime) : Boolean;
+    function DayOfTheWeek : Word;
+    function ToJsonFormat : string;
+    function ToGMTFormat: string;
+    function ToTimeStamp : TTimeStamp;
+    function ToUTC : TDateTime;
+    function ToMilliseconds : Int64;
+    function ToString : string;
+    function Date : TDate;
+    function Time : TTime;
+    function IsAM : Boolean;
+    function IsPM : Boolean;
+  end;
+
+  TDateHelper = record helper for TDate
+  public
+    function ToString : string;
+  end;
+
+  TTimeHelper = record helper for TTime
+  public
+    function ToString : string;
+  end;
+  {$ENDIF}
+
   EEnvironmentPath = class(Exception);
   EShellError = class(Exception);
-
-  { InRange functions }
-  function DateTimeInRange(ADateTime: TDateTime; AStartDateTime, AEndDateTime: TDateTime; aInclusive: Boolean = True): Boolean;
-  function DateInRange(ADate: TDate; AStartDate, AEndDate: TDate; AInclusive: Boolean = True): Boolean;
-  function TimeInRange(ATime: TTime; AStartTime, AEndTime: TTime; AInclusive: Boolean = True): Boolean;
 
   //generates a random password with complexity options
   function RandomPassword(const PasswordLength : Integer; Complexity : TPasswordComplexity = [pfIncludeNumbers,pfIncludeSigns]) : string;
@@ -245,6 +330,7 @@ type
   function ChangeDateOfADay(aDate : TDateTime; aYear, aMonth, aDay : Word) : TDateTime;
   //returns n times a char
   function FillStr(const C : Char; const Count : Integer) : string;
+  function FillStrEx(const value : string; const Count : Integer) : string;
   //checks if string exists in array of string
   function StrInArray(const aValue : string; const aInArray : array of string; aCaseSensitive : Boolean = True) : Boolean;
   //checks if integer exists in array of integer
@@ -293,12 +379,18 @@ type
   function GetLastPathSegment(const aPath : string) : string;
   //finds swith in commandline params
   function ParamFindSwitch(const Switch : string) : Boolean;
+  //gets value for a switch if exists
+  function ParamGetSwitch(const Switch : string; var cvalue : string) : Boolean;
   //returns app name (filename based)
   function GetAppName : string;
   //returns app version (major & minor)
   function GetAppVersionStr: string;
   //returns app version full (major, minor, release & compiled)
   function GetAppVersionFullStr: string;
+  //convert UTC DateTime to Local DateTime
+  function UTCToLocalTime(GMTTime: TDateTime): TDateTime;
+  //convert Local DateTime to UTC DateTime
+  function LocalTimeToUTC(LocalTime : TDateTime): TDateTime;
   //convert DateTime to GTM Time string
   function DateTimeToGMT(aDate : TDateTime) : string;
   //convert GMT Time string to DateTime
@@ -323,10 +415,18 @@ type
   function CommaText(aList : TStringList) : string; overload;
   //returns a real comma separated text from array of string
   function CommaText(aArray : TArray<string>) : string; overload;
-  //returns a string CRLF from array of string
-  function ArrayToString(aArray : TArray<string>) : string;
+  //returns a string CRLF separated from array of string
+  function ArrayToString(aArray : TArray<string>) : string; overload;
+  //returns a string with separator from array of string
+  function ArrayToString(aArray : TArray<string>; aSeparator : string) : string; overload;
+  //returns a string CRLF separated from array of Integer
+  function ArrayToString(aArray : TArray<Integer>) : string; overload;
+  //returns a string with separator from array of Integer
+  function ArrayToString(aArray : TArray<Integer>; aSeparator : string) : string; overload;
   //converts TStrings to array
-  function StringsToArray(aStrings : TStrings) : TArray<string>;
+  function StringsToArray(aStrings : TStrings) : TArray<string>; overload;
+  //converts string comma or semicolon separated to array
+  function StringsToArray(const aString : string) : TArray<string>; overload;
   {$IFDEF MSWINDOWS}
   //process messages on console applications
   procedure ProcessMessages;
@@ -335,7 +435,7 @@ type
   {$ENDIF}
   {$IF DEFINED(FPC) AND DEFINED(MSWINDOWS)}
   function GetLastInputInfo(var plii: TLastInputInfo): BOOL;stdcall; external 'user32' name 'GetLastInputInfo';
-  {$IFEND}
+  {$ENDIF}
   function RemoveLastChar(const aText : string) : string;
   function DateTimeToSQL(aDateTime : TDateTime) : string;
   function IsInteger(const aValue : string) : Boolean;
@@ -345,16 +445,18 @@ type
   function ExtractStr(var vSource : string; aIndex : Integer; aCount : Integer) : string;
   //get first string between string delimiters
   function GetSubString(const aSource, aFirstDelimiter, aLastDelimiter : string) : string;
+  //get double quoted or dequoted string
+  function DbQuotedStr(const str : string): string;
+  function UnDbQuotedStr(const str: string) : string;
+  //get simple quoted or dequoted string
+  function SpQuotedStr(const str : string): string;
+  function UnSpQuotedStr(const str : string): string;
+  function UnQuotedStr(const str : string; const aQuote : Char) : string;
   //ternary operator
   function Ifx(aCondition : Boolean; const aIfIsTrue, aIfIsFalse : string) : string; overload;
   function Ifx(aCondition : Boolean; const aIfIsTrue, aIfIsFalse : Integer) : Integer; overload;
   function Ifx(aCondition : Boolean; const aIfIsTrue, aIfIsFalse : Extended) : Extended; overload;
   function Ifx(aCondition : Boolean; const aIfIsTrue, aIfIsFalse : TObject) : TObject; overload;
-
-  function PosLast(const SubStr, S: AnsiString): Integer;
-  function PosEx(const SubStr, S: AnsiString; Offset: Cardinal = 1): Integer;
-  function RPos(const aSubStr, aString : AnsiString; const aStartPos: Integer): Integer; overload;
-  function RPos(const aSubStr, aString : AnsiString): Integer; overload;
 
 var
   path : TEnvironmentPath;
@@ -364,42 +466,6 @@ var
 implementation
 
 {TFileHelper}
-
-function DateTimeInRange(ADateTime: TDateTime; AStartDateTime, AEndDateTime: TDateTime; aInclusive: Boolean = True): Boolean;
-begin
-  if aInclusive then
-    Result := (AStartDateTime <= ADateTime) and (ADateTime <= AEndDateTime)
-  else
-    Result := (AStartDateTime < ADateTime) and (ADateTime < AEndDateTime);
-end;
-
-function TimeInRange(ATime: TTime; AStartTime, AEndTime: TTime; AInclusive: Boolean = True): Boolean;
-var
-  LTime, LStartTime, LEndTime: TTime;
-begin
-  LTime := TimeOf(ATime);
-  LStartTime := TimeOf(AStartTime);
-  LEndTime := TimeOF(AEndTime);
-
-  if LEndTime < LStartTime then
-    if AInclusive then
-      Result := (LStartTime <= LTime) or (LTime <= LEndTime)
-    else
-      Result := (LStartTime < LTime) or (LTime < LEndTime)
-  else
-    if AInclusive then
-      Result := (LStartTime <= LTime) and (LTime <= LEndTime)
-    else
-      Result := (LStartTime < LTime) and (LTime < LEndTime);
-end;
-
-function DateInRange(ADate: TDate; AStartDate, AEndDate: TDate; AInclusive: Boolean = True): Boolean;
-begin
-  if AInclusive then
-    Result := (DateOf(AStartDate) <= DateOf(ADate)) and (DateOf(ADate) <= DateOf(AEndDate))
- else
-    Result := (DateOf(AStartDate) < DateOf(ADate)) and (DateOf(ADate) < DateOf(AEndDate));
-end;
 
 {$IFNDEF FPC}
 {$IFDEF MSWINDOWS}
@@ -527,7 +593,7 @@ var
   i : Integer;
   clong : Integer;
 begin
-  clong := Length(chars);
+  clong := High(chars);
   SetLength(Result, aLength);
   for i := 1 to aLength do
   begin
@@ -561,11 +627,8 @@ begin
 end;
 
 function UrlGetProtocol(const aUrl : string) : string;
-var
-  LIndex: Integer;
 begin
-  LIndex := Pos('://', aUrl);
-  Result := Copy(aUrl, 1, Lindex);
+  Result := aUrl.SubString(0,aUrl.IndexOf('://'));
 end;
 
 function UrlGetHost(const aUrl : string) : string;
@@ -575,10 +638,10 @@ var
 begin
   url := UrlRemoveProtocol(aUrl);
 
-  if (Pos('/', url) > 0) then len := Pos('/', url)
-    else len := Length(url);
+  if url.Contains('/') then len := url.IndexOf('/')
+    else len := url.Length;
 
-  Result := Copy(url, 1, len);
+  Result := url.SubString(0,len);
 end;
 
 function UrlGetPath(const aUrl : string) : string;
@@ -587,34 +650,34 @@ var
   len : Integer;
 begin
   url := UrlRemoveProtocol(aUrl);
-  if not (Pos('/', url) > 0) then Exit('');
-  len := Pos('?', url);
-  if len <= 0 then len := Length(url)
-    else len := Pos('?', url) - Pos('/', url);
-  Result := Copy(url, Pos('/', url), len);
+  if not url.Contains('/') then Exit('');
+  len := url.IndexOf('?');
+  if len < 0 then len := url.Length
+    else len := url.IndexOf('?') - url.IndexOf('/');
+  Result := url.Substring(url.IndexOf('/'),len);
 end;
 
 function UrlGetQuery(const aUrl : string) : string;
 begin
-  if not (Pos('?', aUrl) > 0) then Exit('');
+  if not aUrl.Contains('?') then Exit('');
 
-  Result := Copy(aUrl, Pos('?', aUrl)+1, Length(aUrl));
+  Result := aUrl.Substring(aUrl.IndexOf('?')+1);
 end;
 
 function UrlRemoveProtocol(const aUrl : string) : string;
 var
-  LPos : Integer;
+  pos : Integer;
 begin
-  LPos := Pos('://', aUrl);
-  if LPos <= 0 then LPos := 1
-    else LPos := LPos + 3;
-  Result := Copy(aUrl, LPos, Length(aUrl));
+  pos := aUrl.IndexOf('://');
+  if pos < 0 then pos := 0
+    else pos := pos + 3;
+  Result := aUrl.SubString(pos, aUrl.Length);
 end;
 
 function UrlRemoveQuery(const aUrl : string) : string;
 begin
-  if not (Pos('?', aUrl) > 0) then Exit(aUrl);
-  Result := Copy(aUrl, 1, Pos('?', aUrl));
+  if not aUrl.Contains('?') then Exit(aUrl);
+  Result := aUrl.Substring(0,aUrl.IndexOf('?'));
 end;
 
 function UrlSimpleEncode(const aUrl : string) : string;
@@ -655,15 +718,25 @@ end;
 {$IFDEF MSWINDOWS}
 function GetSpecialFolderPath(folderID : Integer) : string;
 var
+  shellMalloc: IMalloc;
   ppidl: PItemIdList;
 begin
-  SHGetSpecialFolderLocation(0, folderID, ppidl);
-  SetLength(Result, MAX_PATH);
-  if not SHGetPathFromIDList(ppidl,{$IFDEF FPC}PAnsiChar(Result){$ELSE}PChar(Result){$ENDIF}) then
-  begin
-    raise EShellError.create(Format('GetSpecialFolderPath: Invalid PIPL (%d)',[folderID]));
+  ppidl := nil;
+  try
+    if SHGetMalloc(shellMalloc) = NOERROR then
+    begin
+      SHGetSpecialFolderLocation(0, folderID, ppidl);
+      SetLength(Result, MAX_PATH);
+      if not SHGetPathFromIDList(ppidl,{$IFDEF FPC}PAnsiChar(Result){$ELSE}PChar(Result){$ENDIF}) then
+      begin
+        raise EShellError.create(Format('GetSpecialFolderPath: Invalid PIPL (%d)',[folderID]));
+      end;
+      SetLength(Result, lStrLen({$IFDEF FPC}PAnsiChar(Result){$ELSE}PChar(Result){$ENDIF}));
+    end;
+  finally
+    if ppidl <> nil then
+      shellMalloc.Free(ppidl);
   end;
-  SetLength(Result, lStrLen({$IFDEF FPC}PAnsiChar(Result){$ELSE}PChar(Result){$ENDIF}));
 end;
 
 function Is64bitOS : Boolean;
@@ -692,7 +765,10 @@ function HasConsoleOutput : Boolean;
   begin
     try
       stout := GetStdHandle(Std_Output_Handle);
-      Win32Check(stout <> Invalid_Handle_Value);
+      {$WARN SYMBOL_PLATFORM OFF}
+      //Allready checked that we are on a windows platform
+        Win32Check(stout <> Invalid_Handle_Value);
+      {$WARN SYMBOL_PLATFORM ON}
       Result := stout <> 0;
     except
       Result := False;
@@ -798,6 +874,13 @@ begin
   for i := 1 to Count do Result := Result + C;
 end;
 
+function FillStrEx(const value : string; const Count : Integer) : string;
+var
+  i   : Integer;
+begin
+  Result := '';
+  for i := 1 to Count do Result := Result + value;
+end;
 
 function StrInArray(const aValue : string; const aInArray : array of string; aCaseSensitive : Boolean = True) : Boolean;
 var
@@ -872,9 +955,8 @@ begin
   {$IFDEF DELPHIRX10_UP}
   Result := TGUID.NewGuid.ToString;
   {$ELSE}
-  CreateGUID(guid);
-
-  Result := GUIDToString(guid);
+  guid.NewGuid;
+  Result := guid.ToString
   {$ENDIF}
 end;
 
@@ -891,22 +973,22 @@ begin
   Pattern := LowerCase(Pattern);
   match := False;
 
-  if (Length(Pattern) > Length(cText)) or (Pattern = '') then Exit;
+  if (Pattern.Length > cText.Length) or (Pattern = '') then Exit;
   if Pattern = '*' then
   begin
     Result := True;
     Exit;
   end;
 
-  for i := 1 to Length(cText) do
+  for i := 1 to cText.Length do
   begin
     CurrentPattern := Pattern[i];
     if CurrentPattern = '*' then wildcard := True;
 
     if wildcard then
     begin
-      n := Pos(Copy(Pattern,i+1,Length(Pattern)),cText);
-      if (n > i) or (Length(Pattern) = i) then
+      n := Pos(Copy(Pattern,i+1,Pattern.Length),cText);
+      if (n > i) or (Pattern.Length = i) then
       begin
         Result := True;
         Exit;
@@ -924,32 +1006,22 @@ end;
 function Capitalize(s: string): string;
 begin
   Result := '';
-  if Length(s) = 0 then Exit;
+  if s.Length = 0 then Exit;
   s := LowerCase(s,loUserLocale);
-  Result := UpperCase(s[1],loUserLocale) + Trim(Copy(s, 2, Length(s)));
+  Result := UpperCase(s[1],loUserLocale) + Trim(Copy(s, 2, s.Length));
 end;
 
 function CapitalizeWords(s: string): string;
 var
   cword : string;
-  sl: TStringList;
-  i: Integer;
 begin
   Result := '';
-  sl := TStringList.Create;
-  try
-     if Length(s) = 0 then Exit;
-     s := LowerCase(s,loUserLocale);
-     sl.Delimiter := ' ';
-     sl.DelimitedText := s;
-     for i:=0 to sl.Count - 1 do
-     begin
-       cword := sl[i];
-       if Result = '' then Result := Capitalize(cword)
-         else Result := Result + ' ' + Capitalize(cword);
-     end;
-  finally
-     sl.Free;
+  if s.Length = 0 then Exit;
+  s := LowerCase(s,loUserLocale);
+  for cword in s.Split([' ']) do
+  begin
+    if Result = '' then Result := Capitalize(cword)
+      else Result := Result + ' ' + Capitalize(cword);
   end;
 end;
 
@@ -983,7 +1055,11 @@ function GetLoggedUserName : string;
     {$IFDEF POSIX}
     try
       plogin := getlogin;
+      {$IFDEF NEXTGEN}
+      Result := string(plogin);
+      {$ELSE}
       Result := Copy(plogin,1,Length(Trim(plogin)));
+      {$ENDIF}
     except
       Result := 'N/A';
     end;
@@ -992,7 +1068,7 @@ function GetLoggedUserName : string;
     {$ENDIF}
     //raise ENotImplemented.Create('Not Android GetLoggedUserName implemented!');
   end;
-  {$IFEND}
+  {$ENDIF}
 {$ENDIF}
 
 {$IFDEF IOS}
@@ -1066,7 +1142,7 @@ function GetComputerName : string;
       end;
       {$ENDIF}
     {$ENDIF}
-  {$IFEND}
+  {$ENDIF}
 {$ENDIF}
 
 {$IFDEF MSWINDOWS}
@@ -1082,16 +1158,16 @@ end;
 function ExtractDomainAndUser(const aUser : string; out oDomain, oUser : string) : Boolean;
 begin
   //check if domain specified into username
-  if Pos('\', AUser) > 0 then
+  if aUser.Contains('\') then
   begin
-    oDomain := Copy(aUser,1,Pos('\',aUser)-1);
-    oUser := Copy(aUser,Pos('\',aUser)+1,Length(aUser));
+    oDomain := Copy(aUser,Low(aUser),Pos('\',aUser)-1);
+    oUser := Copy(aUser,Pos('\',aUser)+1,aUser.Length);
     Exit(True);
   end
-  else if Pos('@', aUser) > 0 then
+  else if aUser.Contains('@') then
   begin
-    oDomain := Copy(aUser,Pos('@',aUser)+1,Length(aUser));
-    oUser := Copy(aUser,1,Pos('@',aUser)-1);
+    oDomain := Copy(aUser,Pos('@',aUser)+1,aUser.Length);
+    oUser := Copy(aUser,Low(aUser),Pos('@',aUser)-1);
     Exit(True);
   end;
   oDomain := '';
@@ -1112,14 +1188,14 @@ var
 begin
   path1 := NormalizePathDelim(aFirstPath,aDelim);
   path2 := NormalizePathDelim(aSecondPath,aDelim);
-  if Copy(path1, Length(path1), 1) = aDelim then
+  if path1.EndsWith(aDelim) then
   begin
-    if Copy(path2, 1, 1) = aDelim then Result := path1 + Copy(path2, 2, Length(path2))
+    if path2.StartsWith(aDelim) then Result := path1 + path2.Substring(1)
       else Result := path1 + path2;
   end
   else
   begin
-     if Copy(path2, 1, 1) = aDelim then Result := path1 + path2
+     if path2.StartsWith(aDelim) then Result := path1 + path2
       else result := path1 + aDelim + path2;
   end;
 end;
@@ -1131,25 +1207,25 @@ var
   dir : string;
   StartsWithDelim : Boolean;
 begin
-  if Pos('\', cdir) > 0 then delim := '\'
-    else if Pos('/', cdir) > 0 then delim := '/'
+  if cDir.Contains('\') then delim := '\'
+    else if cDir.Contains('/') then delim := '/'
       else
       begin
         Exit('');
       end;
 
   dir := NormalizePathDelim(cDir,delim);
-  if Copy(dir, 1, 1) = delim then
+  if dir.StartsWith(delim) then
   begin
-    dir := Copy(dir,2,Length(dir));
+    dir := Copy(dir,2,dir.Length);
     StartsWithDelim := True;
   end
   else StartsWithDelim := False;
 
-  if Pos(delim, dir) = 0 then Exit('')
+  if dir.CountChar(delim) = 0 then Exit('')
     else posi := Pos(delim,dir)+1;
-  Result := Copy(dir,posi,Length(dir));
-  if ((not (Trim(Result) = '')) and (StartsWithDelim)) then Result := delim + Result;
+  Result := Copy(dir,posi,dir.Length);
+  if (not Result.IsEmpty) and (StartsWithDelim) then Result := delim + Result;
 end;
 
 function RemoveLastPathSegment(const cDir : string) : string;
@@ -1159,32 +1235,32 @@ var
   dir : string;
   EndsWithDelim : Boolean;
 begin
-  if Pos('\', cDir) > 0 then delim := '\'
-    else if Pos('/', cDir) > 0 then delim := '/'
+  if cDir.Contains('\') then delim := '\'
+    else if cDir.Contains('/') then delim := '/'
       else
       begin
         Exit('');
       end;
   dir := NormalizePathDelim(cDir,delim);
 
-  if Copy(dir, Length(dir), 1) = delim then
+  if dir.EndsWith(delim) then
   begin
-    dir := Copy(dir,1,Length(dir)-1);
+    dir := Copy(dir,1,dir.Length-1);
     EndsWithDelim := True;
   end
   else EndsWithDelim := False;
 
-  if Pos(delim, dir) > 1 then posi := PosLast(delim, dir)
+  if dir.CountChar(delim) > 1 then posi := dir.LastDelimiter(delim)
     else posi := Pos(delim,dir)-1;
-  if posi = Length(dir) then posi := 0;
+  if posi = dir.Length then posi := 0;
   Result := Copy(dir,1,posi);
-  if (Trim(Result) <> EmptyStr) and (EndsWithDelim) then Result := Result + delim;
+  if (not Result.IsEmpty) and (EndsWithDelim) then Result := Result + delim;
 end;
 
 function GetPathDelimiter(const aPath : string) : string;
 begin
-  if Pos('/', aPath) > 0 then Result := '/'
-    else if Pos('\', aPath) > 0 then Result := '\'
+  if aPath.Contains('/') then Result := '/'
+    else if aPath.Contains('\') then Result := '\'
     else Result := '';
 end;
 
@@ -1194,10 +1270,10 @@ var
   spath : string;
 begin
   delimiter := GetPathDelimiter(aPath);
-  if Trim(delimiter) = EmptyStr then Exit(aPath);
-  if Copy(aPath, 1, 1) = delimiter then spath := Copy(aPath,2,Length(aPath))
+  if delimiter.IsEmpty then Exit(aPath);
+  if aPath.StartsWith(delimiter) then spath := Copy(aPath,2,aPath.Length)
     else spath := aPath;
-  if Pos(delimiter, spath) > 0 then Result := Copy(spath,1,pos(delimiter, spath))
+  if spath.Contains(delimiter) then Result := Copy(spath,0,spath.IndexOf(delimiter))
     else Result := spath;
 end;
 
@@ -1207,10 +1283,10 @@ var
   spath : string;
 begin
   delimiter := GetPathDelimiter(aPath);
-  if Trim(delimiter) = EmptyStr then Exit(aPath);
-  if Copy(aPath, Length(aPath), 1)=delimiter then spath := Copy(aPath,1,Length(aPath) - 1)
+  if delimiter.IsEmpty then Exit(aPath);
+  if aPath.EndsWith(delimiter) then spath := Copy(aPath,0,aPath.Length - 1)
     else spath := aPath;
-  Result :=  Copy(spath, PosLast(delimiter, spath)+1, Length(spath));
+  Result := spath.Substring(spath.LastDelimiter(delimiter)+1);
 end;
 
 function ParamFindSwitch(const Switch : string) : Boolean;
@@ -1264,6 +1340,12 @@ begin
 end;
 {$ENDIF}
 
+function ParamGetSwitch(const Switch : string; var cvalue : string) : Boolean;
+begin
+  Result := FindCmdLineSwitch(Switch,cvalue,True,[clstValueAppended]);
+end;
+
+
 function GetAppName : string;
 begin
   Result := ExtractFilenameWithoutExt(ParamStr(0));
@@ -1275,7 +1357,7 @@ var
   Rec: LongRec;
   ver : Cardinal;
 begin
-  ver := SysUtils.GetFileVersion(ParamStr(0));
+  ver := GetFileVersion(ParamStr(0));
   if ver <> Cardinal(-1) then
   begin
     Rec := LongRec(ver);
@@ -1297,7 +1379,11 @@ end;
       var
         PkgInfo : JPackageInfo;
       begin
+        {$IFDEF DELPHIRX103_UP}
+        PkgInfo := TAndroidHelper.Activity.getPackageManager.getPackageInfo(TAndroidHelper.Activity.getPackageName,0);
+        {$ELSE}
         PkgInfo := SharedActivity.getPackageManager.getPackageInfo(SharedActivity.getPackageName,0);
+        {$ENDIF}
         Result := IntToStr(PkgInfo.VersionCode);
       end;
       {$ELSE} //IOS
@@ -1340,7 +1426,7 @@ end;
         end;
       {$ENDIF}
     {$ENDIF}
-  {$IFEND}
+  {$ENDIF}
 {$ENDIF}
 
 function GetAppVersionFullStr: string;
@@ -1401,7 +1487,11 @@ end;
       var
         PkgInfo : JPackageInfo;
       begin
+        {$IFDEF DELPHIRX103_UP}
+        PkgInfo := TAndroidHelper.Activity.getPackageManager.getPackageInfo(TAndroidHelper.Activity.getPackageName,0);
+        {$ELSE}
         PkgInfo := SharedActivity.getPackageManager.getPackageInfo(SharedActivity.getPackageName,0);
+        {$ENDIF}
         Result := JStringToString(PkgInfo.versionName);
       end;
       {$ELSE} //IOS
@@ -1434,9 +1524,26 @@ end;
         end;
       {$ENDIF}
     {$ENDIF}
-  {$IFEND}
+  {$ENDIF}
 {$ENDIF}
 
+function UTCToLocalTime(GMTTime: TDateTime): TDateTime;
+begin
+  {$IFDEF FPC}
+  Result := LocalTimeToUniversal(GMTTime);
+  {$ELSE}
+  Result :=  TTimeZone.Local.ToLocalTime(GMTTime);
+  {$ENDIF}
+end;
+
+function LocalTimeToUTC(LocalTime : TDateTime): TDateTime;
+begin
+  {$IFDEF FPC}
+  Result := UniversalTimeToLocal(Localtime);
+  {$ELSE}
+  Result := TTimeZone.Local.ToUniversalTime(LocalTime);
+  {$ENDIF}
+end;
 
 function DateTimeToGMT(aDate : TDateTime) : string;
 var
@@ -1445,7 +1552,7 @@ begin
   FmtSettings.DateSeparator := '-';
   FmtSettings.TimeSeparator := ':';
   FmtSettings.ShortDateFormat := 'YYYY-MM-DD"T"HH:NN:SS.ZZZ" GMT"';
-  Result := Trim(DateTimeToStr(aDate,FmtSettings));
+  Result := DateTimeToStr(aDate,FmtSettings).Trim;
 end;
 
 function GMTToDateTime(aDate : string) : TDateTime;
@@ -1470,7 +1577,7 @@ begin
   FmtSettings.DateSeparator := '-';
   FmtSettings.TimeSeparator := ':';
   FmtSettings.ShortDateFormat := 'YYYY-MM-DD"T"HH:NN:SS.ZZZ"Z"';
-  Result := Trim(DateTimeToStr(aDateTime,FmtSettings));
+  Result := DateTimeToStr(aDateTime,FmtSettings).Trim;
   {$ENDIF}
 end;
 
@@ -1520,13 +1627,13 @@ var
   findstr : string;
   mainstr : string;
 begin
-  findstr := LowerCase(aFindStr);
-  mainstr := LowerCase(aSourceStr);
+  findstr := aFindStr.ToLower;
+  mainstr := aSourceStr.ToLower;
   Result := 0;
   i := 0;
-  while i < Length(mainstr) do
+  while i < mainstr.Length do
   begin
-    found := RPos(findstr,mainstr,i);
+    found := Pos(findstr,mainstr,i);
     if found > 0 then
     begin
       i := found;
@@ -1601,7 +1708,7 @@ end;
 procedure StringToStreamEx(const aStr : string; aStream : TStream);
 begin
   aStream.Seek(0,soBeginning);
-  aStream.WriteBuffer(Pointer(aStr)^, Length(aStr) * SizeOf(Char));
+  aStream.WriteBuffer(Pointer(aStr)^,aStr.Length * SizeOf(Char));
 end;
 
 function CommaText(aList : TStringList) : string;
@@ -1628,7 +1735,7 @@ var
   value : string;
   sb : TStringBuilder;
 begin
-//  if High(aArray) < 0 then Exit;
+  if High(aArray) < 0 then Exit;
   sb := TStringBuilder.Create;
   try
     for value in aArray do
@@ -1647,14 +1754,82 @@ var
   value : string;
   sb : TStringBuilder;
 begin
-//  if High(aArray) < 0 then Exit;
+  Result := '';
+  if High(aArray) < 0 then Exit;
   sb := TStringBuilder.Create;
   try
     for value in aArray do
     begin
       sb.Append(value);
-      sb.Append(#10#13);
+      sb.Append(CRLF);
     end;
+    Result := sb.ToString;
+  finally
+    sb.Free;
+  end;
+end;
+
+function ArrayToString(aArray : TArray<string>; aSeparator : string) : string;
+var
+  value : string;
+  sb : TStringBuilder;
+  isfirst : Boolean;
+begin
+  Result := '';
+  if High(aArray) < 0 then Exit;
+  isfirst := True;
+  sb := TStringBuilder.Create;
+  try
+    for value in aArray do
+    begin
+      if isfirst then isfirst := False
+        else sb.Append(aSeparator);
+      sb.Append(value);
+    end;
+    Result := sb.ToString;
+  finally
+    sb.Free;
+  end;
+end;
+
+function ArrayToString(aArray : TArray<Integer>) : string;
+var
+  value : Integer;
+  sb : TStringBuilder;
+begin
+  Result := '';
+  if High(aArray) < 0 then Exit;
+  sb := TStringBuilder.Create;
+  try
+    for value in aArray do
+    begin
+      sb.Append(value);
+      sb.Append(CRLF);
+    end;
+    Result := sb.ToString;
+  finally
+    sb.Free;
+  end;
+end;
+
+function ArrayToString(aArray : TArray<Integer>; aSeparator : string) : string;
+var
+  value : Integer;
+  sb : TStringBuilder;
+  isfirst : Boolean;
+begin
+  Result := '';
+  if High(aArray) < 0 then Exit;
+  isfirst := True;
+  sb := TStringBuilder.Create;
+  try
+    for value in aArray do
+    begin
+      if isfirst then isfirst := False
+        else sb.Append(aSeparator);
+      sb.Append(value);
+    end;
+    Result := sb.ToString;
   finally
     sb.Free;
   end;
@@ -1670,6 +1845,13 @@ begin
   begin
     Result[i] := aStrings[i];
   end;
+end;
+
+function StringsToArray(const aString : string) : TArray<string>;
+var
+  item : string;
+begin
+  for item in aString.Split([';',',']) do Result := Result + [item.Trim];
 end;
 
 { TCounter }
@@ -1733,78 +1915,78 @@ end;
 
 { TArrayOfStringHelper}
 
-//{$IFNDEF FPC}
-//function TArrayOfStringHelper.Any : Boolean;
-//begin
-//  Result := High(Self) >= 0;
-//end;
-//
-//function TArrayOfStringHelper.Any(const aValue : string) : Boolean;
-//begin
-//  Result := Exists(aValue);
-//end;
-//
-//function TArrayOfStringHelper.Add(const aValue : string) : Integer;
-//begin
-//  SetLength(Self,Length(Self)+1);
-//  Self[High(Self)] := aValue;
-//  Result := High(Self);
-//end;
-//
-//function TArrayOfStringHelper.AddIfNotExists(const aValue : string; aCaseSense : Boolean = False) : Integer;
-//var
-//  i : Integer;
-//begin
-//  for i := Low(Self) to High(Self) do
-//  begin
-//    if aCaseSense then
-//    begin
-//      if Self[i] = aValue then Exit(i);
-//    end
-//    else
-//    begin
-//      if CompareText(Self[i],aValue) = 0 then Exit(i)
-//    end;
-//  end;
-//  //if not exists add it
-//  Result := Self.Add(aValue);
-//end;
-//
-//function TArrayOfStringHelper.Remove(const aValue : string) : Boolean;
-//var
-//  i : Integer;
-//begin
-//  for i := Low(Self) to High(Self) do
-//  begin
-//    if CompareText(Self[i],aValue) = 0 then
-//    begin
-//      {$IFDEF DELPHIXE7_UP}
-//      System.Delete(Self,i,1);
-//      {$ELSE}
-//      TArrayUtil<string>.Delete(Self,i);
-//      {$ENDIF}
-//      Exit(True);
-//    end;
-//  end;
-//  Result := False;
-//end;
-//
-//function TArrayOfStringHelper.Exists(const aValue : string) : Boolean;
-//var
-//  value : string;
-//begin
-//  Result := False;
-//  for value in Self do
-//  begin
-//    if CompareText(value,aValue) = 0 then Exit(True)
-//  end;
-//end;
-//
-//function TArrayOfStringHelper.Count : Integer;
-//begin
-//  Result := High(Self) + 1;
-//end;
-//{$ENDIF}
+{$IFNDEF FPC}
+function TArrayOfStringHelper.Any : Boolean;
+begin
+  Result := High(Self) >= 0;
+end;
+
+function TArrayOfStringHelper.Any(const aValue : string) : Boolean;
+begin
+  Result := Exists(aValue);
+end;
+
+function TArrayOfStringHelper.Add(const aValue : string) : Integer;
+begin
+  SetLength(Self,Length(Self)+1);
+  Self[High(Self)] := aValue;
+  Result := High(Self);
+end;
+
+function TArrayOfStringHelper.AddIfNotExists(const aValue : string; aCaseSense : Boolean = False) : Integer;
+var
+  i : Integer;
+begin
+  for i := Low(Self) to High(Self) do
+  begin
+    if aCaseSense then
+    begin
+      if Self[i] = aValue then Exit(i);
+    end
+    else
+    begin
+      if CompareText(Self[i],aValue) = 0 then Exit(i)
+    end;
+  end;
+  //if not exists add it
+  Result := Self.Add(aValue);
+end;
+
+function TArrayOfStringHelper.Remove(const aValue : string) : Boolean;
+var
+  i : Integer;
+begin
+  for i := Low(Self) to High(Self) do
+  begin
+    if CompareText(Self[i],aValue) = 0 then
+    begin
+      {$IFDEF DELPHIXE7_UP}
+      System.Delete(Self,i,1);
+      {$ELSE}
+      TArrayUtil<string>.Delete(Self,i);
+      {$ENDIF}
+      Exit(True);
+    end;
+  end;
+  Result := False;
+end;
+
+function TArrayOfStringHelper.Exists(const aValue : string) : Boolean;
+var
+  value : string;
+begin
+  Result := False;
+  for value in Self do
+  begin
+    if CompareText(value,aValue) = 0 then Exit(True)
+  end;
+end;
+
+function TArrayOfStringHelper.Count : Integer;
+begin
+  Result := High(Self) + 1;
+end;
+{$ENDIF}
 
 { TPairItem }
 
@@ -1901,7 +2083,7 @@ begin
       System.Delete(fItems,i,1);
       {$ELSE}
       TArrayUtil<TPairItem>.Delete(fItems,i);
-      {$IFEND}
+      {$ENDIF}
       Exit(True);
     end;
   end;
@@ -1962,12 +2144,12 @@ end;
 
 function RemoveLastChar(const aText : string) : string;
 begin
-  Result := Copy(aText, 1, Length(aText) -1);//aText.Remove(aText.Length - 1);
+  Result := aText.Remove(aText.Length - 1);
 end;
 
 function DateTimeToSQL(aDateTime : TDateTime) : string;
 begin
-  Result := FormatDateTime('YYYYMMDD hh:mm:ss',aDateTime);
+  Result := FormatDateTime('YYYY-MM-DD hh:mm:ss',aDateTime);
 end;
 
 function IsInteger(const aValue : string) : Boolean;
@@ -1993,7 +2175,7 @@ end;
 
 function ExtractStr(var vSource : string; aIndex : Integer; aCount : Integer) : string;
 begin
-  if aIndex > Length(vSource) then Exit('');
+  if aIndex > vSource.Length then Exit('');
 
   Result := Copy(vSource,aIndex,aCount);
   Delete(vSource,aIndex,aCount);
@@ -2004,8 +2186,49 @@ var
   i : Integer;
 begin
   i := Pos(aFirstDelimiter,aSource);
-  if i > -1 then Result := Copy(aSource, i + Length(aFirstDelimiter), RPos(aLastDelimiter, aSource, i + Length(aFirstDelimiter)) - i - Length(aFirstDelimiter))
+  if i > -1 then Result := Copy(aSource, i + aFirstDelimiter.Length, Pos(aLastDelimiter, aSource, i + aFirstDelimiter.Length) - i - aFirstDelimiter.Length)
     else Result := '';
+end;
+
+function DbQuotedStr(const str : string): string;
+var
+  i : Integer;
+begin
+  Result := str;
+  for i := Result.Length - 1 downto 0 do
+  begin
+    if Result.Chars[i] = '"' then Result := Result.Insert(i, '"');
+  end;
+  Result := '"' + Result + '"';
+end;
+
+function UnDbQuotedStr(const str: string) : string;
+begin
+  Result := Trim(str);
+  if not Result.IsEmpty then
+  begin
+    if Result.StartsWith('"') then Result := Copy(Result, 2, Result.Length - 2);
+  end;
+end;
+
+function SpQuotedStr(const str : string): string;
+begin
+  Result := '''' + str + '''';
+end;
+
+function UnSpQuotedStr(const str: string) : string;
+begin
+  Result := Trim(str);
+  if not Result.IsEmpty then
+  begin
+    if Result.StartsWith('''') then Result := Copy(Result, 2, Result.Length - 2);
+  end;
+end;
+
+function UnQuotedStr(const str : string; const aQuote : Char) : string;
+begin
+  if (str.Length > 0) and (str[Low(str)] = aQuote) and (str[High(str)] = aQuote) then Result := Copy(str, Low(str)+1, High(str) - 2)
+    else Result := str;
 end;
 
 function Ifx(aCondition : Boolean; const aIfIsTrue, aIfIsFalse : string) : string;
@@ -2045,77 +2268,150 @@ end;
   {$ENDIF}
 {$ENDIF}
 
-function PosLast(const SubStr, S: AnsiString ): Integer;
-Var P : Integer ;
-begin
-  Result := 0 ;
-  P := Pos( SubStr, S) ;
-  while P <> 0 do
-  begin
-     Result := P ;
-     P := PosEx( String(SubStr), String(S), P+1) ;
-  end ;
-end ;
+{ TDateTimeHelper }
 
-function PosEx(const SubStr, S: AnsiString; Offset: Cardinal = 1): Integer;
-var
-  I,X: Integer;
-  Len, LenSubStr: Integer;
+{$IFDEF DELPHIXE7_UP}
+function TDateTimeHelper.ToSQLString : string;
 begin
-  if Offset = 1 then
-    Result := Pos(SubStr, S)
-  else
-  begin
-    I := Offset;
-    LenSubStr := Length(SubStr);
-    Len := Length(S) - LenSubStr + 1;
-    while I <= Len do
-    begin
-      if S[I] = SubStr[1] then
-      begin
-        X := 1;
-        while (X < LenSubStr) and (S[I + X] = SubStr[X + 1]) do
-          Inc(X);
-        if (X = LenSubStr) then
-        begin
-          Result := I;
-          exit;
-        end;
-      end;
-      Inc(I);
-    end;
-    Result := 0;
-  end;
+  Result := DateTimeToSQL(Self);
 end;
 
-function RPos(const aSubStr, aString : AnsiString; const aStartPos: Integer): Integer; overload;
-var
-  i: Integer;
-  pStr: PChar;
-  pSub: PChar;
+procedure TDateTimeHelper.FromNow;
 begin
-  pSub := Pointer(aSubStr);
-
-  for i := aStartPos downto 1 do
-  begin
-    pStr := @(aString[i]);
-    if (pStr^ = pSub^) then
-    begin
-      if CompareMem(pSub, pStr, Length(aSubStr)) then
-      begin
-        result := i;
-        EXIT;
-      end;
-    end;
-  end;
-
-  result := 0;
+  Self := Now;
 end;
 
-function RPos(const aSubStr, aString : AnsiString): Integer; overload;
+procedure TDateTimeHelper.FromUTC(const aUTCTime: TDateTime);
 begin
-  result := RPos(aSubStr, aString, Length(aString) - Length(aSubStr) + 1);
+  Self := UTCToLocalTime(aUTCTime);
 end;
+
+function TDateTimeHelper.IncDay(const aValue : Cardinal = 1) : TDateTime;
+begin
+  Result := System.DateUtils.IncDay(Self,aValue);
+end;
+
+function TDateTimeHelper.DecDay(const aValue : Cardinal = 1) : TDateTime;
+begin
+  Result := System.DateUtils.IncDay(Self,-aValue);
+end;
+
+function TDateTimeHelper.IncMonth(const aValue : Cardinal = 1) : TDateTime;
+begin
+  Result := SysUtils.IncMonth(Self,aValue);
+end;
+
+function TDateTimeHelper.DecMonth(const aValue : Cardinal = 1) : TDateTime;
+begin
+  Result := SysUtils.IncMonth(Self,-aValue);
+end;
+
+function TDateTimeHelper.IncYear(const aValue : Cardinal = 1) : TDateTime;
+begin
+  Result := System.DateUtils.IncYear(Self,aValue);
+end;
+
+function TDateTimeHelper.DecYear(const aValue : Cardinal = 1) : TDateTime;
+begin
+  Result := System.DateUtils.IncYear(Self,-aValue);
+end;
+
+function TDateTimeHelper.IsEqualTo(const aDateTime : TDateTime) : Boolean;
+begin
+  Result := Self = aDateTime;
+end;
+
+function TDateTimeHelper.IsAfter(const aDateTime : TDateTime) : Boolean;
+begin
+  Result := Self > aDateTime;
+end;
+
+function TDateTimeHelper.IsBefore(const aDateTime : TDateTime) : Boolean;
+begin
+  Result := Self < aDateTime;
+end;
+
+function TDateTimeHelper.IsSameDay(const aDateTime : TDateTime) : Boolean;
+begin
+  Result := System.DateUtils.SameDate(Self,aDateTime);
+end;
+
+function TDateTimeHelper.IsSameTime(const aTime : TTime) : Boolean;
+begin
+  Result := System.DateUtils.SameTime(Self,aTime);
+end;
+
+function TDateTimeHelper.DayOfTheWeek : Word;
+begin
+  Result := System.DateUtils.NthDayOfWeek(Self);
+end;
+
+function TDateTimeHelper.ToJsonFormat : string;
+begin
+  Result := DateTimeToJsonDate(Self);
+end;
+
+function TDateTimeHelper.ToGMTFormat : string;
+begin
+  Result := DateTimeToGMT(Self);
+end;
+
+function TDateTimeHelper.ToTimeStamp : TTimeStamp;
+begin
+  Result := DateTimeToTimeStamp(Self);
+end;
+
+function TDateTimeHelper.ToUTC : TDateTime;
+begin
+  Result := LocalTimeToUTC(Self);
+end;
+
+function TDateTimeHelper.ToMilliseconds : Int64;
+begin
+  {$IFDEF DELPHIRX104_ANDUP}
+  Result := System.DateUtils.DateTimeToMilliseconds(Self);
+  {$ELSE}
+  Result := System.DateUtils.MilliSecondOf(Self);
+  {$ENDIF}
+end;
+
+function TDateTimeHelper.ToString : string;
+begin
+  Result := DateTimeToStr(Self);
+end;
+
+function TDateTimeHelper.Date : TDate;
+begin
+  Result := System.DateUtils.DateOf(Self);
+end;
+
+function TDateTimeHelper.Time : TTime;
+begin
+  Result := System.DateUtils.TimeOf(Self);
+end;
+
+function TDateTimeHelper.IsAM : Boolean;
+begin
+  Result := System.DateUtils.IsAM(Self);
+end;
+
+function TDateTimeHelper.IsPM : Boolean;
+begin
+  Result := System.DateUtils.IsPM(Self);
+end;
+
+{ TDateHelper }
+function TDateHelper.ToString : string;
+begin
+  Result := DateToStr(Self);
+end;
+
+{ TTimeHelper }
+function TTimeHelper.ToString : string;
+begin
+  Result := TimeToStr(Self);
+end;
+{$ENDIF}
 
 {$IFNDEF NEXTGEN}
 initialization
@@ -2135,4 +2431,8 @@ initialization
   end;
 {$ENDIF}
 
+
 end.
+
+
+

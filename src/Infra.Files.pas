@@ -1,6 +1,35 @@
-unit Infra.Files;
+{ ***************************************************************************
 
-{$i Infra.inc}
+  Copyright (c) 2016-2019 Kike Pérez
+
+  Unit        : Quick.Files
+  Description : Files functions
+  Author      : Kike Pérez
+  Version     : 1.5
+  Created     : 09/03/2018
+  Modified    : 16/11/2020
+
+  This file is part of QuickLib: https://github.com/exilon/QuickLib
+
+ ***************************************************************************
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+
+ *************************************************************************** }
+
+unit Quick.Files;
+
+{$i QuickLib.inc}
 
 interface
 
@@ -14,10 +43,7 @@ uses
   strutils,
     {$IFDEF LINUX}
     baseunix,
-    FileInfo,
     {$ENDIF}
-  {$ELSE}
-    IOUtils,
   {$ENDIF}
   {$IFDEF POSIX}
   Posix.Base,
@@ -237,14 +263,15 @@ type
   function FindDelimiter(const Delimiters, S: string; StartIdx: Integer = 1): Integer;
   {$ENDIF}
   function ConvertDateTimeToFileTime(const DateTime: TDateTime; const UseLocalTimeZone: Boolean): TFileTime;
+  {$IFDEF MSWINDOWS}
   function ConvertFileTimeToDateTime(const FileTime : TFileTime; const UseLocalTimeZone : Boolean) : TDateTime;
+  {$ENDIF}
   procedure SetDateTimeInfo(const Path: string; const CreationTime, LastAccessTime, LastWriteTime: PDateTime; const UseLocalTimeZone: Boolean);
   function GetFiles(const Path : string; Recursive : Boolean) : TArray<TDirItem>; overload;
   procedure GetFiles(const Path : string; aAddToList : TDirItemAddProc; Recursive : Boolean); overload;
   function GetDirectories(const Path : string; Recursive : Boolean) : TArray<TDirItem>;
   function GetFilesAndDirectories(const Path : string; Recursive : Boolean) : TArray<TDirItem>; overload;
   procedure GetFilesAndDirectories(const Path : string; aAddToList : TDirItemAddProc; Recursive : Boolean); overload;
-  function ExtractFileNameWithoutExt(const FileName: string): string;
 
 implementation
 
@@ -1284,8 +1311,12 @@ begin
         diritem.Name := rec.Name;
         diritem.IsDirectory := False;
         diritem.Size := rec.Size;
+        {$IFNDEF LINUX}
         diritem.CreationDate := ConvertFileTimeToDateTime(rec.FindData.ftCreationTime,True);
         diritem.LastModified := ConvertFileTimeToDateTime(rec.FindData.ftLastWriteTime,True);
+        {$ELSE}
+        diritem.CreationDate := FileDateToDateTime(rec.Time);
+        {$ENDIF}
         Result := Result + [diritem];
       end
       else
@@ -1311,8 +1342,12 @@ begin
         diritem.Name := rec.Name;
         diritem.IsDirectory := False;
         diritem.Size := rec.Size;
+       {$IFNDEF LINUX}
         diritem.CreationDate := ConvertFileTimeToDateTime(rec.FindData.ftCreationTime,True);
         diritem.LastModified := ConvertFileTimeToDateTime(rec.FindData.ftLastWriteTime,True);
+        {$ELSE}
+        diritem.CreationDate := FileDateToDateTime(rec.Time);
+        {$ENDIF}
         aAddToList(diritem);
       end
       else
@@ -1338,8 +1373,12 @@ begin
         diritem.Name := rec.Name;
         diritem.IsDirectory := True;
         diritem.Size := rec.Size;
+        {$IFNDEF LINUX}
         diritem.CreationDate := ConvertFileTimeToDateTime(rec.FindData.ftCreationTime,True);
         diritem.LastModified := ConvertFileTimeToDateTime(rec.FindData.ftLastWriteTime,True);
+        {$ELSE}
+        diritem.CreationDate := FileDateToDateTime(rec.Time);
+        {$ENDIF}
         Result := Result + [diritem];
         if Recursive then Result := Result + GetFiles(IncludeTrailingPathDelimiter(Path) + diritem.Name,Recursive);
       end;
@@ -1377,8 +1416,12 @@ begin
         diritem.Name := rec.Name;
         diritem.IsDirectory := False;
         diritem.Size := rec.Size;
+        {$IFNDEF LINUX}
         diritem.CreationDate := ConvertFileTimeToDateTime(rec.FindData.ftCreationTime,True);
         diritem.LastModified := ConvertFileTimeToDateTime(rec.FindData.ftLastWriteTime,True);
+        {$ELSE}
+        diritem.CreationDate := FileDateToDateTime(rec.Time);
+        {$ENDIF}
         Result := Result + [diritem];
       end
       else if (rec.Name <> '.') and (rec.Name <> '..') then
@@ -1386,8 +1429,12 @@ begin
         diritem.Name := rec.Name;
         diritem.IsDirectory := True;
         diritem.Size := rec.Size;
+        {$IFNDEF LINUX}
         diritem.CreationDate := ConvertFileTimeToDateTime(rec.FindData.ftCreationTime,True);
         diritem.LastModified := ConvertFileTimeToDateTime(rec.FindData.ftLastWriteTime,True);
+        {$ELSE}
+        diritem.CreationDate := FileDateToDateTime(rec.Time);
+        {$ENDIF}
         Result := Result + [diritem];
         if Recursive then Result := Result + GetFilesAndDirectories(dirpath + diritem.Name,Recursive);
       end;
@@ -1427,8 +1474,12 @@ begin
         diritem.Name := rec.Name;
         diritem.IsDirectory := False;
         diritem.Size := rec.Size;
+        {$IFNDEF LINUX}
         diritem.CreationDate := ConvertFileTimeToDateTime(rec.FindData.ftCreationTime,True);
         diritem.LastModified := ConvertFileTimeToDateTime(rec.FindData.ftLastWriteTime,True);
+        {$ELSE}
+        diritem.CreationDate := FileDateToDateTime(rec.Time);
+        {$ENDIF}
         aAddToList(diritem);
       end
       else if (rec.Name <> '.') and (rec.Name <> '..') then
@@ -1436,8 +1487,12 @@ begin
         diritem.Name := rec.Name;
         diritem.IsDirectory := True;
         diritem.Size := rec.Size;
+        {$IFNDEF LINUX}
         diritem.CreationDate := ConvertFileTimeToDateTime(rec.FindData.ftCreationTime,True);
         diritem.LastModified := ConvertFileTimeToDateTime(rec.FindData.ftLastWriteTime,True);
+        {$ELSE}
+        diritem.CreationDate := FileDateToDateTime(rec.Time);
+        {$ENDIF}
         aAddToList(diritem);
         if Recursive then GetFilesAndDirectories(dirpath + diritem.Name,aAddToList,Recursive);
       end;
@@ -1445,11 +1500,6 @@ begin
   finally
     SysUtils.FindClose(rec);
   end;
-end;
-
-function ExtractFileNameWithoutExt(const FileName: string): string;
-begin
-  Result := TPath.GetFileNameWithoutExtension(FileName);
 end;
 
 end.
