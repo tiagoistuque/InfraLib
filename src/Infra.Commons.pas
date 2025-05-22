@@ -27,7 +27,7 @@
 
  *************************************************************************** }
 
-unit Quick.Commons;
+unit Infra.Commons;
 
 {$i QuickLib.inc}
 

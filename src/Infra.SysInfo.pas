@@ -27,7 +27,7 @@
 
  *************************************************************************** }
 
-unit Quick.SysInfo;
+unit Infra.SysInfo;
 
 {$i QuickLib.inc}
 
@@ -60,7 +60,7 @@ uses
       {$ENDIF}
     {$ENDIF}
   {$ENDIF}
-  Quick.Commons;
+  Infra.Commons;
 
 type
 
