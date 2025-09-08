@@ -33,6 +33,7 @@ type
     function Add(Str: string): IQueryEngine; virtual; abstract;
     {$IF DEFINED(INFRA_ADO)}
     function Open(const ATimeout: Integer = 0): IQueryEngine; virtual; abstract;
+    function Requery(const ATimeout: Integer = 0; const APosition: Boolean = False): IQueryEngine; virtual; abstract;
     function Exec(const AReturn: Boolean = False; const ATimeout: Integer = 0): IQueryEngine; virtual; abstract;
     {$ELSE}
     function Open: IQueryEngine; virtual; abstract;

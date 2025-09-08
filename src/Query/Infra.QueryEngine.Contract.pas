@@ -18,6 +18,7 @@ type
     function Add(Str: string): IQueryEngine;
     {$IF DEFINED(INFRA_ADO)}
     function Open(const ATimeout: Integer = 0): IQueryEngine;
+    function Requery(const ATimeout: Integer = 0; const APosition: Boolean = False): IQueryEngine;
     function Exec(const AReturn: Boolean = False; const ATimeout: Integer = 0): IQueryEngine;
     {$ELSE}
     function Open: IQueryEngine;

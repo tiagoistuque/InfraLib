@@ -27,6 +27,7 @@ type
     function Clear: IQueryEngine; override;
     function Add(Str: string): IQueryEngine; override;
     function Open(const ATimeout: Integer = 0): IQueryEngine; override;
+    function Requery(const ATimeout: Integer = 0; const APosition: Boolean = False): IQueryEngine; override;
     function Exec(const AReturn: Boolean = False; const ATimeout: Integer = 0): IQueryEngine; override;
     function Close: IQueryEngine; override;
     function IndexFieldNames(const Fields: string): IQueryEngine; override;
@@ -178,6 +179,34 @@ begin
       raise;
     end;
   end;
+end;
+
+function TQueryEngineADO.Requery(const ATimeout: Integer = 0; Const APosition: Boolean = False): IQueryEngine;
+var
+  LBookmark: TBookmark;
+begin
+  Result := Self;
+  try
+    try
+      if (FQuery.IsEmpty) then
+        Exit;
+      if APosition then
+        LBookmark := FQuery.GetBookmark;
+      FExecutionStartTime := Now;
+      FQuery.Requery;
+      FExecutionEndTime := Now;
+      if FQuery.BookmarkValid(LBookmark) then
+        FQuery.GotoBookmark(LBookmark);
+    except
+      on E: Exception do
+      begin
+        raise;
+      end;
+    end;
+  finally
+    if APosition then
+      FQuery.FreeBookmark(LBookmark);
+  end
 end;
 
 function TQueryEngineADO.Params: TSQLParams;
