@@ -21,8 +21,10 @@ uses
   FireDAC.Phys.FB,
   FireDAC.Phys.FBDef,
 
+  {$IFDEF FDMSAcc}
   FireDAC.Phys.MSAcc,
   FireDAC.Phys.MSAccDef,
+  {$ENDIF}
 
   {$IFDEF FDMSSQL}
   FireDAC.Phys.MSSQLDef,
@@ -44,7 +46,11 @@ uses
   {$ENDIF}
 
   FireDAC.UI.Intf,
+  {$IFDEF MSWINDOWS}
   FireDAC.VCLUI.Wait,
+  {$ELSE}
+  FireDAC.FMXUI.Wait,
+  {$ENDIF}
   FireDAC.Comp.Client,
   FireDAC.DApt.Intf,
   FireDAC.DApt,
