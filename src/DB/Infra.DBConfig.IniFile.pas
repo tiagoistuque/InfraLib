@@ -49,6 +49,9 @@ type
 implementation
 
 uses
+  {$IFDEF D2DOCKER}
+  D2Bridge.Instance,
+  {$ENDIF}
   Infra.SysInfo;
 
 const
@@ -93,9 +96,16 @@ begin
 end;
 
 constructor TDBConfigIniFile.Create(const APrefixVariable: string);
+var
+  LAppPath: string;
 begin
   inherited;
-  FFileName := SystemInfo.AppPath + APrefixVariable + SystemInfo.AppName + '.ini';
+  {$IFDEF D2DOCKER}
+  LAppPath := AppConfig.Path.Data;
+  {$ELSE}
+  LAppPath := SystemInfo.AppPath;
+  {$ENDIF}
+  FFileName := LAppPath + APrefixVariable + SystemInfo.AppName + '.ini';
   FIniFile := TIniFile.Create(FFileName);
 end;
 
