@@ -61,7 +61,7 @@ end;
 function TQueryEngineADO.ApplyUpdates: Boolean;
 begin
   FQuery.UpdateBatch(arAll);
-  Result := FQuery.RowsAffected > 0;
+  Result := not (rsPendingChanges in FQuery.RecordStatus);
 end;
 
 function TQueryEngineADO.CancelUpdates: IQueryEngine;
@@ -93,6 +93,7 @@ begin
   inherited;
   FQuery := TADOQuery.Create(nil);
   FQuery.Connection := TADOConnection(AConnection.ConnectionComponent);
+  FQuery.LockType := ltBatchOptimistic;
   LADOCommand := TADOCommand.Create(FQuery);
   FParams := TSQLParams.Create(LADOCommand, TParameter);
 end;
