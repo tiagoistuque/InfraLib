@@ -54,7 +54,8 @@ uses
   Infra.DBEngine.Error in '..\src\DB\Infra.DBEngine.Error.pas',
   Infra.DBEngine.ADODB in '..\src\DB\Infra.DBEngine.ADODB.pas',
   Infra.QueryEngine.ADO in '..\src\Query\Infra.QueryEngine.ADO.pas',
-  Infra.DML.Generator.SQLite in '..\src\DB\Infra.DML.Generator.SQLite.pas';
+  Infra.DML.Generator.SQLite in '..\src\DB\Infra.DML.Generator.SQLite.pas',
+  Infra.QueryEngine.ADOHelper in '..\src\Query\Infra.QueryEngine.ADOHelper.pas';
 
 var
   runner : ITestRunner;

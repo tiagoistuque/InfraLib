@@ -24,6 +24,13 @@ type
     FExecutionStartTime: TDateTime;
     FExecutionEndTime: TDateTime;
     FComandoSQL: TStringList;
+    FRowsAffected: Integer;
+    procedure PrepareComponentSQLAndParams; virtual; abstract;
+    procedure InternalOpen; virtual; abstract;
+    function InternalExec(const AReturn: Boolean): Integer; virtual; abstract;
+    function InternalGetTotalPages: Integer; virtual; abstract;
+    procedure HandleException(E: Exception); virtual;
+
   public
     constructor Create(const AConnection: TDbEngineAbstract); virtual;
     destructor Destroy; override;
@@ -32,13 +39,11 @@ type
     function Clear: IQueryEngine; virtual; abstract;
     function Add(Str: string): IQueryEngine; virtual; abstract;
     {$IF DEFINED(INFRA_ADO)}
-    function Open(const ATimeout: Integer = 0): IQueryEngine; virtual; abstract;
+    function SetCommandTimeout(const ATimeout: Integer): IQueryEngine; virtual; abstract;
     function Requery(const ATimeout: Integer = 0; const APosition: Boolean = False): IQueryEngine; virtual; abstract;
-    function Exec(const AReturn: Boolean = False; const ATimeout: Integer = 0): IQueryEngine; virtual; abstract;
-    {$ELSE}
-    function Open: IQueryEngine; virtual; abstract;
-    function Exec(const AReturn: Boolean = False): IQueryEngine; virtual; abstract;
     {$ENDIF}
+    function Open: IQueryEngine;
+    function Exec(const AReturn: Boolean = False): IQueryEngine;
     function Close: IQueryEngine; virtual; abstract;
     function IndexFieldNames(const Fields: string): IQueryEngine; overload; virtual; abstract;
     function IndexFieldNames: string; overload; virtual; abstract;
@@ -100,6 +105,57 @@ end;
 function TQueryEngineAbstract.ExecutionStartTime: TDateTime;
 begin
   Result := FExecutionStartTime;
+end;
+
+procedure TQueryEngineAbstract.HandleException(E: Exception);
+var
+  LNewEx: Exception;
+begin
+  // Preserva a exceção original e adiciona o contexto do SQL que falhou
+  LNewEx := Exception.CreateFmt('Erro ao executar Query.' + sLineBreak + 'SQL: %s' + sLineBreak + 'Detalhe: %s', [FComandoSQL.Text, E.Message]);
+
+  // Utiliza RaiseOuterException para anexar a exceção original e não perder o Stack Trace
+  Exception.RaiseOuterException(LNewEx);
+end;
+
+function TQueryEngineAbstract.Open: IQueryEngine;
+begin
+  Result := Self;
+  try
+    FExecutionStartTime := Now;
+
+    if FPaginate and (FRowsPerPage > 0) and (FPage > 0) then
+      FDMLGenerator.GenerateSQLPaginating(FPage, FRowsPerPage, FComandoSQL);
+
+    PrepareComponentSQLAndParams;
+    InternalOpen;
+
+    FExecutionEndTime := Now;
+
+    if FPaginate then
+      FTotalPages := InternalGetTotalPages;
+  except
+    on E: Exception do
+      HandleException(E);
+  end;
+end;
+
+function TQueryEngineAbstract.Exec(const AReturn: Boolean = False): IQueryEngine;
+begin
+  Result := Self;
+  try
+    FExecutionStartTime := Now;
+
+    PrepareComponentSQLAndParams;
+    FRowsAffected := InternalExec(AReturn);
+
+    FExecutionEndTime := Now;
+  except
+    // Se for FireDAC, a classe concreta de FireDAC pode sobrescrever o HandleException
+    // para tratar o EFDDBEngineException e transformá-lo no EDBEngineException antes de subir.
+    on E: Exception do
+      HandleException(E);
+  end;
 end;
 
 function TQueryEngineAbstract.ExecutionEndTime: TDateTime;

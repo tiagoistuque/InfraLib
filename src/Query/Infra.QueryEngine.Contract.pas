@@ -17,13 +17,11 @@ type
     function Clear: IQueryEngine;
     function Add(Str: string): IQueryEngine;
     {$IF DEFINED(INFRA_ADO)}
-    function Open(const ATimeout: Integer = 0): IQueryEngine;
+    function SetCommandTimeout(const ATimeout: Integer): IQueryEngine;
     function Requery(const ATimeout: Integer = 0; const APosition: Boolean = False): IQueryEngine;
-    function Exec(const AReturn: Boolean = False; const ATimeout: Integer = 0): IQueryEngine;
-    {$ELSE}
+    {$ENDIF}
     function Open: IQueryEngine;
     function Exec(const AReturn: Boolean = False): IQueryEngine;
-    {$ENDIF}
     function Close: IQueryEngine;
     function IndexFieldNames(const Fields: string): IQueryEngine; overload;
     function IndexFieldNames: string; overload;

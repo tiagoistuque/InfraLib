@@ -4,10 +4,17 @@ interface
 
 {$IF DEFINED(INFRA_ZEOS)}
 
+
 uses
   DB,
-  Classes, SysUtils,
-  ZAbstractRODataset, ZAbstractDataset, ZDataset, ZAbstractConnection, ZConnection, ZSequence,
+  Classes,
+  SysUtils,
+  ZAbstractRODataset,
+  ZAbstractDataset,
+  ZDataset,
+  ZAbstractConnection,
+  ZConnection,
+  ZSequence,
   Infra.QueryEngine.Abstract,
   Infra.DBEngine.Abstract,
   Infra.DBEngine.Contract,
@@ -21,6 +28,12 @@ type
     FParams: TSQLParams;
     FZSequence: TZSequence;
     FRowsAffected: Integer;
+  protected
+    // Implementação dos ganchos (hooks) do Template Method da classe abstrata
+    procedure PrepareComponentSQLAndParams; override;
+    procedure InternalOpen; override;
+    function InternalExec(const AReturn: Boolean): Integer; override;
+    function InternalGetTotalPages: Integer; override;
   public
     constructor Create(const AConnection: TDbEngineAbstract); override;
     destructor Destroy; override;
@@ -28,8 +41,6 @@ type
     function Reset: IQueryEngine; override;
     function Clear: IQueryEngine; override;
     function Add(Str: string): IQueryEngine; override;
-    function Open: IQueryEngine; override;
-    function Exec(const AReturn: Boolean = False): IQueryEngine; override;
     function Close: IQueryEngine; override;
     function IndexFieldNames(const Fields: string): IQueryEngine; override;
     function IndexFieldNames: string; override;
@@ -55,6 +66,61 @@ implementation
 {$IF DEFINED(INFRA_ZEOS)}
 { TQueryEngineZeos }
 
+constructor TQueryEngineZeos.Create(const AConnection: TDbEngineAbstract);
+begin
+  inherited;
+  FQuery := TZQuery.Create(nil);
+  FQuery.Connection := TZConnection(AConnection.ConnectionComponent);
+  FQuery.CachedUpdates := True;
+  FParams := TSQLParams.Create;
+  FZSequence := TZSequence.Create(nil);
+  FZSequence.Connection := TZConnection(AConnection.ConnectionComponent);
+  FQuery.Sequence := FZSequence;
+end;
+
+destructor TQueryEngineZeos.Destroy;
+begin
+  FQuery.Close;
+  FQuery.Free;
+  FParams.Free;
+  inherited;
+end;
+
+// --- IMPLEMENTAÇÃO DOS MÉTODOS DO TEMPLATE METHOD ---
+
+procedure TQueryEngineZeos.PrepareComponentSQLAndParams;
+begin
+  FQuery.Close;
+  FQuery.IndexFieldNames := EmptyStr;
+  FQuery.SQL.Clear;
+  FQuery.SQL.Assign(FComandoSQL);
+
+  if FParams.Count > 0 then
+    FQuery.Params.Assign(FParams);
+end;
+
+procedure TQueryEngineZeos.InternalOpen;
+begin
+  FQuery.Open;
+end;
+
+function TQueryEngineZeos.InternalExec(const AReturn: Boolean): Integer;
+begin
+  if AReturn then
+    FQuery.Open
+  else
+    FQuery.ExecSQL;
+
+  Result := FQuery.RowsAffected;
+end;
+
+function TQueryEngineZeos.InternalGetTotalPages: Integer;
+begin
+  Result := FQuery.FieldByName(FDMLGenerator.GetColumnNameTotalPages).AsInteger;
+end;
+
+// --- DEMAIS MÉTODOS DE COMPORTAMENTO ---
+
 function TQueryEngineZeos.Add(Str: string): IQueryEngine;
 begin
   Result := Self;
@@ -74,11 +140,6 @@ begin
     FQuery.CancelUpdates;
 end;
 
-function TQueryEngineZeos.Locate(const KeyFields: string; const KeyValues: Variant; Options: TLocateOptions): Boolean;
-begin
-  Result := FQuery.Locate(KeyFields, KeyValues, Options);
-end;
-
 function TQueryEngineZeos.Clear: IQueryEngine;
 begin
   Result := Self;
@@ -93,63 +154,12 @@ begin
   FQuery.Close;
 end;
 
-constructor TQueryEngineZeos.Create(
-  const AConnection: TDbEngineAbstract);
-begin
-  inherited;
-  FQuery := TZQuery.Create(nil);
-  FQuery.Connection := TZConnection(AConnection.ConnectionComponent);
-  FQuery.CachedUpdates := True;
-  FParams := TSQLParams.Create;
-  FZSequence := TZSequence.Create(nil);
-  FZSequence.Connection := TZConnection(AConnection.ConnectionComponent);
-  FQuery.Sequence := FZSequence;
-end;
-
 function TQueryEngineZeos.DataSet: TDataSet;
 begin
   Result := FQuery;
 end;
 
-destructor TQueryEngineZeos.Destroy;
-begin
-  FQuery.Close;
-  FQuery.Free;
-  FParams.Free;
-  inherited;
-end;
-
-function TQueryEngineZeos.Exec(const AReturn: Boolean = False): IQueryEngine;
-begin
-  Result := Self;
-  try
-    FExecutionStartTime := Now;
-    FQuery.Close;
-    FQuery.IndexFieldNames := EmptyStr;
-    FQuery.SQL.Clear;
-    FQuery.SQL.Assign(FComandoSQL);
-    if FParams.Count > 0 then
-      FQuery.Params.Assign(FParams);
-    if AReturn then
-      FQuery.Open
-    else
-    begin
-      FQuery.ExecSQL;
-    end;
-    FExecutionEndTime := Now;
-    FRowsAffected := FQuery.RowsAffected;
-  except
-    on E: Exception do
-    begin
-      raise Exception.Create('Erro ao executar Query: ' + FQuery.SQL.Text + sLineBreak +
-        'Excessão: ' + E.message);
-    end;
-  end;
-end;
-
-
-function TQueryEngineZeos.IndexFieldNames(
-  const Fields: string): IQueryEngine;
+function TQueryEngineZeos.IndexFieldNames(const Fields: string): IQueryEngine;
 begin
   Result := Self;
   FQuery.IndexFieldNames := Fields;
@@ -160,28 +170,9 @@ begin
   Result := FQuery.IndexFieldNames;
 end;
 
-function TQueryEngineZeos.Open: IQueryEngine;
+function TQueryEngineZeos.Locate(const KeyFields: string; const KeyValues: Variant; Options: TLocateOptions): Boolean;
 begin
-  Result := Self;
-  try
-    FExecutionStartTime := Now;
-    FQuery.Close;
-    FQuery.IndexFieldNames := EmptyStr;
-    if FPaginate and (FRowsPerPage > 0) and (FPage > 0) then
-      FDMLGenerator.GenerateSQLPaginating(FPage, FRowsPerPage, FComandoSQL);
-    FQuery.SQL.Assign(FComandoSQL);
-    if FParams.Count > 0 then
-      FQuery.Params.Assign(FParams);
-    FQuery.Open;
-    FExecutionEndTime := Now;
-    if FPaginate then
-      FTotalPages := FQuery.FieldByName(FDMLGenerator.GetColumnNameTotalPages).AsInteger;
-  except
-    on E: Exception do
-    begin
-      raise;
-    end;
-  end;
+  Result := FQuery.Locate(KeyFields, KeyValues, Options);
 end;
 
 function TQueryEngineZeos.Params: TSQLParams;
@@ -215,8 +206,7 @@ begin
   Close.Clear;
 end;
 
-function TQueryEngineZeos.RetornaAutoIncremento(
-  const ASequenceName: string): Integer;
+function TQueryEngineZeos.RetornaAutoIncremento(const ASequenceName: string): Integer;
 begin
   Self.Reset
     .Add('SELECT GEN_ID(' + ASequenceName + ',1) AS CONTROLE FROM RDB$DATABASE');
@@ -232,9 +222,11 @@ begin
     .Add('FROM ' + ATableDest)
     .Add('WHERE ' + AFieldDest + ' = :FIELDVALUE');
   Self.Params.ParamByName('FIELDVALUE').AsInteger := Result;
+
   if Self.Open.DataSet.FieldByName('QTDE').AsInteger > 0 then
   begin
-    RetornaAutoIncremento(ASequenceName, ATableDest, AFieldDest);
+    // CORREÇÃO DO BUG: Vinculando o retorno recursivo à variável Result da função
+    Result := RetornaAutoIncremento(ASequenceName, ATableDest, AFieldDest);
   end;
 end;
 

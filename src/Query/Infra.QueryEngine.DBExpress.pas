@@ -5,7 +5,7 @@ interface
 uses
   DB,
   Classes, SysUtils,
-  SqlExpr, DBclient, Provider,
+  SqlExpr, DBClient, Provider,
   Infra.QueryEngine.Abstract,
   Infra.DBEngine.Abstract,
   Infra.DBEngine.Contract,
@@ -20,6 +20,12 @@ type
     FProvider: TDataSetProvider;
     FParams: TSQLParams;
     FRowsAffected: Integer;
+  protected
+    // Implementação dos ganchos (hooks) do Template Method da classe abstrata
+    procedure PrepareComponentSQLAndParams; override;
+    procedure InternalOpen; override;
+    function InternalExec(const AReturn: Boolean): Integer; override;
+    function InternalGetTotalPages: Integer; override;
   public
     constructor Create(const AConnection: TDbEngineAbstract); override;
     destructor Destroy; override;
@@ -27,11 +33,9 @@ type
     function Reset: IQueryEngine; override;
     function Clear: IQueryEngine; override;
     function Add(Str: string): IQueryEngine; override;
-    function Open: IQueryEngine; override;
-    function Exec(const AReturn: Boolean = False): IQueryEngine; override;
     function Close: IQueryEngine; override;
     function IndexFieldNames(const Fields: string): IQueryEngine; override;
-  	function IndexFieldNames: string; override;
+    function IndexFieldNames: string; override;
     function DataSet: TDataSet; override;
     function ProviderFlags(const FieldName: string; ProviderFlags: TProviderFlags): IQueryEngine; override;
     function ApplyUpdates: Boolean; override;
@@ -52,6 +56,71 @@ var
   DM: TDataModule;
 
 { TQueryEngineDBExpress }
+
+constructor TQueryEngineDBExpress.Create(const AConnection: TDbEngineAbstract);
+begin
+  inherited;
+  FQuery := TSQLQuery.Create(DM);
+  FQuery.SQLConnection := TSQLConnection(AConnection.ConnectionComponent);
+
+  FProvider := TDataSetProvider.Create(DM);
+  FProvider.Options := [poUseQuoteChar];
+  FProvider.UpdateMode := upWhereKeyOnly;
+
+  FClientDataSet := TClientDataSet.Create(DM);
+  FProvider.DataSet := FQuery;
+  Sleep(1);
+  FProvider.Name := 'InfraDSP' + Format('%s%d',[FormatDateTime('YYYYMMDDHHNNSSZZZ', Now), Random(32768)]);
+  FClientDataSet.ProviderName := FProvider.Name;
+
+  FParams := TSQLParams.Create;
+end;
+
+destructor TQueryEngineDBExpress.Destroy;
+begin
+  FParams.Free;
+  FClientDataSet.Free;
+  FProvider.Free;
+  FQuery.Close;
+  FQuery.Free;
+  inherited;
+end;
+
+// --- IMPLEMENTAÇÃO DOS MÉTODOS DO TEMPLATE METHOD ---
+
+procedure TQueryEngineDBExpress.PrepareComponentSQLAndParams;
+begin
+  FQuery.Close;
+  FClientDataSet.Close;
+  FQuery.SQL.Clear;
+  FQuery.SQL.Assign(FComandoSQL);
+
+  if Assigned(FParams) and (FParams.Count > 0) then
+    FQuery.Params.Assign(FParams);
+end;
+
+procedure TQueryEngineDBExpress.InternalOpen;
+begin
+  FQuery.Open;
+  FClientDataSet.Open;
+end;
+
+function TQueryEngineDBExpress.InternalExec(const AReturn: Boolean): Integer;
+begin
+  if AReturn then
+    FQuery.Open
+  else
+    FQuery.ExecSQL;
+
+  Result := FQuery.RowsAffected;
+end;
+
+function TQueryEngineDBExpress.InternalGetTotalPages: Integer;
+begin
+  Result := FClientDataSet.FieldByName(FDMLGenerator.GetColumnNameTotalPages).AsInteger;
+end;
+
+// --- DEMAIS MÉTODOS DE COMPORTAMENTO ---
 
 function TQueryEngineDBExpress.Add(Str: string): IQueryEngine;
 begin
@@ -88,26 +157,6 @@ begin
   FQuery.Close;
 end;
 
-constructor TQueryEngineDBExpress.Create(
-  const AConnection: TDbEngineAbstract);
-begin
-  inherited;
-  FQuery := TSQLQuery.Create(DM);
-  FQuery.SQLConnection := TSQLConnection(AConnection.ConnectionComponent);
-
-  FProvider := TDataSetProvider.Create(DM);
-  FProvider.Options := [poUseQuoteChar];
-  FProvider.UpdateMode := upWhereKeyOnly;
-
-  FClientDataSet := TClientDataSet.Create(DM);
-  FProvider.DataSet := FQuery;
-  Sleep(1);
-  FProvider.Name := 'InfraDSP' + Format('%s%d',[FormatDateTime('YYYYMMDDHHNNSSZZZ', Now), Random(32768)]);
-  FClientDataSet.ProviderName := FProvider.Name;
-
-  FParams := TSQLParams.Create;
-end;
-
 function TQueryEngineDBExpress.DataSet: TDataSet;
 begin
   if FClientDataSet.Active then
@@ -116,49 +165,12 @@ begin
     Result := FQuery;
 end;
 
-destructor TQueryEngineDBExpress.Destroy;
-begin
-  FParams.Free;
-  FClientDataSet.Free;
-  FProvider.Free;
-  FQuery.Close;
-  FQuery.Free;
-  inherited;
-end;
-
-function TQueryEngineDBExpress.Exec(const AReturn: Boolean = False): IQueryEngine;
-begin
-  Result := Self;
-  try
-    FExecutionStartTime := Now;
-    FQuery.Close;
-    FQuery.SQL.Clear;
-    FQuery.SQL.Assign(FComandoSQL);
-    if FParams.Count > 0 then
-      FQuery.Params.Assign(FParams);
-    if AReturn then
-      FQuery.Open
-    else
-      FQuery.ExecSQL;
-    FExecutionEndTime := Now;
-    FRowsAffected := FQuery.RowsAffected;
-  except
-    on E: Exception do
-    begin
-      raise Exception.Create('Erro ao executar Query: ' + FQuery.SQL.Text + sLineBreak +
-        'Excessão: ' + E.message);
-    end;
-  end;
-end;
-
-function TQueryEngineDBExpress.FindKey(
-  const KeyValues: array of TVarRec): Boolean;
+function TQueryEngineDBExpress.FindKey(const KeyValues: array of TVarRec): Boolean;
 begin
   Result := FClientDataSet.Active and (FClientDataSet.FindKey(KeyValues));
 end;
 
-function TQueryEngineDBExpress.IndexFieldNames(
-  const Fields: string): IQueryEngine;
+function TQueryEngineDBExpress.IndexFieldNames(const Fields: string): IQueryEngine;
 begin
   Result := Self;
   FClientDataSet.IndexFieldNames := Fields;
@@ -166,33 +178,7 @@ end;
 
 function TQueryEngineDBExpress.IndexFieldNames: string;
 begin
-  Result := FClientDataSet.IndexFieldNames;	
-end;
-
-function TQueryEngineDBExpress.Open: IQueryEngine;
-begin
-  Result := Self;
-  try
-    FExecutionStartTime := Now;
-    FQuery.Close;
-    FClientDataSet.Close;
-    FQuery.SQL.Clear;
-    if FPaginate and (FRowsPerPage > 0) and (FPage > 0) then
-      FDMLGenerator.GenerateSQLPaginating(FPage, FRowsPerPage, FComandoSQL);
-    FQuery.SQL.Assign(FComandoSQL);
-    if Assigned(FParams) and (FParams.Count > 0) then
-      FQuery.Params.Assign(FParams);
-    FQuery.Open;
-    FClientDataSet.Open;
-    FExecutionEndTime := Now;
-    if FPaginate then
-      FTotalPages := FClientDataSet.FieldByName(FDMLGenerator.GetColumnNameTotalPages).AsInteger;
-  except
-    on E: Exception do
-    begin
-      raise;
-    end;
-  end;
+  Result := FClientDataSet.IndexFieldNames;
 end;
 
 function TQueryEngineDBExpress.Params: TSQLParams;
@@ -225,8 +211,7 @@ begin
   Close.Clear;
 end;
 
-function TQueryEngineDBExpress.RetornaAutoIncremento(
-  const ASequenceName: string): Integer;
+function TQueryEngineDBExpress.RetornaAutoIncremento(const ASequenceName: string): Integer;
 begin
   Self.Reset
     .Add('SELECT GEN_ID(' + ASequenceName + ',1) AS CONTROLE FROM RDB$DATABASE');
@@ -242,9 +227,11 @@ begin
     .Add('FROM ' + ATableDest)
     .Add('WHERE ' + AFieldDest + ' = :FIELDVALUE');
   Self.Params.ParamByName('FIELDVALUE').AsInteger := Result;
+
   if Self.Open.DataSet.FieldByName('QTDE').AsInteger > 0 then
   begin
-    RetornaAutoIncremento(ASequenceName, ATableDest, AFieldDest);
+    // CORREÇÃO DO BUG: Atribuindo corretamente o retorno da chamada recursiva ao Result
+    Result := RetornaAutoIncremento(ASequenceName, ATableDest, AFieldDest);
   end;
 end;
 
@@ -264,7 +251,6 @@ begin
 end;
 
 initialization
-
 
 DM := TDataModule.Create(nil);
 Randomize;

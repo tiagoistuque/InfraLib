@@ -4,11 +4,20 @@ interface
 
 {$IF DEFINED(INFRA_FIREDAC)}
 
+
 uses
   DB,
-  Classes, SysUtils,
-  FireDAC.Stan.Intf, FireDAC.Stan.Option, FireDAC.Stan.Param, FireDAC.Stan.Error, FireDAC.DatS,
-  FireDAC.Phys.Intf, FireDAC.DApt.Intf, FireDAC.Comp.DataSet, FireDAC.Comp.Client,
+  Classes,
+  SysUtils,
+  FireDAC.Stan.Intf,
+  FireDAC.Stan.Option,
+  FireDAC.Stan.Param,
+  FireDAC.Stan.Error,
+  FireDAC.DatS,
+  FireDAC.Phys.Intf,
+  FireDAC.DApt.Intf,
+  FireDAC.Comp.DataSet,
+  FireDAC.Comp.Client,
   FireDAC.Stan.Util,
   Infra.DBEngine.Error,
   Infra.QueryEngine.Abstract,
@@ -24,6 +33,14 @@ type
     FParams: TSQLParams;
     FRowsAffected: Integer;
     procedure _ParseException(const aExceptionFD: EFDDBEngineException; var aExceptionDBEngine: EDBEngineException);
+  protected
+    // Implementações do Template Method
+    procedure PrepareComponentSQLAndParams; override;
+    procedure InternalOpen; override;
+    function InternalExec(const AReturn: Boolean): Integer; override;
+    function InternalGetTotalPages: Integer; override;
+    procedure HandleException(E: Exception); override;
+
   public
     constructor Create(const AConnection: TDbEngineAbstract); override;
     destructor Destroy; override;
@@ -31,8 +48,6 @@ type
     function Reset: IQueryEngine; override;
     function Clear: IQueryEngine; override;
     function Add(Str: string): IQueryEngine; override;
-    function Open: IQueryEngine; override;
-    function Exec(const AReturn: Boolean = False): IQueryEngine; override;
     function Close: IQueryEngine; override;
     function IndexFieldNames(const Fields: string): IQueryEngine; override;
     function IndexFieldNames: string; override;
@@ -52,12 +67,61 @@ type
     function SetAutoIncField(const AFieldName: string): IQueryEngine; override;
     function SetAutoIncGeneratorName(const AGeneratorName: string): IQueryEngine; override;
   end;
-  {$IFEND}
+{$IFEND}
 
 implementation
 
 {$IF DEFINED(INFRA_FIREDAC)}
 
+procedure TQueryEngineFireDAC.PrepareComponentSQLAndParams;
+begin
+  FQuery.Close;
+  FQuery.IndexFieldNames := EmptyStr;
+  FQuery.SQL.Clear;
+  FQuery.SQL.Assign(FComandoSQL);
+  if FParams.Count > 0 then
+    FQuery.Params.Assign(FParams);
+end;
+
+procedure TQueryEngineFireDAC.InternalOpen;
+begin
+  FQuery.Open;
+end;
+
+function TQueryEngineFireDAC.InternalExec(const AReturn: Boolean): Integer;
+begin
+  if AReturn then
+    FQuery.Open
+  else
+  begin
+    if FParams.ArraySize > 0 then
+      FQuery.Execute(FParams.ArraySize)
+    else
+      FQuery.ExecSQL;
+  end;
+  Result := FQuery.RowsAffected;
+end;
+
+function TQueryEngineFireDAC.InternalGetTotalPages: Integer;
+begin
+  Result := FQuery.FieldByName(FDMLGenerator.GetColumnNameTotalPages).AsInteger;
+end;
+
+procedure TQueryEngineFireDAC.HandleException(E: Exception);
+var
+  LEx: EDBEngineException;
+begin
+  // FireDAC tem uma tratativa de erro própria que você já havia mapeado
+  if E is EFDDBEngineException then
+  begin
+    LEx := EDBEngineException.Create(EFDDBEngineException(E).FDCode, E.Message);
+    _ParseException(EFDDBEngineException(E), LEx);
+    // Preserva o stack trace nativo, mas levanta a exceção mapeada da sua infraestrutura
+    Exception.RaiseOuterException(LEx);
+  end
+  else
+    inherited; // Chama o comportamento padrão da classe abstrata
+end;
 
 function TQueryEngineFireDAC.Add(Str: string): IQueryEngine;
 begin
@@ -157,8 +221,8 @@ begin
       LKind := TDBEngineCommandExceptionKind.ArrExecMalfunc;
     ekInvalidParams:
       LKind := TDBEngineCommandExceptionKind.InvalidParams;
-    else
-      LKind := TDBEngineCommandExceptionKind.Other;
+  else
+    LKind := TDBEngineCommandExceptionKind.Other;
   end;
 
   for I := 0 to aExceptionFD.ErrorCount - 1 do
@@ -173,45 +237,6 @@ begin
       aExceptionFD.Errors[I].RowIndex);
   end;
 
-end;
-
-function TQueryEngineFireDAC.Exec(const AReturn: Boolean = False): IQueryEngine;
-var
-  LEx: EDBEngineException;
-begin
-  Result := Self;
-  try
-    FExecutionStartTime := Now;
-    FQuery.Close;
-    FQuery.IndexFieldNames := EmptyStr;
-    FQuery.SQL.Clear;
-    FQuery.SQL.Assign(FComandoSQL);
-    if FParams.Count > 0 then
-      FQuery.Params.Assign(FParams);
-    if AReturn then
-      FQuery.Open
-    else
-    begin
-      if FParams.ArraySize > 0 then
-        FQuery.Execute(FParams.ArraySize)
-      else
-        FQuery.ExecSQL;
-    end;
-    FExecutionEndTime := Now;
-    FRowsAffected := FQuery.RowsAffected;
-  except
-    on E: EFDDBEngineException do
-    begin
-      LEx := EDBEngineException.Create(E.FDCode, E.Message);
-      _ParseException(E, LEx);
-      raise LEx;
-    end;
-    on E: Exception do
-    begin
-      raise Exception.Create('Erro ao executar Query: ' + FQuery.SQL.Text + sLineBreak +
-        'Excessão: ' + E.Message);
-    end;
-  end;
 end;
 
 function TQueryEngineFireDAC.FindKey(
@@ -235,30 +260,6 @@ end;
 function TQueryEngineFireDAC.IndexFieldNames: string;
 begin
   Result := FQuery.IndexFieldNames;
-end;
-
-function TQueryEngineFireDAC.Open: IQueryEngine;
-begin
-  Result := Self;
-  try
-    FExecutionStartTime := Now;
-    FQuery.Close;
-    FQuery.IndexFieldNames := EmptyStr;
-    if FPaginate and (FRowsPerPage > 0) and (FPage > 0) then
-      FDMLGenerator.GenerateSQLPaginating(FPage, FRowsPerPage, FComandoSQL);
-    FQuery.SQL.Assign(FComandoSQL);
-    if FParams.Count > 0 then
-      FQuery.Params.Assign(FParams);
-    FQuery.Open;
-    FExecutionEndTime := Now;
-    if FPaginate then
-      FTotalPages := FQuery.FieldByName(FDMLGenerator.GetColumnNameTotalPages).AsInteger;
-  except
-    on E: Exception do
-    begin
-      raise;
-    end;
-  end;
 end;
 
 function TQueryEngineFireDAC.Params: TSQLParams;
@@ -321,7 +322,7 @@ begin
   Self.Params.ParamByName('FIELDVALUE').AsInteger := Result;
   if Self.Open.DataSet.FieldByName('QTDE').AsInteger > 0 then
   begin
-    RetornaAutoIncremento(ASequenceName, ATableDest, AFieldDest);
+    Result := RetornaAutoIncremento(ASequenceName, ATableDest, AFieldDest);
   end;
 end;
 

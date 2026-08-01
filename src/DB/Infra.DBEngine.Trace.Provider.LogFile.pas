@@ -91,7 +91,7 @@ var
   I: Integer;
 begin
   for I := 0 to Pred(ALogCache.Count) do
-    FDbEngineTraceProviderLogFileManager.NewLog(TDbEngineTraceLog(ALogCache.Items[0].Clone));
+    FDbEngineTraceProviderLogFileManager.NewLog(TDbEngineTraceLog(ALogCache.Items[I].Clone));
 end;
 
 class function TDbEngineTraceProviderLogFile.New(const AConfig: TDbEngineTraceLogFileConfig = nil): IDbEngineTraceProvider;

@@ -69,6 +69,8 @@ begin
   Result := TQueryEngineDBExpress.Create(AConnection);
   {$ELSEIF DEFINED(INFRA_ADO)}
   Result := TQueryEngineADO.Create(AConnection);
+  {$ELSEIF DEFINED(INFRA_ZEOS)}
+  Result := TQueryEngineZeos.Create(AConnection);
   {$ELSE}
   Result := TQueryEngineFireDAC.Create(AConnection);
   {$IFEND}

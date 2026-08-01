@@ -1,10 +1,13 @@
 unit Infra.QueryEngine.ADO;
 
 interface
+
 {$IF DEFINED(INFRA_ADO)}
+
 uses
   DB,
-  Classes, SysUtils,
+  Classes,
+  SysUtils,
   ADODB,
   Infra.QueryEngine.Abstract,
   Infra.DBEngine.Abstract,
@@ -18,7 +21,14 @@ type
     FQuery: TADOQuery;
     FParams: TSQLParams;
     FRowsAffected: Integer;
+    FTimeout: Integer;
     procedure SynchronizeParams;
+  protected
+    // Implementação dos ganchos (hooks) do Template Method da classe abstrata
+    procedure PrepareComponentSQLAndParams; override;
+    procedure InternalOpen; override;
+    function InternalExec(const AReturn: Boolean): Integer; override;
+    function InternalGetTotalPages: Integer; override;
   public
     constructor Create(const AConnection: TDbEngineAbstract); override;
     destructor Destroy; override;
@@ -26,12 +36,11 @@ type
     function Reset: IQueryEngine; override;
     function Clear: IQueryEngine; override;
     function Add(Str: string): IQueryEngine; override;
-    function Open(const ATimeout: Integer = 0): IQueryEngine; override;
+    function SetCommandTimeout(const ATimeout: Integer): IQueryEngine; override;
     function Requery(const ATimeout: Integer = 0; const APosition: Boolean = False): IQueryEngine; override;
-    function Exec(const AReturn: Boolean = False; const ATimeout: Integer = 0): IQueryEngine; override;
     function Close: IQueryEngine; override;
     function IndexFieldNames(const Fields: string): IQueryEngine; override;
-  	function IndexFieldNames: string; override;
+    function IndexFieldNames: string; override;
     function DataSet: TDataSet; override;
     function ProviderFlags(const FieldName: string; ProviderFlags: TProviderFlags): IQueryEngine; override;
     function Locate(const KeyFields: string; const KeyValues: Variant; Options: TLocateOptions): Boolean; override;
@@ -47,10 +56,70 @@ type
     function RetornaAutoIncremento(const ASequenceName, ATableDest, AFieldDest: string): Integer; overload; override;
   end;
 {$IFEND}
+
 implementation
+
 {$IF DEFINED(INFRA_ADO)}
 
 { TQueryEngineADO }
+
+constructor TQueryEngineADO.Create(const AConnection: TDbEngineAbstract);
+var
+  LADOCommand: TADOCommand;
+begin
+  inherited;
+  FQuery := TADOQuery.Create(nil);
+  FQuery.Connection := TADOConnection(AConnection.ConnectionComponent);
+  FQuery.LockType := ltBatchOptimistic;
+  LADOCommand := TADOCommand.Create(FQuery);
+  FParams := TSQLParams.Create(LADOCommand, TParameter);
+end;
+
+destructor TQueryEngineADO.Destroy;
+begin
+  FParams.Free;
+  FQuery.Close;
+  FQuery.Free;
+  inherited;
+end;
+
+// --- IMPLEMENTAÇÃO DOS MÉTODOS DO TEMPLATE METHOD ---
+
+procedure TQueryEngineADO.PrepareComponentSQLAndParams;
+begin
+  FQuery.Close;
+  FQuery.SQL.Clear;
+  FQuery.SQL.Assign(FComandoSQL);
+
+  if FParams.Count > 0 then
+    SynchronizeParams;
+
+  // Aplica o timeout configurado dinamicamente no fluxo principal se houver
+  if FTimeout > 0 then
+    FQuery.CommandTimeout := FTimeout;
+end;
+
+procedure TQueryEngineADO.InternalOpen;
+begin
+  FQuery.Open;
+end;
+
+function TQueryEngineADO.InternalExec(const AReturn: Boolean): Integer;
+begin
+  if AReturn then
+    FQuery.Open
+  else
+    FQuery.ExecSQL;
+
+  Result := FQuery.RowsAffected;
+end;
+
+function TQueryEngineADO.InternalGetTotalPages: Integer;
+begin
+  Result := FQuery.FieldByName(FDMLGenerator.GetColumnNameTotalPages).AsInteger;
+end;
+
+// --- DEMAIS MÉTODOS DE COMPORTAMENTO ---
 
 function TQueryEngineADO.Add(Str: string): IQueryEngine;
 begin
@@ -61,7 +130,7 @@ end;
 function TQueryEngineADO.ApplyUpdates: Boolean;
 begin
   FQuery.UpdateBatch(arAll);
-  Result := not (rsPendingChanges in FQuery.RecordStatus);
+  Result := not(rsPendingChanges in FQuery.RecordStatus);
 end;
 
 function TQueryEngineADO.CancelUpdates: IQueryEngine;
@@ -85,61 +154,12 @@ begin
   FQuery.Close;
 end;
 
-constructor TQueryEngineADO.Create(
-  const AConnection: TDbEngineAbstract);
-var
-  LADOCommand: TADOCommand;
-begin
-  inherited;
-  FQuery := TADOQuery.Create(nil);
-  FQuery.Connection := TADOConnection(AConnection.ConnectionComponent);
-  FQuery.LockType := ltBatchOptimistic;
-  LADOCommand := TADOCommand.Create(FQuery);
-  FParams := TSQLParams.Create(LADOCommand, TParameter);
-end;
-
 function TQueryEngineADO.DataSet: TDataSet;
 begin
   Result := FQuery;
 end;
 
-destructor TQueryEngineADO.Destroy;
-begin
-  FParams.Free;
-  FQuery.Close;
-  FQuery.Free;
-  inherited;
-end;
-
-function TQueryEngineADO.Exec(const AReturn: Boolean = False; const ATimeout: Integer = 0): IQueryEngine;
-begin
-  Result := Self;
-  try
-    FExecutionStartTime := Now;
-    FQuery.Close;
-    FQuery.SQL.Clear;
-    FQuery.SQL.Assign(FComandoSQL);
-    if FParams.Count > 0 then
-      SynchronizeParams;
-    if ATimeout > 0 then
-      FQuery.CommandTimeout := ATimeout;
-    if AReturn then
-      FQuery.Open
-    else
-      FQuery.ExecSQL;
-    FExecutionEndTime := Now;
-    FRowsAffected := FQuery.RowsAffected;
-  except
-    on E: Exception do
-    begin
-      raise Exception.Create('Erro ao executar Query: ' + FQuery.SQL.Text + sLineBreak +
-        'Excessão: ' + E.message);
-    end;
-  end;
-end;
-
-function TQueryEngineADO.IndexFieldNames(
-  const Fields: string): IQueryEngine;
+function TQueryEngineADO.IndexFieldNames(const Fields: string): IQueryEngine;
 begin
   Result := Self;
   FQuery.Sort := StringReplace(Fields, ';', ',', [rfReplaceAll]);
@@ -156,33 +176,12 @@ begin
   Result := FQuery.Locate(KeyFields, KeyValues, Options);
 end;
 
-function TQueryEngineADO.Open(const ATimeout: Integer = 0): IQueryEngine;
+function TQueryEngineADO.SetCommandTimeout(const ATimeout: Integer): IQueryEngine;
 begin
-  Result := Self;
-  try
-    FExecutionStartTime := Now;
-    FQuery.Close;
-    FQuery.SQL.Clear;
-    if FPaginate and (FRowsPerPage > 0) and (FPage > 0) then
-      FDMLGenerator.GenerateSQLPaginating(FPage, FRowsPerPage, FComandoSQL);
-    FQuery.SQL.Assign(FComandoSQL);
-    if Assigned(FParams) and (FParams.Count > 0) then
-      SynchronizeParams;
-    if ATimeout > 0 then
-      FQuery.CommandTimeout := ATimeout;
-    FQuery.Open;
-    FExecutionEndTime := Now;
-    if FPaginate then
-      FTotalPages := FQuery.FieldByName(FDMLGenerator.GetColumnNameTotalPages).AsInteger;
-  except
-    on E: Exception do
-    begin
-      raise;
-    end;
-  end;
+  FTimeout := ATimeout;
 end;
 
-function TQueryEngineADO.Requery(const ATimeout: Integer = 0; Const APosition: Boolean = False): IQueryEngine;
+function TQueryEngineADO.Requery(const ATimeout: Integer = 0; const APosition: Boolean = False): IQueryEngine;
 var
   LBookmark: TBookmark;
 begin
@@ -194,6 +193,10 @@ begin
       if APosition then
         LBookmark := FQuery.GetBookmark;
       FExecutionStartTime := Now;
+
+      if ATimeout > 0 then
+        FQuery.CommandTimeout := ATimeout;
+
       FQuery.Requery;
       FExecutionEndTime := Now;
       if FQuery.BookmarkValid(LBookmark) then
@@ -207,7 +210,7 @@ begin
   finally
     if APosition then
       FQuery.FreeBookmark(LBookmark);
-  end
+  end;
 end;
 
 function TQueryEngineADO.Params: TSQLParams;
@@ -254,8 +257,7 @@ begin
   Close.Clear;
 end;
 
-function TQueryEngineADO.RetornaAutoIncremento(
-  const ASequenceName: string): Integer;
+function TQueryEngineADO.RetornaAutoIncremento(const ASequenceName: string): Integer;
 begin
   Self.Reset
     .Add('SELECT GEN_ID(' + ASequenceName + ',1) AS CONTROLE FROM RDB$DATABASE');
@@ -271,9 +273,11 @@ begin
     .Add('FROM ' + ATableDest)
     .Add('WHERE ' + AFieldDest + ' = :FIELDVALUE');
   Self.Params.ParamByName('FIELDVALUE').Value := Result;
+
   if Self.Open.DataSet.FieldByName('QTDE').AsInteger > 0 then
   begin
-    RetornaAutoIncremento(ASequenceName, ATableDest, AFieldDest);
+    // CORREÇÃO DO BUG: Atribuindo corretamente o retorno da chamada recursiva ao Result
+    Result := RetornaAutoIncremento(ASequenceName, ATableDest, AFieldDest);
   end;
 end;
 
@@ -289,7 +293,7 @@ end;
 
 function TQueryEngineADO.UpdatesPending: Boolean;
 begin
-  Result := FQuery.Active and ( rsPendingChanges in FQuery.RecordStatus );
+  Result := FQuery.Active and ((rsPendingChanges in FQuery.RecordStatus) or (rsModified in FQuery.RecordStatus));
 end;
 
 procedure TQueryEngineADO.SynchronizeParams;
@@ -311,4 +315,5 @@ begin
 end;
 
 {$IFEND}
+
 end.
