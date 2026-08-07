@@ -2,7 +2,6 @@ unit Infra.QueryEngine.ADOHelper;
 
 interface
 
-
 {$IF DEFINED(INFRA_ADO)}
 uses
   ADODB,

@@ -31,7 +31,6 @@ type
   private
     FQuery: TFDQuery;
     FParams: TSQLParams;
-    FRowsAffected: Integer;
     procedure _ParseException(const aExceptionFD: EFDDBEngineException; var aExceptionDBEngine: EDBEngineException);
   protected
     // Implementações do Template Method

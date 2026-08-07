@@ -20,7 +20,6 @@ type
   private
     FQuery: TADOQuery;
     FParams: TSQLParams;
-    FRowsAffected: Integer;
     FTimeout: Integer;
     procedure SynchronizeParams;
   protected

@@ -27,7 +27,6 @@ type
     FQuery: TZQuery;
     FParams: TSQLParams;
     FZSequence: TZSequence;
-    FRowsAffected: Integer;
   protected
     // Implementação dos ganchos (hooks) do Template Method da classe abstrata
     procedure PrepareComponentSQLAndParams; override;
