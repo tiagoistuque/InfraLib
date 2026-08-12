@@ -58,6 +58,7 @@ type
     function VendorLib(const AValue: string): IDbEngineConfig; overload;
     function SetExecuteMigrations(const AValue: Boolean): IDbEngineConfig; overload;
     function ConfigFileName: TFileName;
+    function ToJson: string;
   end;
 
   IDbEngine = interface

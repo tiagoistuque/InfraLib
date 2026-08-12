@@ -3,7 +3,8 @@ unit Infra.DBConfig;
 interface
 
 uses
-  SysUtils,
+  System.SysUtils,
+  System.JSON,
   Infra.DBEngine.Contract;
 
 type
@@ -34,6 +35,7 @@ type
     function VendorLib(const AValue: string): IDbEngineConfig; overload; virtual; abstract;
     function SetExecuteMigrations(const AValue: Boolean): IDbEngineConfig; overload; virtual; abstract;
     function ConfigFileName: TFileName; virtual; abstract;
+    function ToJson: string; virtual;
   public
     constructor Create(const APrefixVariable: string); virtual; abstract;
     class function New(const APrefixVariable: string): IDbEngineConfig; virtual; abstract;
@@ -41,5 +43,25 @@ type
 
 implementation
 
+{ TDBConfigDef }
+
+function TDBConfigDef.ToJson: string;
+var
+  LJson: TJSONObject;
+begin
+  LJson := TJSONObject.Create;
+  try
+    LJson
+      .AddPair('Driver', TJSONString.Create(Self.Driver.ToString))
+      .AddPair('Host', TJSONString.Create(Self.Host))
+      .AddPair('Port', TJSONNumber.Create(Self.Port))
+      .AddPair('Database', TJSONString.Create(Self.Database))
+      .AddPair('CharSet', TJSONString.Create(Self.CharSet));
+    Result := LJson.ToJSON;
+  finally
+    LJson.Free;
+  end;
+end;
+
 end.
-
+
