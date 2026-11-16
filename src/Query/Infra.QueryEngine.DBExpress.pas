@@ -19,7 +19,6 @@ type
     FClientDataSet: TClientDataSet;
     FProvider: TDataSetProvider;
     FParams: TSQLParams;
-    FRowsAffected: Integer;
   protected
     // Implementação dos ganchos (hooks) do Template Method da classe abstrata
     procedure PrepareComponentSQLAndParams; override;
