@@ -77,7 +77,16 @@ begin
     FConnectionComponent.Mode := cmShareDenyNone;
     FConnectionComponent.CursorLocation := clUseServer;
     FConnectionComponent.KeepConnection := True;
-    FConnectionComponent.ConnectionString := Format('Provider=SQLOLEDB.1; Persist Security Info=False; User ID=%s; Password=%s; Data Source=%s; Initial Catalog=%s', [ADBconfig.User, ADBConfig.Password, ADBConfig.Host, ADBConfig.Database]);
+    if ADbConfig.Driver = TDBDriver.MSSQL then
+    begin
+      FConnectionComponent.ConnectionString := Format('Provider=SQLOLEDB.1; Persist Security Info=False; User ID=%s; Password=%s; Data Source=%s; Initial Catalog=%s', [ADBconfig.User, ADBConfig.Password, ADBConfig.Host, ADBConfig.Database]);
+    end
+    else if ADbConfig.Driver = TDBDriver.MSAcc then
+    begin
+      FConnectionComponent.ConnectionString := Format('Provider=Microsoft.Jet.OLEDB.4.0;Data Source=%s;Mode=ReadWrite;Persist Security Info=False;Jet OLEDB:Create System Database=False;Jet OLEDB:Database Password=%s', [ ADBConfig.Database, ADBConfig.Password]);
+    end
+    else
+      raise Exception.CreateFmt('Driver do banco de dados não implementado para ADO: %s', [ADbConfig.Driver.ToString]);
 
     {$IF DEFINED(INFRA_ORMBR)}
     FDBConnection := TFactoryADO.Create(FConnectionComponent, TDBDriverRegister.GetDriverName(ADbConfig.Driver));
